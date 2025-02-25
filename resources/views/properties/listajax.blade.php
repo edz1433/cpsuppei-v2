@@ -28,7 +28,7 @@
         <div class="col-lg-10">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title float-right">
+                    <h3 class="card-title">
                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modal-inventory">
                             <i class="fas fa-plus"></i> Add New
                         </button>
@@ -46,7 +46,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th width="300">ITEM NAME</th>
+                                    <th width="250">ITEM NAME</th>
                                     <th width="400">DETAILS</th>
                                     <th>PRICE</th>
                                     <th>QTY</th>

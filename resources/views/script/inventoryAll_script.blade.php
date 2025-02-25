@@ -18,7 +18,10 @@
                         var propertyCode = row.property_no_generated ? '<br><b>PROPERTY CODE</b>: ' + row.property_no_generated : '';
                         var itemmodel = row.item_model ? '<br><b>MODEL</b> ' + row.item_model : '';
                         var description = row.item_descrip ? '<b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
-                        return campus + ' ' + type + ' ' + poNumber + ' ' + propertyCode + ' ' + itemmodel + '<br><br> ' + description;
+                        var accountname = row.accountableName ? '<b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
+                        var accountname1 = row.accountableNames ? '<b>END USER:</b><br> ' + row.accountableNames : '';
+                        
+                        return campus + ' ' + type + ' ' + poNumber + ' ' + propertyCode + ' ' + itemmodel + '<br><br> ' + description + '<br><br> ' + accountname + '<br><br> ' + accountname1;
                     },
                     className: 'align-middle'
                 },

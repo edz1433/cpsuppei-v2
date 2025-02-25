@@ -49,21 +49,21 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="10%">ITEM NAME</th>
-                                    <th width="20%">DETAILS</th>
-                                    <th width="10%">PRICE</th>
-                                    <th width="10%">QTY</th>
-                                    <th width="15%">TOTAL COST</th>
-                                    <th width="10%">DATE ACQ.</th>
-                                    <th width="10%">ITEM STATUS</th>
-                                    <th width="10%">ACTION</th>
+                                    <th width="20%" class="text-center">DETAILS</th>
+                                    <th width="10%" class="text-center">PRICE</th>
+                                    <th width="10%" class="text-center">QTY</th>
+                                    <th width="15%" class="text-center">TOTAL COST</th>
+                                    <th width="10%" class="text-center">DATE ACQ.</th>
+                                    <th width="10%" class="text-center">ITEM STATUS</th>
+                                    <th width="10%" class="text-center">ACTION</th>
                                 </tr>                                
                             </thead>
                             <tbody>
                                 @php $no = 1; @endphp
                                 @foreach($properties as $data)
                                 <tr id="tr-{{ $data->id }}" class="uns-bg">
-                                    <td>{{ $no++ }}</td>
-                                    <td>{{ $data->item_name }}</td>
+                                    <td class="text-center align-middle">{{ $no++ }}</td>
+                                    <td class="text-center align-middle">{{ $data->item_name }}</td>
                                     <td>
                                         @if($data->office_name)
                                             <b>CAMPUS:</b> {{ $data->office_name }}<br>
@@ -85,7 +85,36 @@
                                         
                                         @if($data->item_descrip)
                                             <br><b>DESCRIPTION:</b><br>
-                                            {{ $data->item_descrip }}
+                                            {{ $data->item_descrip }}<br>
+                                        @endif
+
+                                        @if($data->item_descrip)
+                                            <br><b>PERSON ACCOUNTABLE:</b><br>
+                                            @php
+                                                $accountableName = null;
+                                                if (!empty($data->person_accnt)) {
+                                                    $accountableName = DB::table('accountable')
+                                                        ->where('id', $data->person_accnt)
+                                                        ->value('person_accnt');
+                                                }
+                                            @endphp
+                                            {{ $accountableName ?? '' }}<br>
+                                        @endif
+
+                                        @if($data->item_descrip)
+                                            <br><b>END USER:</b><br>
+                                            @php
+                                                $personIds = array_filter(explode(';', $data->person_accnt1)); 
+                                        
+                                                $accountableNames = [];
+                                                if (!empty($personIds)) {
+                                                    $accountableNames = DB::table('accountable')
+                                                        ->whereIn('id', $personIds)
+                                                        ->pluck('person_accnt')
+                                                        ->toArray();
+                                                }
+                                            @endphp
+                                            {{ implode(', ', $accountableNames) }}
                                         @endif
                                     </td>
                                     <td class="text-center align-middle">
@@ -102,13 +131,17 @@
                                     <td class="text-center align-middle">
                                         <div class="btn-group">
                                             <div class="btn-group">
-                                                <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <a href="{{ route('propertiesEdit', ['id' => $data->id] ) }}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
-                                                    <button id="{{ $data->id }}" onclick="printSticker(this.id)" class="dropdown-item btn-print" href="#"><i class="fas fa-print"></i> Sticker</button>
-                                                    <button value="{{ $data->id }}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
-                                                </div>
+                                                @if(auth()->user()->role != "Campus Admin")
+                                                    <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <a href="{{ route('propertiesEdit', ['id' => $data->id] ) }}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
+                                                        <button id="{{ $data->id }}" onclick="printSticker(this.id)" class="dropdown-item btn-print" href="#"><i class="fas fa-print"></i> Sticker</button>
+                                                        <button value="{{ $data->id }}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
+                                                    </div>
+                                                @else
+                                                    <button class="btn btn-success"><i class="fas fa-users"></i></button>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>

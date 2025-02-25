@@ -20,6 +20,7 @@ use App\Models\InventoryHistory;
 use App\Models\Setting;
 use App\Models\InvSetting;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use PDF;
 
 class PropertiesController extends Controller
@@ -49,8 +50,8 @@ class PropertiesController extends Controller
         }
         
         $properties = $properties->get();
-
-        return view('properties.listajax', compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
+        $page = (auth()->user()->role == "Campus Admin") ? 'list' : 'listajax';
+        return view('properties.'.$page, compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
     }
 
     public function returnSlip($id){
@@ -128,7 +129,21 @@ class PropertiesController extends Controller
                 ->join('property', 'enduser_property.properties_id', '=', 'property.id')
                 ->join('items', 'enduser_property.item_id', '=', 'items.id')
                 ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
-                ->select('enduser_property.*', 'offices.office_name', 'property.abbreviation', 'items.item_name', 'purchases.po_number');
+                ->leftJoin('accountable as acc1', 'enduser_property.person_accnt', '=', 'acc1.id')
+                ->leftJoin(DB::raw('(SELECT person_accnt, GROUP_CONCAT(person_accnt SEPARATOR ", ") as accountable_names 
+                                     FROM accountable GROUP BY person_accnt) as acc2'), 
+                    function ($join) {
+                        $join->whereRaw("FIND_IN_SET(acc2.person_accnt, enduser_property.person_accnt1) > 0");
+                    })
+                ->select(
+                    'enduser_property.*',
+                    'offices.office_name',
+                    'property.abbreviation',
+                    'items.item_name',
+                    'purchases.po_number',
+                    'acc1.person_accnt as accountableName',
+                    'acc2.accountable_names as accountableNames'
+                );
 
         if ($exists) {
             $data->where('enduser_property.office_id', $ucampid);
