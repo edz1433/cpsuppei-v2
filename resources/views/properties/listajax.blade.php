@@ -34,7 +34,7 @@
                         </button>
                     </h3>
                 </div>
-
+                
                 <!-- Modal -->
                 @include('properties.modal')
                 @include('properties.modal-prntSticker')

@@ -108,8 +108,8 @@
                                     <label for="exampleInputName">Gender:</label>
                                     <select class="form-control select2bs4" name="gender">
                                         <option value=""> --- Select Here --- </option>
-                                        <option {{ $cr == 'Male' ? 'selected' : '' }}>Male</option>
-                                        <option {{ $cr == 'Female' ? 'selected' : '' }}>Female</option>
+                                        <option {{ $cr === 'userEdit' && $selectedUser->gender == 'Male' ? 'selected' : '' }}>Male</option>
+                                        <option {{ $cr === 'userEdit' && $selectedUser->gender == 'Female' ? 'selected' : '' }}>Female</option>
                                     </select>
                                </div>
                             </div>

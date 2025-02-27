@@ -443,6 +443,21 @@ class PropertiesController extends Controller
         return redirect()->route('propertiesEdit', ['id' => $inventory->id])->with('success', 'Updated Successfully');
     }
 
+    public function enduserUpdate(Request $request){
+        $request->validate([
+            'prop_id' => 'required',
+            'person_accnt1' => 'nullable|array',
+        ]);
+
+        $properties = EnduserProperty::findOrFail($request->input('prop_id'));
+
+        $properties->update([
+            'person_accnt1' => implode(';', $request->input('person_accnt1', [])),
+        ]);
+
+        return redirect()->back()->with('success', 'Updated Successfully');
+    }
+
     public function propertiesCat($id, $mode) {
         if ($id) {
             $accounts = Properties::where('category_id', $id)

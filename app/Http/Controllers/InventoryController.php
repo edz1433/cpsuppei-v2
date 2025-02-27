@@ -43,13 +43,23 @@ class InventoryController extends Controller
 
     public function getInventory()
     {
-        $data = InventoryHistory::join('enduser_property', 'inventory_histories.prop_id', '=', 'enduser_property.id')
+        $ucampid = auth()->user()->campus_id;
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->exists();
+
+        $inventory = InventoryHistory::join('enduser_property', 'inventory_histories.prop_id', '=', 'enduser_property.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('property', 'enduser_property.properties_id', '=', 'property.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
-            ->select('inventory_histories.*', 'inventory_histories.remarks as his_remarks', 'enduser_property.*', 'offices.office_name', 'property.abbreviation', 'items.item_name', 'purchases.po_number')
-            ->get();
+            ->select('inventory_histories.*', 'inventory_histories.remarks as his_remarks', 'enduser_property.*', 'offices.office_name', 'property.abbreviation', 'items.item_name', 'purchases.po_number');
+            
+        if ($exists) {
+            $inventory->where('enduser_property.office_id', $ucampid);
+        }
+        
+        $data = $inventory->get();
 
         return response()->json(['data' => $data]);
     }
@@ -65,13 +75,13 @@ class InventoryController extends Controller
 
         // Create new yearly inventory
         $yearinve = YearlyInventory::create([
-            'inv_status' => 'Ongoing',
+            'inv_status' => 'Ongoing', 
         ]);
     
         $invId = $yearinve->id;
     
         $properties = EnduserProperty::leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
-            ->select('enduser_property.id', 'enduser_property.person_accnt', 'enduser_property.person_accnt_name', 'enduser_property.remarks', 'offices.office_officer')
+            ->select('enduser_property.id', 'enduser_property.person_accnt', 'enduser_property.person_accnt_name', 'enduser_property.remarks', 'enduser_property.office_id', 'offices.office_officer')
             ->get();
         
         $inventoryData = [];
@@ -79,6 +89,7 @@ class InventoryController extends Controller
             $inventoryData[] = [
                 'prop_id' => $property->id,
                 'inv_id' => $invId,
+                'office_id' => $property->office_id,
                 'accnt_type' => !is_null($property->person_accnt) ? 1 : 2,
                 'person_accnt' => !empty($property->person_accnt_name) ? $property->person_accnt_name : $property->office_officer,
                 'item_status' => $property->remarks,

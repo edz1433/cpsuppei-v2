@@ -12,6 +12,7 @@ class InventoryHistory extends Model
         'uid',
         'prop_id',
         'inv_id',
+        'office_id',
         'accnt_type',
         'person_accnt',
         'remarks',

@@ -140,7 +140,7 @@
                                                         <button value="{{ $data->id }}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
                                                     </div>
                                                 @else
-                                                    <button class="btn btn-success"><i class="fas fa-users"></i></button>
+                                                    <button class="btn btn-info end-user" onclick="endUser('{{ $data->id }}')" data-toggle="modal" data-target="#endUserModal"><i class="fas fa-exclamation-circle"></i></button>
                                                 @endif
                                             </div>
                                         </div>
@@ -156,7 +156,45 @@
     </div>
 </div>
 
-
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="endUserModal" tabindex="-1" aria-labelledby="endUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form action="{{ route('enduserUpdate') }}" class="form-horizontal add-form" id="addpurchase" method="POST">
+                    @csrf
+                    <input type="hidden" id="prop-id" name="prop_id" value="">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col-md-12 mt-3">
+                                <label>END USER:</label>
+                                <select class="form-control select2" name="person_accnt1[]" data-placeholder="--- Select End User ---" style="width: 100%;" multiple>
+                                    <option value="0">N/A</option>
+                                    @foreach ($accnt as $data)
+                                        <option value="{{ $data->id }}">
+                                            {{ $data->person_accnt }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col md 12">
+                                <button type="submit" class="btn btn-success mt-2 float-right"><i class="fas fa-save"></i> Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+               
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function endUser(id){
+        document.getElementById('prop-id').value=id;
+    }
+</script>
 <script>
 function formatNumber(input) {
     const value = input.value.replace(/[^\d.]/g, '');

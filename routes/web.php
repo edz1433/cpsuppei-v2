@@ -154,7 +154,8 @@ use App\Http\Controllers\TechController;
         Route::get('/list/cat/{id}/{mode}', [PropertiesController::class, 'propertiesCat'])->name('propertiesCat');
         Route::get('/list/prnt/{id}', [PropertiesController::class, 'propertiesPrntSticker'])->name('propertiesPrntSticker');
         Route::get('/list/delete/{id}', [PropertiesController::class, 'propertiesDelete'])->name('propertiesDelete'); 
-
+        
+        Route::post('/end-user/update', [PropertiesController::class, 'enduserUpdate'])->name('enduserUpdate');
         Route::get('/list/sticker', [PropertiesController::class, 'propertiesStickerTemplate'])->name('propertiesStickerTemplate');
         Route::get('/list/sticker/pdf', [PropertiesController::class, 'propertiesStickerTemplatePDF'])->name('propertiesStickerTemplatePDF');
     });
