@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Models\InventoryHistory;
 use App\Models\Setting;
 use App\Models\InvSetting;
+use App\Models\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use PDF;
@@ -453,6 +454,14 @@ class PropertiesController extends Controller
 
         $properties->update([
             'person_accnt1' => implode(';', $request->input('person_accnt1', [])),
+        ]);
+
+        Log::create([
+            'camp_id' => auth()->user()->campus_id,
+            'user_id' => auth()->user()->id,
+            'module_id' => $request->input('prop_id'),
+            'module' => 'properties',
+            'action' => 'update',
         ]);
 
         return redirect()->back()->with('success', 'Updated Successfully');

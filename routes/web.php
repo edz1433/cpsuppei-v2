@@ -49,7 +49,7 @@ use App\Http\Controllers\TechController;
         Route::get('/instat-update', [PropertiesController::class, 'propertiesStatUp'])->name('propertiesStatUp');
         Route::get('/checkInv', [InventoryController::class, 'checkInv'])->name('check-inv');
     });
-
+    
     Route::prefix('/technician')->group(function () {
         Route::get('/repair', [TechController::class, 'repairRead'])->name('repairRead');
         Route::get('/repair-create', [TechController::class, 'repairCreate'])->name('repairCreate');
@@ -213,8 +213,6 @@ use App\Http\Controllers\TechController;
         Route::get('/system-name',[SettingsController::class,'setting_list'])->name('setting_list');
         Route::post('/system-name',[SettingsController::class,'upload'])->name('upload');
     });
-
-    
     
     //Logout
     Route::get('/logout',[MasterController::class,'logout'])->name('logout');

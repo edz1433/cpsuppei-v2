@@ -156,6 +156,12 @@ class InventoryController extends Controller
                 'person_accnt_name' => $accountable_name,
                 'remarks' => $item_status,
             ]);
+
+            // Check if this is the last record with inv_status = 2
+            $remainingCount = InventoryHistory::where('inv_status', '2')->count();
+            if ($remainingCount == 0) {
+                YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
+            }
         }else{
             $updated = EnduserProperty::where('id', $prop_id)->update([
                 'person_accnt' => $person_accnt,

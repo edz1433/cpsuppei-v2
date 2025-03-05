@@ -118,7 +118,7 @@
                             <div class="form-row">
                                 <div class="col-md-12">
                                     <label for="exampleInputName">Password:</label>
-                                    <input type="password" name="password" value="{{ $cr === 'userEdit' ? $selectedUser->password : '' }}" placeholder="Enter Password" class="form-control">   
+                                    <input type="password" name="password" placeholder="{{ $cr === 'userEdit' ? '********' : 'Enter Password' }}" class="form-control">   
                                 </div>
                             </div>
                         </div>
