@@ -11,10 +11,10 @@
                         <b>INVENTORY LIST</b>
                     </h3>
                     <h3 class="card-title float-right">
-                        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
-                        <button type="button" class="btn btn-success start-inventory btn-sm">
-                            <i class="fas fa-warehouse"></i> START INVENTORY
-                        </button>
+                        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Supply Staff" || auth()->user()->role == "Administrator")
+                            <button type="button" class="btn btn-success start-inventory btn-sm">
+                                <i class="fas fa-warehouse"></i> START INVENTORY
+                            </button>
                         @endif
                     </h3>
                 </div>
