@@ -7,10 +7,15 @@
         <div class="col-8">
             <div class="card">
                 <div class="card-header">
+                    <h3 class="card-title">
+                        <b>INVENTORY LIST</b>
+                    </h3>
                     <h3 class="card-title float-right">
-                        <button type="button" class="btn btn-success start-inventory">
+                        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
+                        <button type="button" class="btn btn-success start-inventory btn-sm">
                             <i class="fas fa-warehouse"></i> START INVENTORY
                         </button>
+                        @endif
                     </h3>
                 </div>
                 <div class="card-body">

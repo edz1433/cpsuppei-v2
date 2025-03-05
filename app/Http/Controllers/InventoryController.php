@@ -115,7 +115,7 @@ class InventoryController extends Controller
         $person_accnt = $request->query('person_accnt');
         $isInv = $request->query('isInv'); //1 || 2
 
-        // ?uid=1&qrcode=2024-06-05-030-135-035&accnt_type=2&item_status=Good Condition&remarks=balo
+        // ?uid=1&qrcode=2024-06-05-030-135-035&accnt_type=2&item_status=Good Condition&remarks=balo&person_accnt=36
 
         $accountableperson  = Accountable::find($person_accnt);
         $officeaccountable = Office::find($person_accnt);
