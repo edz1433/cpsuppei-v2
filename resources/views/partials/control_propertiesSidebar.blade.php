@@ -38,11 +38,12 @@
             Intangible Value
         </a>
     </li>
-
+    @if(auth()->user()->role !=='Campus Admin')
     <li class="nav-item mb-1">
         <a href="{{ route('propertiesStickerTemplate') }}" class="nav-link2 {{ $blankStickerActive }}">
             Blank Sticker
         </a>
     </li>
+    @endif
 </ul>
 

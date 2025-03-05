@@ -28,11 +28,13 @@
         <div class="col-lg-10">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">
+                    @if(auth()->user()->role !=='Campus Admin')
+                    <h3 class="card-title" style="float: right;">
                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modal-inventory">
                             <i class="fas fa-plus"></i> Add New
                         </button>
                     </h3>
+                    @endif
                 </div>
                 
                 <!-- Modal -->
