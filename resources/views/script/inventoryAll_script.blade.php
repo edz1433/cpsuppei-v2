@@ -7,7 +7,7 @@
             searching: true,
             paging: true,
             "columns": [
-                {data: 'id', name: 'id', orderable: false, searchable: false},
+                {data: 'id', name: 'id', className: 'align-middle', orderable: false, searchable: false},
                 { data: 'item_name', className: 'align-middle' },
                 {
                     data: null,
