@@ -84,6 +84,12 @@
                                         @else
                                             <b>MODEL:</b> N/A<br>
                                         @endif
+
+                                        @if($data->serial_number)
+                                            <b>SERIAL NUMBER:</b> {{ $data->serial_number }}<br>
+                                        @else
+                                            <b>SERIAL NUMBER:</b> N/A<br>
+                                        @endif
                                         
                                         @if($data->item_descrip)
                                             <br><b>DESCRIPTION:</b><br>

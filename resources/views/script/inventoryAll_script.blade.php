@@ -8,20 +8,21 @@
             paging: true,
             "columns": [
                 {data: 'id', name: 'id', orderable: false, searchable: false},
-                {data: 'item_name', className: 'align-middle'},
+                { data: 'item_name', className: 'align-middle' },
                 {
                     data: null,
                     render: function(data, type, row) {
                         var campus = row.office_name ? '<b>CAMPUS:</b> ' + row.office_name : '';
                         var type = row.abbreviation ? '<br><b>TYPE:</b> ' + row.abbreviation : '';
-                        var poNumber = row.po_number ? '<br><b>PO NUMBER</b>: ' + row.po_number : '';
-                        var propertyCode = row.property_no_generated ? '<br><b>PROPERTY CODE</b>: ' + row.property_no_generated : '';
-                        var itemmodel = row.item_model ? '<br><b>MODEL</b> ' + row.item_model : '';
+                        var poNumber = row.po_number ? '<br><b>PO NUMBER:</b> ' + row.po_number : '';
+                        var propertyCode = row.property_no_generated ? '<br><b>PROPERTY CODE:</b> ' + row.property_no_generated : '';
+                        var itemmodel = row.item_model ? '<br><b>MODEL:</b> ' + row.item_model : '';
+                        var serialNumber = row.serial_number ? '<br><b>SERIAL NUMBER:</b> ' + row.serial_number : ''; // ✅ Added Serial Number
                         var description = row.item_descrip ? '<b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
                         var accountname = row.accountableName ? '<b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
                         var accountname1 = row.accountableNames ? '<b>END USER:</b><br> ' + row.accountableNames : '';
-                        
-                        return campus + ' ' + type + ' ' + poNumber + ' ' + propertyCode + ' ' + itemmodel + '<br><br> ' + description + '<br><br> ' + accountname + '<br><br> ' + accountname1;
+
+                        return campus + ' ' + type + ' ' + poNumber + ' ' + propertyCode + ' ' + itemmodel + ' ' + serialNumber + '<br><br> ' + description + '<br><br> ' + accountname + '<br><br> ' + accountname1;
                     },
                     className: 'align-middle'
                 },
