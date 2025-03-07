@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Setting;
 use App\Models\Purchases;
 use App\Models\Inventory;
+use App\Models\EnduserProperty;
 use App\Models\Office;
 use App\Models\Accountable;
 use App\Models\property;
@@ -144,7 +145,7 @@ class PurchaseController extends Controller
         $categoriesCode = $purchase->categories_id;
         $propertiesCode = $purchase->property_id;
 
-        $lastItemNumber = Inventory::where([
+        $lastItemNumber = EnduserProperty::where([
             //'office_id' => $request->input('office_id'),
             'item_id' => $purchase->item_id,
             'property_id' => $purchase->property_id,
@@ -220,7 +221,7 @@ class PurchaseController extends Controller
 
                 $newItemNum = str_pad($new_part, strlen($part_to_increment), '0', STR_PAD_LEFT);
 
-                Inventory::create([
+                EnduserProperty::create([
                     'purch_id' => $request->purchase_id,
                     'office_id' => $request->office_id,
                     'item_id' => $purchase->item_id,
@@ -245,7 +246,7 @@ class PurchaseController extends Controller
                 ]);
             }
         }else{
-            Inventory::create([
+            EnduserProperty::create([
                 'purch_id' => $request->purchase_id,
                 'office_id' => $request->office_id,
                 'item_id' => $purchase->item_id,
