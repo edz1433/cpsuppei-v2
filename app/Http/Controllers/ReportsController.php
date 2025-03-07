@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Setting;
-use App\Models\Inventory;
+use App\Models\EnduserProperty;
 use App\Models\Purchases;
 use App\Models\Office;
 use App\Models\property;
@@ -63,74 +63,74 @@ class ReportsController extends Controller
         $selectId = ($categoriesId == 'All') ? $selectId = '0' : $selectId;
         $categoriesId = ($categoriesId == 'All') ? $categoriesId = '0' : $categoriesId;
 
-        $purchase = Inventory::join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->join('properties', 'inventories.selected_account_id', '=', 'properties.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('items', 'inventories.item_id', '=', 'items.id')
+        $purchase = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->where(function ($query) use ($officeId, $allOffice, $cond) {
                 if ($officeId == 1) {
-                    $query->whereNotIn('inventories.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
                 } else {
-                    $query->where('inventories.office_id', $allOffice, $officeId);
+                    $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
-            ->where('inventories.properties_id', $propertiesId)
-            ->where('inventories.categories_id', $cond, $categoriesId)
-            ->where('inventories.property_id', $cond, $propId)
-            ->where('inventories.selected_account_id', $cond, $selectId)
+            ->where('enduser_property.properties_id', $propertiesId)
+            ->where('enduser_property.categories_id', $cond, $categoriesId)
+            ->where('enduser_property.property_id', $cond, $propId)
+            ->where('enduser_property.selected_account_id', $cond, $selectId)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
-                    $query->whereBetween('inventories.date_acquired', [$startDate, $endDate]);
+                    $query->whereBetween('enduser_property.date_acquired', [$startDate, $endDate]);
                 } elseif ($startDate) {
-                    $query->where('inventories.date_acquired', '>=', $startDate);
+                    $query->where('enduser_property.date_acquired', '>=', $startDate);
                 } elseif ($endDate) {
-                    $query->where('inventories.date_acquired', '<=', $endDate);
+                    $query->where('enduser_property.date_acquired', '<=', $endDate);
                 }
             })
         ->get();
 
-        $purchase1 = Inventory::join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->join('properties', 'inventories.selected_account_id', '=', 'properties.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('items', 'inventories.item_id', '=', 'items.id')
+        $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->where(function ($query) use ($officeId, $allOffice, $cond) {
                 if ($officeId == 1) {
-                    $query->whereNotIn('inventories.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
                 } else {
-                    $query->where('inventories.office_id', $allOffice, $officeId);
+                    $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
-            ->where('inventories.properties_id', $propertiesId)
-            ->where('inventories.categories_id', $cond, $categoriesId)
-            ->where('inventories.property_id', $cond, $propId)
-            ->where('inventories.selected_account_id', $cond, $selectId)
+            ->where('enduser_property.properties_id', $propertiesId)
+            ->where('enduser_property.categories_id', $cond, $categoriesId)
+            ->where('enduser_property.property_id', $cond, $propId)
+            ->where('enduser_property.selected_account_id', $cond, $selectId)
             ->where(function ($query) use ($startDate) {
                 if ($startDate) {
-                    $query->where('inventories.date_acquired', '<', $startDate);
+                    $query->where('enduser_property.date_acquired', '<', $startDate);
                 }
             })
             ->get();
 
 
-        $purchase2 = Inventory::join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->join('properties', 'inventories.selected_account_id', '=', 'properties.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('items', 'inventories.item_id', '=', 'items.id')
-            // ->where('inventories.office_id', $allOffice, $officeId)
+        $purchase2 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            // ->where('enduser_property.office_id', $allOffice, $officeId)
             ->where(function ($query) use ($officeId, $allOffice, $cond) {
                 if ($officeId == 1) {
-                    $query->whereNotIn('inventories.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
                 } else {
-                    $query->where('inventories.office_id', $cond, $allOffice);
+                    $query->where('enduser_property.office_id', $cond, $allOffice);
                 }
             })
-            ->where('inventories.properties_id', $propertiesId)
-            ->where('inventories.categories_id', $cond, $categoriesId)
-            ->where('inventories.property_id', $cond, $propId)
-            ->where('inventories.selected_account_id', $cond, $selectId)
+            ->where('enduser_property.properties_id', $propertiesId)
+            ->where('enduser_property.categories_id', $cond, $categoriesId)
+            ->where('enduser_property.property_id', $cond, $propId)
+            ->where('enduser_property.selected_account_id', $cond, $selectId)
             ->where(function ($query) use ($endDate) {
                 if ($endDate) {
-                    $query->where('inventories.date_acquired', '>', $endDate);
+                    $query->where('enduser_property.date_acquired', '>', $endDate);
                 }
             })
             ->get();
@@ -365,103 +365,103 @@ class ReportsController extends Controller
         $formattedStartDate = $startDate ? date('M. d, Y', strtotime($startDate)) : '';
         $formattedEndDate = $endDate ? date('M. d, Y', strtotime($endDate)) : '';
         
-        $purchase = Inventory::join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->join('properties', 'inventories.selected_account_id', '=', 'properties.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('items', 'inventories.item_id', '=', 'items.id')
+        $purchase = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->where(function ($query) use ($officeId, $allOffice) {
                 if ($officeId == 1) {
-                    $query->whereNotIn('inventories.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
                 } else {
-                    $query->where('inventories.office_id', $allOffice, $officeId);
+                    $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
             ->where(function ($query) use ($condProperties, $propertiesId) {
                 if (!empty($propertiesId)) {
-                    $query->where('inventories.properties_id', $condProperties, $propertiesId);
+                    $query->where('enduser_property.properties_id', $condProperties, $propertiesId);
                 }
             })
             ->where(function ($query) use ($condpropId, $propId) {
                 if (!empty($propId)) {
-                    $query->where('inventories.property_id', $condpropId, $propId);
+                    $query->where('enduser_property.property_id', $condpropId, $propId);
                 }
             })
-            ->where('inventories.categories_id', $condCategories, $categoriesId)
+            ->where('enduser_property.categories_id', $condCategories, $categoriesId)
             ->where(function ($query) use ($selectId) {
                 if (!empty($selectId)) {
-                    $query->where('inventories.selected_account_id', $selectId);
+                    $query->where('enduser_property.selected_account_id', $selectId);
                 }
             })
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
-                    $query->whereBetween('inventories.date_acquired', [$startDate, $endDate]);
+                    $query->whereBetween('enduser_property.date_acquired', [$startDate, $endDate]);
                 } elseif ($startDate) {
-                    $query->where('inventories.date_acquired', '>=', $startDate);
+                    $query->where('enduser_property.date_acquired', '>=', $startDate);
                 } elseif ($endDate) {
-                    $query->where('inventories.date_acquired', '<=', $endDate);
+                    $query->where('enduser_property.date_acquired', '<=', $endDate);
                 }
             })
             ->get();        
             
-        $purchase1 = Inventory::join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->join('properties', 'inventories.selected_account_id', '=', 'properties.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('items', 'inventories.item_id', '=', 'items.id')
+        $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->where(function ($query) use ($officeId, $allOffice) {
                 if ($officeId == 1) {
-                    $query->whereNotIn('inventories.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
                 } else {
-                    $query->where('inventories.office_id', $allOffice, $officeId);
+                    $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
             ->where(function ($query) use ($condProperties, $propertiesId) {
                 if (!empty($propertiesId)) {
-                    $query->where('inventories.properties_id', $condProperties, $propertiesId);
+                    $query->where('enduser_property.properties_id', $condProperties, $propertiesId);
                 }
             })
             ->where(function ($query) use ($condpropId, $propId) {
                 if (!empty($propId)) {
-                    $query->where('inventories.property_id', $condpropId, $propId);
+                    $query->where('enduser_property.property_id', $condpropId, $propId);
                 }
             })
-            ->where('inventories.categories_id', $condCategories, $categoriesId)
+            ->where('enduser_property.categories_id', $condCategories, $categoriesId)
             ->where(function ($query) use ($selectId) {
                 if (!empty($selectId)) {
-                    $query->where('inventories.selected_account_id', $selectId);
+                    $query->where('enduser_property.selected_account_id', $selectId);
                 }
             })
             ->where(function ($query) use ($startDate) {
                 if ($startDate) {
-                    $query->where('inventories.date_acquired', '<', $startDate);
+                    $query->where('enduser_property.date_acquired', '<', $startDate);
                 }
             })
             ->get();
 
 
-        $purchase2 = Inventory::join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->join('properties', 'inventories.selected_account_id', '=', 'properties.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('items', 'inventories.item_id', '=', 'items.id')
-            ->where('inventories.office_id', $allOffice, $officeId)
+        $purchase2 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->where('enduser_property.office_id', $allOffice, $officeId)
             ->where(function ($query) use ($condProperties, $propertiesId) {
                 if (!empty($propertiesId)) {
-                    $query->where('inventories.properties_id', $condProperties, $propertiesId);
+                    $query->where('enduser_property.properties_id', $condProperties, $propertiesId);
                 }
             })
             ->where(function ($query) use ($condpropId, $propId) {
                 if (!empty($propId)) {
-                    $query->where('inventories.property_id', $condpropId, $propId);
+                    $query->where('enduser_property.property_id', $condpropId, $propId);
                 }
             })
-            ->where('inventories.categories_id', $condCategories, $categoriesId)
+            ->where('enduser_property.categories_id', $condCategories, $categoriesId)
             ->where(function ($query) use ($selectId) {
                 if (!empty($selectId)) {
-                    $query->where('inventories.selected_account_id', $selectId);
+                    $query->where('enduser_property.selected_account_id', $selectId);
                 }
             })
             ->where(function ($query) use ($endDate) {
                 if ($endDate) {
-                    $query->where('inventories.date_acquired', '>', $endDate);
+                    $query->where('enduser_property.date_acquired', '>', $endDate);
                 }
             })
             ->get();
@@ -678,37 +678,37 @@ class ReportsController extends Controller
         $officeId = ($officeId == 'All') ? '0' : $officeId;
     
         $selectedItem = Item::whereIn('id', $itemId)->get();
-        $condAccnt = ($pAccountable == 'accountable') ? 'inventories.person_accnt' : 'inventories.office_id';
+        $condAccnt = ($pAccountable == 'accountable') ? 'enduser_property.person_accnt' : 'enduser_property.office_id';
     
-        $unservicequery = Inventory::join('items', 'inventories.item_id', '=', 'items.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->select('inventories.*', 'items.*', 'offices.*',  'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
+        $unservicequery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->select('enduser_property.*', 'items.*', 'offices.*',  'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
     
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
-            $unservicequery->whereIn('inventories.id', $itemId);
+            $unservicequery->whereIn('enduser_property.id', $itemId);
         }
     
         if ($pAccountable == 'accountable') {
             $unservicequery->where($condAccnt, $personaccountable);
         } else {
-            $unservicequery->where('inventories.office_id', $officecond, $officeId);
+            $unservicequery->where('enduser_property.office_id', $officecond, $officeId);
         }
     
         $unservitems = $unservicequery
-            ->where('inventories.categories_id', $condcategories, $categoriesId)
-            ->where('inventories.property_id', $condpropid, $propId)
-            ->where('inventories.selected_account_id', $conaccountid, $selectId)
+            ->where('enduser_property.categories_id', $condcategories, $categoriesId)
+            ->where('enduser_property.property_id', $condpropid, $propId)
+            ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
-                    $query->whereBetween('inventories.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                    $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
                 } elseif ($startDate) {
-                    $query->where('inventories.date_acquired', '>=', $startDate . ' 00:00:00');
+                    $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                 } elseif ($endDate) {
-                    $query->where('inventories.date_acquired', '<=', $endDate . ' 23:59:59');
+                    $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                 }
             })
-            ->where('inventories.remarks', 'Unserviceable')
+            ->where('enduser_property.remarks', 'Unserviceable')
             ->get();
 
         if($unservitems->isNotEmpty()){
@@ -724,8 +724,8 @@ class ReportsController extends Controller
         $office = Office::all();
         $property = Property::all();
         $category = Category::all();
-        $purchase = Inventory::join('accountable', 'inventories.person_accnt', '=', 'accountable.id')
-                    ->select('inventories.*', 'accountable.person_accnt')
+        $purchase = EnduserProperty::join('accountable', 'enduser_property.person_accnt', '=', 'accountable.id')
+                    ->select('enduser_property.*', 'accountable.person_accnt')
                     ->get();
                                         
         $accntables = Accountable::all();
@@ -763,34 +763,34 @@ class ReportsController extends Controller
    
         $selectedItem = Item::whereIn('id', $itemId)->get();
     
-        $icsitemquery = Inventory::join('items', 'inventories.item_id', '=', 'items.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('offices', 'inventories.office_id', '=', 'offices.id')
-            // ->where('inventories.office_id', '!=', 'Unserviceable')
-            ->select('inventories.*', 'items.*', 'offices.*', 'offices.id as oid', 'inventories.person_accnt as person_accnt_id', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
+        $icsitemquery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            // ->where('enduser_property.office_id', '!=', 'Unserviceable')
+            ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'enduser_property.person_accnt as person_accnt_id', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
     
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
-            $icsitemquery->whereIn('inventories.id', $itemId);
+            $icsitemquery->whereIn('enduser_property.id', $itemId);
         }
       
         if ($pAccountable == 'accountable') {
-            $icsitemquery->where('inventories.person_accnt', $accntcond, $paccount);
+            $icsitemquery->where('enduser_property.person_accnt', $accntcond, $paccount);
         } else {
-            $icsitemquery->where('inventories.office_id', $officecond, $officeId);
+            $icsitemquery->where('enduser_property.office_id', $officecond, $officeId);
         }
     
         $icsitems = $icsitemquery
-            ->whereIn('inventories.properties_id', [1, 2])
-            ->where('inventories.categories_id', $condcategories, $categoriesId)
-            ->where('inventories.property_id', $condpropid, $propId)
-            ->where('inventories.selected_account_id', $condsel, $selectId)
+            ->whereIn('enduser_property.properties_id', [1, 2])
+            ->where('enduser_property.categories_id', $condcategories, $categoriesId)
+            ->where('enduser_property.property_id', $condpropid, $propId)
+            ->where('enduser_property.selected_account_id', $condsel, $selectId)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
-                    $query->whereBetween('inventories.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                    $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
                 } elseif ($startDate) {
-                    $query->where('inventories.date_acquired', '>=', $startDate . ' 00:00:00');
+                    $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                 } elseif ($endDate) {
-                    $query->where('inventories.date_acquired', '<=', $endDate . ' 23:59:59');
+                    $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                 }
             })
             ->get();
@@ -842,35 +842,35 @@ class ReportsController extends Controller
         $officeId = ($officeId == 'All') ? '0' : $officeId;
     
         $selectedItem = Item::whereIn('id', $itemId)->get();
-        $condAccnt = ($pAccountable == 'accountable') ? 'inventories.person_accnt' : 'inventories.office_id';
+        $condAccnt = ($pAccountable == 'accountable') ? 'enduser_property.person_accnt' : 'enduser_property.office_id';
     
-        $paritemquery = Inventory::join('items', 'inventories.item_id', '=', 'items.id')
-            ->join('units', 'inventories.unit_id', '=', 'units.id')
-            ->join('offices', 'inventories.office_id', '=', 'offices.id')
-            ->select('inventories.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
+        $paritemquery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
     
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
-            $paritemquery->whereIn('inventories.id', $itemId);
+            $paritemquery->whereIn('enduser_property.id', $itemId);
         }
     
         if ($pAccountable == 'accountable') {
             $paritemquery->where($condAccnt, $personaccountable);
         } else {
-            $paritemquery->where('inventories.office_id', $officecond, $officeId);
+            $paritemquery->where('enduser_property.office_id', $officecond, $officeId);
         }
     
         $paritems = $paritemquery
-            ->where('inventories.properties_id', 3)
-            ->where('inventories.categories_id', $condcategories, $categoriesId)
-            ->where('inventories.property_id', $condpropid, $propId)
-            ->where('inventories.selected_account_id', $conaccountid, $selectId)
+            ->where('enduser_property.properties_id', 3)
+            ->where('enduser_property.categories_id', $condcategories, $categoriesId)
+            ->where('enduser_property.property_id', $condpropid, $propId)
+            ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
-                    $query->whereBetween('inventories.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                    $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
                 } elseif ($startDate) {
-                    $query->where('inventories.date_acquired', '>=', $startDate . ' 00:00:00');
+                    $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                 } elseif ($endDate) {
-                    $query->where('inventories.date_acquired', '<=', $endDate . ' 23:59:59');
+                    $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                 }
             })
             ->get();
@@ -911,14 +911,14 @@ class ReportsController extends Controller
 
         } else {
             if($pAccountable == 'officeAccountable'){
-                $itempar = Inventory::join('items', 'items.id', '=', 'inventories.item_id')
-                ->select('inventories.*', 'items.*', 'inventories.id as pid')
+                $itempar = EnduserProperty::join('items', 'items.id', '=', 'enduser_property.item_id')
+                ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
                 ->where('office_id', $id)
                 ->get();
             }else{
-                 $itempar = Inventory::where('person_accnt', $id)
-                ->join('items', 'items.id', '=', 'inventories.item_id')
-                ->select('inventories.*', 'items.*', 'inventories.id as pid')
+                 $itempar = EnduserProperty::where('person_accnt', $id)
+                ->join('items', 'items.id', '=', 'enduser_property.item_id')
+                ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
                 ->get();
             }
 
@@ -980,37 +980,37 @@ class ReportsController extends Controller
 
         } else {
             if($pAccountable == 'officeAccountable'){
-                $itempar = Inventory::join('items', 'items.id', '=', 'inventories.item_id')
-                ->select('inventories.*', 'items.*', 'inventories.id as pid')
+                $itempar = EnduserProperty::join('items', 'items.id', '=', 'enduser_property.item_id')
+                ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
                 ->where('office_id', $id)
-                ->whereIn('inventories.properties_id', $propertiesid)
+                ->whereIn('enduser_property.properties_id', $propertiesid)
                 ->when($properties_id == 'ics', function ($query) {
-                    return $query->whereIn('inventories.properties_id', [1, 2]);
+                    return $query->whereIn('enduser_property.properties_id', [1, 2]);
                 })
                 ->when($properties_id == 'par', function ($query) {
-                    return $query->whereIn('inventories.properties_id', [3]);
+                    return $query->whereIn('enduser_property.properties_id', [3]);
                 })
                 ->when($properties_id == 'unserv', function ($query) {
-                    return $query->whereIn('inventories.properties_id', [1, 2, 3]);
+                    return $query->whereIn('enduser_property.properties_id', [1, 2, 3]);
                 })
-                ->where('inventories.property_id', $condpropid, $propId)
+                ->where('enduser_property.property_id', $condpropid, $propId)
                 ->get();
             }else{
-                $itempar = Inventory::where('person_accnt', $id)
-                ->join('items', 'items.id', '=', 'inventories.item_id')
-                ->select('inventories.*', 'items.*', 'inventories.id as pid')
+                $itempar = EnduserProperty::where('person_accnt', $id)
+                ->join('items', 'items.id', '=', 'enduser_property.item_id')
+                ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
                 ->when($properties_id == 'ics', function ($query) {
-                    return $query->whereIn('inventories.properties_id', [1, 2]);
+                    return $query->whereIn('enduser_property.properties_id', [1, 2]);
                 })
                 ->when($properties_id == 'par', function ($query) {
-                    return $query->whereIn('inventories.properties_id', [3]);
+                    return $query->whereIn('enduser_property.properties_id', [3]);
                 })
                 ->when($properties_id == 'unserv', function ($query) {
-                    return $query->whereIn('inventories.properties_id', [1, 2, 3]);
+                    return $query->whereIn('enduser_property.properties_id', [1, 2, 3]);
                 })
-                ->where('inventories.categories_id', $condcategories, $categoriesId)
-                ->where('inventories.property_id', $condpropid, $propId)
-                // ->where('inventories.selected_account_id ', $selaccnt)
+                ->where('enduser_property.categories_id', $condcategories, $categoriesId)
+                ->where('enduser_property.property_id', $condpropid, $propId)
+                // ->where('enduser_property.selected_account_id ', $selaccnt)
                 ->get();            
             }
 
