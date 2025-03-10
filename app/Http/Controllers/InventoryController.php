@@ -56,7 +56,7 @@ class InventoryController extends Controller
             ->select('inventory_histories.*', 'inventory_histories.remarks as his_remarks', 'enduser_property.*', 'offices.office_name', 'property.abbreviation', 'items.item_name', 'purchases.po_number');
             
         if ($exists){
-            $properties->where('offices.camp_id', $ucampid);
+            $inventory->where('offices.camp_id', $ucampid);
         }
         
         $data = $inventory->get();
