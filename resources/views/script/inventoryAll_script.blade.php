@@ -21,7 +21,7 @@
                         var description = row.item_descrip ? '<b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
                         var accountname = row.accountableName ? '<b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
                         var accountname1 = row.accountableNames ? '<b>END USER:</b><br> ' + row.accountableNames : '';
-
+                        
                         return campus + ' ' + type + ' ' + poNumber + ' ' + propertyCode + ' ' + itemmodel + ' ' + serialNumber + '<br><br> ' + description + '<br><br> ' + accountname + '<br><br> ' + accountname1;
                     },
                     className: 'align-middle'

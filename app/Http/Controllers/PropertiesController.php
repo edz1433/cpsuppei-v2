@@ -44,10 +44,10 @@ class PropertiesController extends Controller
                     ->join('property', 'enduser_property.properties_id', '=', 'property.id')
                     ->join('items', 'enduser_property.item_id', '=', 'items.id')
                     ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
-                    ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name', 'purchases.po_number');
+                    ->select('enduser_property.*', 'offices.id', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name', 'purchases.po_number');
 
         if ($exists){
-            $properties->where('enduser_property.office_id', $ucampid);
+            $properties->where('offices.camp_id', $ucampid);
         }
         
         $properties = $properties->get();
@@ -81,8 +81,8 @@ class PropertiesController extends Controller
                     ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
                     ->where('enduser_property.properties_id', '=', '3');
 
-        if ($exists) {
-            $properties->where('enduser_property.office_id', $ucampid);
+        if ($exists){
+            $properties->where('offices.camp_id', $ucampid);
         }
         
         $properties = $properties->get();
@@ -110,8 +110,8 @@ class PropertiesController extends Controller
         ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
         ->where('enduser_property.properties_id', '=', '1');
     
-        if ($exists) {
-            $properties->where('enduser_property.office_id', $ucampid);
+        if ($exists){
+            $properties->where('offices.camp_id', $ucampid);
         }
         
         $properties = $properties->get();
@@ -175,8 +175,8 @@ class PropertiesController extends Controller
                     ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
                     ->where('enduser_property.properties_id', '=', '2');
 
-        if ($exists) {
-            $properties->where('enduser_property.office_id', $ucampid);
+        if ($exists){
+            $properties->where('offices.camp_id', $ucampid);
         }
         
         $properties = $properties->get();     
@@ -204,8 +204,8 @@ class PropertiesController extends Controller
                     ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
                     ->where('enduser_property.properties_id', '=', '4');
 
-        if ($exists) {
-            $properties->where('enduser_property.office_id', $ucampid);
+        if ($exists){
+            $properties->where('offices.camp_id', $ucampid);
         }
         
         $properties = $properties->get();     
