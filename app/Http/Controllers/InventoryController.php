@@ -55,8 +55,8 @@ class InventoryController extends Controller
             ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
             ->select('inventory_histories.*', 'inventory_histories.remarks as his_remarks', 'enduser_property.*', 'offices.office_name', 'property.abbreviation', 'items.item_name', 'purchases.po_number');
             
-        if ($exists) {
-            $inventory->where('enduser_property.office_id', $ucampid);
+        if ($exists){
+            $properties->where('offices.camp_id', $ucampid);
         }
         
         $data = $inventory->get();
