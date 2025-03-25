@@ -65,16 +65,28 @@
 	@endphp
 
 	@foreach ($serialNumbers as $serial)
-	<div class="colortable{{ $inventory->pid }}" style="background-color: {{ $propertiesId == 3 ? 'yellow' : ($propertiesId == 2 ? 'lightgreen' : ($propertiesId == 1 ? 'green' : '')) }}">
+	@php
+		$backgroundColor = '';
+		$itemCost = str_replace(',', '', $inventory->item_cost);
+		if ($itemCost < 5000) {
+			$backgroundColor = 'lightgreen';
+		} elseif ($itemCost < 50000) {
+			$backgroundColor = 'green';
+		} else {
+			$backgroundColor = 'yellow';
+		}
+	@endphp
+
+	<div class="colortable{{ $inventory->pid }}" style="background-color: {{ $backgroundColor }}">
 		<table id="sticker">
 			<thead>
 				<tr>
 					<th rowspan="1" class="sticker-text-label">
 						@if($setting->photo_filename)
-		                    <img src="{{ asset('uploads/'. $setting->photo_filename) }}" class="logo-sticker brand-image img-circle elevation-3" alt="Uploaded Photo">
-		                @else
-		                    <img class="logo-sticker img-circle" src="{{ asset('template/img/default-logo.png') }}" alt="User profile picture">
-		                @endif
+							<img src="{{ asset('uploads/'. $setting->photo_filename) }}" class="logo-sticker brand-image img-circle elevation-3" alt="Uploaded Photo">
+						@else
+							<img class="logo-sticker img-circle" src="{{ asset('template/img/default-logo.png') }}" alt="User profile picture">
+						@endif
 					</th>
 					<th colspan="3" class="sticker-text-label" style="font-size: 11pt">Central Philippines State University</th>
 				</tr>
@@ -103,9 +115,9 @@
 				<tr>
 					<th>Person Accountable: <span class="dataText">
 						@php
-					        $accountable = $inventory->person_accnt ?? $inventory->office_officer ?? null;
-					        echo is_null($accountable) ? 'N/A' : $accountable;
-					    @endphp
+							$accountable = $inventory->person_accnt ?? $inventory->office_officer ?? null;
+							echo is_null($accountable) ? 'N/A' : $accountable;
+						@endphp
 					</span></th>
 				</tr>
 				<tr>

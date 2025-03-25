@@ -8,32 +8,30 @@
         <div class="col-lg-3">
             <div class="card" >
                 <div class="card-body">
-                 
-                   <form action="{{ isset($issues) ? route('issueUpdate', ['id' => $issues->id]) : route('issueInsertion') }} " method="post">
-                    @csrf
-                    <div class="col-12">
-                        <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Issue</span></label>
-                        <input type="text" value="{{ (isset($issues)) ? $issues->issue : '' }}" name="issue" class="form-control" id="exampleInput" placeholder="">
-                    </div>
-                    <div class="col-12">
-                        <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Description</span></label>
-                        <input type="text" value="{{ (isset($issues)) ? $issues->remarks : '' }}"  name="remarks" class="form-control" id="exampleInput" placeholder="">
-                    </div>
-                    <div class="col-12">
-                        <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Status</span></label>
-                        <input type="text" value="{{ (isset($issues)) ? $issues->status : '' }}"  name="status" class="form-control" id="exampleInput" placeholder="">
-                    </div>
-                    <div class="col-12">
-                        <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Urgency</span></label>
-                        <input type="text" value="{{ (isset($issues)) ? $issues->urgency : '' }}"  name="urgency" class="form-control" id="exampleInput" placeholder="">
-                    </div>
-                    <div class="col-12 mt-4">
-                    <button class="btn btn-primary btn-sm">
-                        <i class="fas fa-save"></i>{{ (isset($issues)) ? 'Update' : 'Save'}}
-                    </button>
-                    </div>
+                    <form action="{{ isset($issues) ? route('issueUpdate', ['id' => $issues->id]) : route('issueInsertion') }} " method="post">
+                        @csrf
+                        <div class="col-12">
+                            <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Issue</span></label>
+                            <input type="text" value="{{ (isset($issues)) ? $issues->issue : '' }}" name="issue" class="form-control" id="exampleInput" placeholder="">
+                        </div>
+                        <div class="col-12">
+                            <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Description</span></label>
+                            <input type="text" value="{{ (isset($issues)) ? $issues->remarks : '' }}"  name="remarks" class="form-control" id="exampleInput" placeholder="">
+                        </div>
+                        <div class="col-12">
+                            <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Status</span></label>
+                            <input type="text" value="{{ (isset($issues)) ? $issues->status : '' }}"  name="status" class="form-control" id="exampleInput" placeholder="">
+                        </div>
+                        <div class="col-12">
+                            <label for="exampleInput" class="form-label"><span class="badge badge-secondary">Urgency</span></label>
+                            <input type="text" value="{{ (isset($issues)) ? $issues->urgency : '' }}"  name="urgency" class="form-control" id="exampleInput" placeholder="">
+                        </div>
+                        <div class="col-12 mt-4">
+                        <button class="btn btn-primary btn-sm">
+                            <i class="fas fa-save"></i>{{ (isset($issues)) ? 'Update' : 'Save'}}
+                        </button>
+                        </div>
                     </form>
-                  
                 </div>
             </div>
         </div>
@@ -45,7 +43,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="example" class="table table-bordered table-hover ">
+                        <table id="example1" class="table table-bordered table-hover ">
                             <thead>
                             <tr>
                                 <th>Property number</th>
