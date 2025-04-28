@@ -26,7 +26,7 @@
                         @csrf
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-6">
+                                <div class="col-md-6" {{ auth()->user()->role !== 'Campus Admin' ? '' : 'hidden' }}>
                                     <label>Campus or Office:</label>
                                     <select class="form-control select2bs4" id="office_id" name="office_id" style="width: 100%;" onchange="allgenOption(this.value, 'campus', this.options[this.selectedIndex].getAttribute('data-person-cat'))">
                                         <option disabled selected value=""> --- Select Campus or Office Type --- </option>
@@ -37,7 +37,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-{{ auth()->user()->role !== 'Campus Admin' ? '6' : '12' }}">
                                     <label>Category:</label>
                                     <select id="category_id" name="categories_id" onchange="categor(this.value)" data-placeholder="---Select Category---" class="form-control select2bs4" style="width: 100%;">
                                         <option></option>
@@ -133,6 +133,18 @@
         </div>
     </div>
 </div>
+@if(auth()->user()->role == 'Campus Admin')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var selectElement = document.getElementById('office_id');
+            selectElement.value = "{{ $uoffice->id }}"; // Set the value
+
+            // Trigger the change event manually
+            var event = new Event('change', { bubbles: true });
+            selectElement.dispatchEvent(event);
+        });
+    </script>
+@endif
 <script>
 function acctTitle(){
     $('#item_id').empty();

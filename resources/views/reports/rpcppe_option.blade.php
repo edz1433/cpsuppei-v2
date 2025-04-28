@@ -24,7 +24,7 @@
                 <div class="card-body">
                     <form action="{{ route('rpcppeOptionReportGen') }}" class="form-horizontal add-form" id="rpcppeReport" method="GET" target="_blank">
                         @csrf
-                        
+                        @if(auth()->user()->role !== 'Campus Admin')
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
@@ -39,7 +39,9 @@
                                 </div>
                             </div>
                         </div>
-
+                        @else
+                            <input type="text" name="office_id" id="office_id" value="{{ $uoffice->id }}" hidden>
+                        @endif
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-6">
@@ -98,14 +100,17 @@
                                         <option value="EXCEL">EXCEL</option>
                                     </select>
                                 </div>
-                                <div class="col-md-1">
-                                    <label>Serial Column:</label>
-                                    <input type="checkbox" name="serial" class="form-control" value="1">
-                                </div>
-                                <div class="col-md-1">
-                                    <label>Date Acquired:</label>
-                                    <input type="checkbox" name="acquired" class="form-control" value="1">
-                                </div>
+                                
+                                @if(auth()->user()->role !== 'Campus Admin')
+                                    <div class="col-md-1">
+                                        <label>Serial Column:</label>
+                                        <input type="checkbox" name="serial" class="form-control" value="1">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <label>Date Acquired:</label>
+                                        <input type="checkbox" name="acquired" class="form-control" value="1">
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         

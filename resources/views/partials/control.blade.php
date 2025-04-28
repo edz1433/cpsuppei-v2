@@ -20,25 +20,25 @@
             <a href="@if(auth()->user()->role !== 'Technician'){{ route('propertiesRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician'])) disabled @endif {{ request()->is('properties*') ? 'active' : '' }}">
                 <i class="fas fa-server"></i> Properties
             </a>
-
+            
             <a href="@if(auth()->user()->role !== 'Technician'){{ route('inventoryRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician'])) disabled @endif {{ request()->is('inventory*') ? 'active' : '' }}">
                 <i class="fas fa-server"></i> Inventory
             </a>
 
-            <a href="{{ route('rpcppeOption') }}" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('reports*') ? 'active' : '' }}">
+            <a href="{{ route('rpcppeOption') }}" class="btn btn-app {{ request()->is('reports*') ? 'active' : '' }}">
                 <i class="fas fa-file-pdf"></i> Reports
             </a>
 
             <a href="@if(auth()->user()->role !== 'Technician'){{ route('repairRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Campus Admin'])) disabled @endif {{ request()->is('technician*') ? 'active' : '' }}">
                 <i class="fas fa-user"></i> Technician
             </a>
-
+            
             @if(auth()->user()->role=='Administrator')
                 <a href="{{ route('userRead') }}" class="btn btn-app {{$current_route=='userRead' || $current_route=='userEdit' ?'active':''}}">
                     <i class="fas fa-users"></i> Users
                 </a>
             @endif
-                
+            
             <a href="{{ route('user_settings') }}" class="btn btn-app {{ request()->is('settings*') ? 'active' : '' }}">
                 <i class="fas fa-cog"></i> Settings
             </a>

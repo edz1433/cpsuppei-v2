@@ -31,12 +31,12 @@
             PAR Reports
         </a>
     </li>
-
+    @if(auth()->user()->role !== 'Campus Admin')
     <li class="nav-item mb-1">
         <a href="{{ route('unserviceForm') }}" class="nav-link2 {{ $unservActive }}" style="color: #000;">
             Unserviceable Reports
         </a>
     </li>
-    
+    @endif
 </ul>
 

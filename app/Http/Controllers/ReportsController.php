@@ -28,13 +28,20 @@ class ReportsController extends Controller
     public function rpcppeOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
+        $uid = auth()->user()->campus_id;
+        $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::whereIn('id', [3])->get();
         $category = Category::all();
 
-        return view('reports.rpcppe_option', compact('setting', 'office', 'property', 'category'));
+        return view('reports.rpcppe_option', compact('setting', 'uoffice', 'office', 'property', 'category'));
     }
-
+    
     public function rpcppeOptionReportGen(Request $request) {
+        $ucampid = auth()->user()->campus_id;
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->exists();
+
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
         $item = Item::all();
@@ -86,8 +93,13 @@ class ReportsController extends Controller
                 } elseif ($endDate) {
                     $query->where('enduser_property.date_acquired', '<=', $endDate);
                 }
-            })
-        ->get();
+            });
+
+        if ($exists){
+            $purchase->where('offices.camp_id', $ucampid);
+        } 
+
+        $purchase = $purchase->get();
 
         $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
@@ -108,8 +120,13 @@ class ReportsController extends Controller
                 if ($startDate) {
                     $query->where('enduser_property.date_acquired', '<', $startDate);
                 }
-            })
-            ->get();
+            });
+
+        if ($exists){
+            $purchase1->where('offices.camp_id', $ucampid);
+        } 
+        
+        $purchase1 = $purchase1->get();
 
 
         $purchase2 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
@@ -132,8 +149,13 @@ class ReportsController extends Controller
                 if ($endDate) {
                     $query->where('enduser_property.date_acquired', '>', $endDate);
                 }
-            })
-            ->get();
+            });
+
+        if ($exists){
+            $purchase2->where('offices.camp_id', $ucampid);
+        } 
+        
+        $purchase2 = $purchase2->get();
 
         $bforward = $purchase1->sum(function ($purchase1) {
             return str_replace(',', '', $purchase1->total_cost);
@@ -324,13 +346,20 @@ class ReportsController extends Controller
     public function rpcsepOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
+        $uid = auth()->user()->campus_id;
+        $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::whereIn('id', [1, 2])->get();
         $category = Category::all();
 
-        return view('reports.rpcsep_option', compact('setting', 'office', 'property', 'category'));
+        return view('reports.rpcsep_option', compact('setting', 'uoffice', 'office', 'property', 'category'));
     }
     
     public function rpcsepOptionReportGen(Request $request) {
+        $ucampid = auth()->user()->campus_id;
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->exists();
+
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
         $item = Item::all();
@@ -400,8 +429,13 @@ class ReportsController extends Controller
                 } elseif ($endDate) {
                     $query->where('enduser_property.date_acquired', '<=', $endDate);
                 }
-            })
-            ->get();        
+            });
+            
+        if ($exists){
+            $purchase->where('offices.camp_id', $ucampid);
+        } 
+
+        $purchase = $purchase->get();
             
         $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
@@ -722,20 +756,28 @@ class ReportsController extends Controller
     public function icsOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
+        $uid = auth()->user()->campus_id;
+        $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::all();
         $category = Category::all();
         $purchase = EnduserProperty::join('accountable', 'enduser_property.person_accnt', '=', 'accountable.id')
                     ->select('enduser_property.*', 'accountable.person_accnt')
                     ->get();
-                                        
-        $accntables = Accountable::all();
-
-        return view('reports.ics_option', compact('setting', 'office', 'property', 'category', 'purchase', 'accntables'));
+        if($uoffice){
+            $accntables = Accountable::where('off_id', $uoffice->id)->get();
+        }else{
+            $accntables = Accountable::all();
+        }
+        return view('reports.ics_option', compact('setting', 'uoffice', 'office', 'property', 'category', 'purchase', 'accntables'));
     }
 
     public function icsOptionReportGen(Request $request) {
+        $ucampid = auth()->user()->campus_id;
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->exists();
+
         $setting = Setting::firstOrNew(['id' => 1]);
-    
         $officeId = $request->office_id;
         $personaccountable = $request->person_accnt;
         $itemId = $request->item_id;
@@ -792,11 +834,15 @@ class ReportsController extends Controller
                 } elseif ($endDate) {
                     $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                 }
-            })
-            ->get();
+            });
+
+        if ($exists){
+            $icsitems->where('offices.camp_id', $ucampid);
+        } 
+
+        $icsitems = $icsitems->get();
 
         $pAccountable2 = $request->person_accnt1;
-    
     
         if($icsitems->isNotEmpty()){
             $pdf = PDF::loadView('reports.ics_option_reportsGen', compact('selectedItem', 'icsitems', 'itemId', 'pAccountable', 'pAccountable2', 'datereport'))->setPaper('Legal', 'portrait');
@@ -809,13 +855,24 @@ class ReportsController extends Controller
     public function parOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
+        $uid = auth()->user()->campus_id;
+        $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::all();
         $category = Category::all();
-        $accntables = Accountable::all();
-        return view('reports.par_option', compact('setting', 'office', 'property', 'accntables', 'category'));
+        if($uoffice){
+            $accntables = Accountable::where('off_id', $uoffice->id)->get();
+        }else{
+            $accntables = Accountable::all();
+        }
+        return view('reports.par_option', compact('setting', 'uoffice', 'office', 'property', 'accntables', 'category'));
     }
 
     public function parOptionReportGen(Request $request) {
+        $ucampid = auth()->user()->campus_id;
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->exists();
+
         $setting = Setting::firstOrNew(['id' => 1]);
     
         $officeId = $request->office_id;
@@ -848,7 +905,13 @@ class ReportsController extends Controller
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
-    
+        
+        if ($exists){
+            $paritemquery->where('offices.camp_id', $ucampid);
+        }
+
+        $paritemquery = $paritemquery->get();
+
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
             $paritemquery->whereIn('enduser_property.id', $itemId);
         }
@@ -872,8 +935,13 @@ class ReportsController extends Controller
                 } elseif ($endDate) {
                     $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                 }
-            })
-            ->get();
+            });
+
+        if ($exists){
+            $paritems->where('offices.camp_id', $ucampid);
+        }
+
+        $paritems = $paritems->get();
         
         $pAccountable2 = $request->person_accnt1;
 
@@ -895,7 +963,7 @@ class ReportsController extends Controller
             $userAccountable = Accountable::where('off_id', $id)
                 ->select('person_accnt', 'id')
                 ->get();
-
+ 
             $officeAccountable = Office::where('id', $id)
                 ->select('office_officer', 'id')
                 ->get();

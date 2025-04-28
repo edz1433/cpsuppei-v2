@@ -167,7 +167,7 @@ use App\Http\Controllers\TechController;
         Route::get('/list/ajax', [InventoryController::class, 'getInventory'])->name('getInventory');
         Route::post('/inventory/start', [InventoryController::class, 'startInventory'])->name('startInventory');
     });
-    
+     
     //Reports
     Route::prefix('/reports')->group(function () {
         Route::get('/rpcppe/option', [ReportsController::class, 'rpcppeOption'])->name('rpcppeOption');

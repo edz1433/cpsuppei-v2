@@ -23,7 +23,7 @@ class LoginAuth
                 }
             }
             if(auth()->user()->hasRole('Campus Admin')){
-                if ($request->is(['users*', 'view*', 'technician*', 'properties/list/edit*', 'purchases*', 'reports*', 'settings/system-name'])) {
+                if ($request->is(['users*', 'view*', 'technician*', 'properties/list/edit*', 'purchases*', 'settings/system-name'])) {
                     return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page');
                 }                
             }

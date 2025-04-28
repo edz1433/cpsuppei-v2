@@ -25,6 +25,7 @@
                     <form action="{{ route('rpcppeOptionReportGen') }}" class="form-horizontal add-form" id="rpcppeReport" method="GET" target="_blank">
                         @csrf
                         
+                        @if(auth()->user()->role !== 'Campus Admin')
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
@@ -39,6 +40,9 @@
                                 </div>
                             </div>
                         </div>
+                        @else
+                            <input type="text" name="office_id" id="office_id" value="{{ $uoffice->id }}" hidden>
+                        @endif
 
                         <div class="form-group">
                             <div class="form-row">
