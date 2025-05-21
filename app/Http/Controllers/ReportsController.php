@@ -872,7 +872,6 @@ class ReportsController extends Controller
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
             ->exists();
-
         $setting = Setting::firstOrNew(['id' => 1]);
     
         $officeId = $request->office_id;
@@ -905,13 +904,7 @@ class ReportsController extends Controller
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
-        
-        if ($exists){
-            $paritemquery->where('offices.camp_id', $ucampid);
-        }
-
-        $paritemquery = $paritemquery->get();
-
+    
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
             $paritemquery->whereIn('enduser_property.id', $itemId);
         }
@@ -939,10 +932,9 @@ class ReportsController extends Controller
 
         if ($exists){
             $paritems->where('offices.camp_id', $ucampid);
-        }
-
-        $paritems = $paritems->get();
+        } 
         
+        $paritems = $paritems->get();
         $pAccountable2 = $request->person_accnt1;
 
         if($paritems->isNotEmpty()){
