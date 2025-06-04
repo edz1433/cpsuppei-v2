@@ -6,6 +6,7 @@
 
 <div class="container-fluid">
     <div class="row" style="padding-top: 100px;">
+        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
         <div class="col-lg-2">
             <div class="card">
                 <div class="card-body">
@@ -14,7 +15,60 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-7">
+        @else
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-{{ $cr == 'accountableEdit' ? 'pen' : 'plus'}}"></i> {{ $cr == 'accountableEdit' ? 'Edit' : 'Add'}}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ $cr == 'accountableEdit' ? route('accountableUpdate', ['id' => $selectedAccnt->id]) : route('accountableCreate') }}" class="form-horizontal" method="post" id="addAccnt">
+                            @csrf
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Accountable Person:</label>
+                                        @if ($cr == 'accountableEdit')
+                                            <input type="hidden" name="id" value="{{ $selectedAccnt->id }}">
+                                        @endif
+                                        <input type="text" name="person_accnt" value="{{ $cr === 'accountableEdit' ? $selectedAccnt->person_accnt : '' }}" oninput="var words = this.value.split(' '); for(var i = 0; i < words.length; i++){ words[i] = words[i].substr(0,1).toUpperCase() + words[i].substr(1); } this.value = words.join(' ');" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Campus / Office:</label>
+                                        <select class="form-control select2bs4" id="off_id" name="off_id" style="width: 100%;">
+                                            <option disabled selected> --- Select here --- </option>
+                                            @foreach ($office as $data)
+                                                <option value="{{ $data->id }}" @if($cr === 'accountableEdit' && $data->id === $selectedAccnt->off_id) selected @endif>{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-save"></i> {{ $cr == 'accountableEdit' ? 'Update' : 'Save'}}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+        <div class="col-lg-{{ auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator" ? '7' : '9' }}">
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
@@ -50,6 +104,7 @@
                 </div>
             </div>
         </div>
+        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
         <div class="col-lg-3">
             <div class="card">
                 <div class="card-header">
@@ -72,6 +127,7 @@
                             </div>
                         </div>
 
+                        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
@@ -85,6 +141,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
 
                         <div class="form-group">
                             <div class="form-row">
@@ -99,9 +156,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 </div>
-
-
-
 @endsection

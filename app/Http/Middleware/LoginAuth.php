@@ -23,9 +23,12 @@ class LoginAuth
                 }
             }
             if(auth()->user()->hasRole('Campus Admin')){
-                if ($request->is(['users*', 'view*', 'technician*', 'properties/list/edit*', 'purchases*', 'settings/system-name'])) {
-                    return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page');
-                }                
+                if ($request->is('users*', 'view*', 'technician*', 'properties/list/edit*', 'purchases*', 'settings/system-name')) {
+                    // But allow access only if the route is exactly 'view/accntperson' or starts with it
+                    if (! $request->is('view/accntperson*')) {
+                        return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page');
+                    }
+                }
             }
             if(auth()->user()->hasRole('Staff')) {
                 // restrict access to certain pages

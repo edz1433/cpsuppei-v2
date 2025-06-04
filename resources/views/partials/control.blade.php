@@ -8,11 +8,15 @@
             <a href="{{ route('dashboard') }}" class="btn btn-app {{$current_route=='dashboard'?'active':''}}">
                 <i class="fas fa-th"></i> Dashboard
             </a>
-            
+            @if(auth()->user()->role !== 'Campus Admin')
             <a href="@if(auth()->user()->role !== 'Technician'){{ route('ppeRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('view*') ? 'active' : '' }}">
                 <i class="fas fa-list"></i> View
             </a>
-
+            @else 
+                <a href="{{ route('accountableRead') }}" class="btn btn-app {{ request()->is('view/accntperson*') ? 'active' : '' }}">
+                    <i class="fas fa-user-check"></i> Accountable
+                </a>
+            @endif
             <a href="@if(auth()->user()->role !== 'Technician'){{ route('purchaseREAD') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('purchases*') ? 'active' : '' }}">
                 <i class="fas fa-shopping-cart"></i> Purchases
             </a>

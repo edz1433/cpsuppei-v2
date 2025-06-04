@@ -195,7 +195,6 @@ use App\Http\Controllers\TechController;
         Route::post('/allgenoption', [ReportsController::class, 'allgenOption'])->name('allgenOption');
     });
 
-
     //Users
     Route::prefix('/users')->group(function () {
         Route::get('/list',[UserController::class,'userRead'])->name('userRead');

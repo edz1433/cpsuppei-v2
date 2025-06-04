@@ -34,7 +34,15 @@ class PropertiesController extends Controller
 
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
-        $accnt = Accountable::all();
+        
+        $role = auth()->user()->role;
+        if ($role == "Campus Admin") {
+            $officeId = Office::where('camp_id', auth()->user()->campus_id)->first()->id;
+            $accnt = Accountable::where('off_id', $officeId)->get();
+        }else{
+            $accnt = Accountable::all();
+        }
+
         $item = Item::all();
         $unit = Unit::all();
         $category = Category::all();

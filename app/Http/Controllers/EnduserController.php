@@ -17,9 +17,16 @@ class EnduserController extends Controller
     public function accountableRead() {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
+        
         $accnt = Accountable::join('offices', 'accountable.off_id', '=', 'offices.id')
-                ->select('accountable.*', 'offices.office_name', 'accountable.id as aid')
-                ->get();
+            ->select('accountable.*', 'offices.office_name', 'accountable.id as aid');
+
+        if (auth()->user()->role == "Campus Admin") {
+            $accnt->where('camp_id', auth()->user()->campus_id);
+        }
+
+        $accnt = $accnt->get();
+                
         return view('manage.enduser.accntlist', compact('setting', 'accnt', 'office'));
     }
 
@@ -30,7 +37,6 @@ class EnduserController extends Controller
         if ($request->isMethod('post')) {
             $request->validate([
                 'person_accnt' => 'required|string|max:255',
-                'off_id' => 'required',
             ]);
             
             $accntName = $request->input('person_accnt');
@@ -41,9 +47,14 @@ class EnduserController extends Controller
             }
 
             try {
+                $role = auth()->user()->role;
+                if ($role == "Campus Admin") {
+                    $officeId = Office::where('camp_id', auth()->user()->campus_id)->first()->id;
+                }
+
                 Accountable::create([
                     'person_accnt' => $request->input('person_accnt'),
-                    'off_id' => $request->input('off_id'),
+                    'off_id' => $request->input('off_id', $officeId),
                 ]);
 
                 return redirect()->route('accountableRead')->with('success', 'Item stored successfully!');
@@ -58,8 +69,13 @@ class EnduserController extends Controller
         $office = Office::all();
 
         $accnt = Accountable::join('offices', 'accountable.off_id', '=', 'offices.id')
-                ->select('accountable.*', 'offices.office_name', 'accountable.id as aid')
-                ->get();
+                ->select('accountable.*', 'offices.office_name', 'accountable.id as aid');
+
+        if (auth()->user()->role == "Campus Admin") {
+            $accnt->where('camp_id', auth()->user()->campus_id);
+        }
+
+        $accnt = $accnt->get();
 
         $selectedAccnt = Accountable::join('offices', 'accountable.off_id', '=', 'offices.id')
                 ->select('accountable.*', 'offices.office_name', 'accountable.id as aid')
@@ -74,14 +90,19 @@ class EnduserController extends Controller
         $request->validate([
             'id' => 'required',
             'person_accnt' => 'required',
-            'off_id' => 'required',
         ]);
     
         try {
             $accountId = $request->input('id');
             $accntName = $request->input('person_accnt');
-            $offId = $request->input('off_id');
-    
+
+            $role = auth()->user()->role;
+            if ($role == "Campus Admin") {
+                $offId = Office::where('camp_id', auth()->user()->campus_id)->first()->id;
+            }else {
+                $offId = auth()->user()->campus_id;
+            }
+            
             $existingAccnt = Accountable::where('person_accnt', $accntName)
                                         ->where('id', '!=', $accountId)
                                         ->first();
