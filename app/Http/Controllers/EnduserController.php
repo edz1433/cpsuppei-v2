@@ -48,9 +48,7 @@ class EnduserController extends Controller
 
             try {
                 $role = auth()->user()->role;
-                if ($role == "Campus Admin") {
-                    $officeId = Office::where('camp_id', auth()->user()->campus_id)->first()->id;
-                }
+                $officeId = $request->input('off_id', auth()->user()->campus_id);
 
                 Accountable::create([
                     'person_accnt' => $request->input('person_accnt'),
