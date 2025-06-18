@@ -6,7 +6,7 @@
 
 <div class="container-fluid">
     <div class="row" style="padding-top: 100px;">
-        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator" || auth()->user()->role == "Supply Staff")
+        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
         <div class="col-lg-2">
             <div class="card">
                 <div class="card-body">
@@ -38,7 +38,7 @@
                                 </div>
                             </div>
 
-                            @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator" || auth()->user()->role == "Supply Staff"))
+                            @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
                             <div class="form-group">
                                 <div class="form-row">
                                     <div class="col-md-12">
@@ -104,7 +104,7 @@
                 </div>
             </div>
         </div>
-        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator" || auth()->user()->role == "Supply Staff")
+        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
         <div class="col-lg-3">
             <div class="card">
                 <div class="card-header">
@@ -127,7 +127,7 @@
                             </div>
                         </div>
 
-                        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator" || auth()->user()->role == "Supply Staff"))
+                        @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
