@@ -113,12 +113,12 @@ class InventoryController extends Controller
         $item_status = $request->query('item_status');
         $remarks = $request->query('remarks');
         $person_accnt = $request->query('person_accnt');
-        $isInv = $request->query('isInv'); //1 || 2
+        $isInv = $request->query('isInv'); //1 || 0
 
         // ?uid=1&qrcode=2024-06-05-030-135-035&accnt_type=2&item_status=Good Condition&remarks=balo&person_accnt=36
 
         $accountableperson  = Accountable::find($person_accnt);
-        $officeaccountable = Office::find($person_accnt);
+        $officeaccountable = Office::find($person_accnt); 
         
         // $accountable_name = ($accttype == 1) ? $accountableperson->person_accnt : $officeaccountable->office_officer;
 
@@ -137,7 +137,7 @@ class InventoryController extends Controller
         if (!$userproperties) {
             return response()->json(['error' => 'Property not found'], 404);
         }
-    
+     
         $prop_id = $userproperties->prop_id;
 
         // dd($paccount);

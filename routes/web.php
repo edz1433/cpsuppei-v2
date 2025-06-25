@@ -42,9 +42,10 @@ use App\Http\Controllers\TechController;
 
     Route::get('/qr-check', [PropertiesController::class, 'geneCheck'])->name('gene-check');
     Route::get('/gene-qr', [InventoryController::class, 'geneQr'])->name('gene-qr');
+
     Route::middleware(['android'])->group(function () {
         Route::get('/app-login',[UserController::class,'appLogin'])->name('appLogin');
-        
+         
         Route::get('/instat', [PropertiesController::class, 'propertiesStat'])->name('propertiesStat');
         Route::get('/instat-update', [PropertiesController::class, 'propertiesStatUp'])->name('propertiesStatUp');
         Route::get('/checkInv', [InventoryController::class, 'checkInv'])->name('check-inv');
