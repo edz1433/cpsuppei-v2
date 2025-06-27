@@ -37,8 +37,35 @@ class InventoryController extends Controller
         $setting = Setting::firstOrNew(['id' => 1]);
         $yearinvs = YearlyInventory::all();
         $countInv = YearlyInventory::where('inv_status', 'Ongoing')->count();
+
+        $ucampid = auth()->user()->campus_id;
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->exists();
+
+        $inventoryQuery = InventoryHistory::join('enduser_property', 'inventory_histories.prop_id', '=', 'enduser_property.id')
+            ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->select(
+            'offices.camp_id',
+            \DB::raw("COALESCE(offices.office_name, 'MAIN CAMPUS') as office_name"),
+            \DB::raw("SUM(CASE WHEN inventory_histories.inv_status = 1 THEN 1 ELSE 0 END) as total"),
+            \DB::raw("SUM(CASE WHEN inventory_histories.inv_status = 2 THEN 1 ELSE 0 END) as done")
+            )
+            ->groupBy('offices.camp_id', 'offices.office_name');
+
+        if ($exists) {
+            $inventoryQuery->where('offices.camp_id', $ucampid);
+        }
+
+        $inventory = $inventoryQuery->get()->map(function($row) {
+            if (is_null($row->camp_id)) {
+            $row->office_name = 'MAIN CAMPUS';
+            }
+            return $row;
+        });
         
-        return view('inventory.listajax', compact('setting', 'yearinvs', 'countInv'));
+        
+        return view('inventory.listajax', compact('setting', 'yearinvs', 'countInv', 'inventory'));
     }
 
     public function getInventory()
@@ -151,11 +178,18 @@ class InventoryController extends Controller
                 'inv_status' => '2',
             ]);
 
-            $updated = EnduserProperty::where('id', $prop_id)->update([
-                'person_accnt' => $person_accnt,
+            $updateData = [
                 'person_accnt_name' => $accountable_name,
                 'remarks' => $item_status,
-            ]);
+            ];
+            if ($accttype == 2) {
+                $updateData['person_accnt'] = null;
+                $updateData['person_accnt1'] = null;
+                $updateData['office_id'] = $officeaccountable->id;
+            } else {
+                $updateData['person_accnt'] = $person_accnt;
+            }
+            $updated = EnduserProperty::where('id', $prop_id)->update($updateData);
 
             // Check if this is the last record with inv_status = 2
             $remainingCount = InventoryHistory::where('inv_status', '2')->count();
@@ -163,11 +197,18 @@ class InventoryController extends Controller
                 YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
             }
         }else{
-            $updated = EnduserProperty::where('id', $prop_id)->update([
-                'person_accnt' => $person_accnt,
+            $updateData = [
                 'person_accnt_name' => $accountable_name,
                 'remarks' => $item_status,
-            ]);
+            ];
+            if ($accttype == 2) {
+                $updateData['person_accnt'] = null;
+                $updateData['person_accnt1'] = null;
+                $updateData['office_id'] = $officeaccountable->id;
+            } else {
+                $updateData['person_accnt'] = $person_accnt;
+            }
+            $updated = EnduserProperty::where('id', $prop_id)->update($updateData);
         }
 
         return $updated ? "1" : "0";

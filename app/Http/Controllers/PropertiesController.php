@@ -594,7 +594,7 @@ class PropertiesController extends Controller
 
     public function geneCheck(Request $request){
         $qr = $request->query('q');
-    
+        
         $inventoryQuery = EnduserProperty::where('property_no_generated', $qr)
             ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
@@ -604,6 +604,7 @@ class PropertiesController extends Controller
                 'enduser_property.remarks', 
                 'enduser_property.property_no_generated', 
                 'enduser_property.office_id', 
+                'enduser_property.person_accnt', // Add this
                 'enduser_property.person_accnt_name', 
                 'items.item_name',
                 'offices.office_officer', 

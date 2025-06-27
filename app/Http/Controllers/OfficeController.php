@@ -99,22 +99,23 @@ class OfficeController extends Controller
             'office_officer' => $officeOfficer,
         ]);
     
-        $inventories = EnduserProperty::where('office_id', $officeId)->get();
+        $inventories = EnduserProperty::where('office_id', $officeId)
+            ->whereNull('person_accnt')
+            ->get();
+
         foreach ($inventories as $inventory) {
-            if ($officeOfficer != $inventory->person_accnt_name) {
-                $inventory->update([
-                    'person_accnt_name' => $officeOfficer,
-                ]);
-    
-                InvQR::create([
-                    'uid' => auth()->check() ? auth()->user()->id : null,
-                    'inv_id' => $inventory->id,
-                    'accnt_type' => 'OfficeAccountable',
-                    'person_accnt' => $officeOfficer,
-                    'remarks' => $inventory->remarks,
-                    'comment' => 'Updating office officer',
-                ]);
-            }
+            $inventory->update([
+                'person_accnt_name' => $officeOfficer,
+            ]);
+
+            InvQR::create([
+            'uid' => auth()->check() ? auth()->user()->id : null,
+            'inv_id' => $inventory->id,
+            'accnt_type' => 'OfficeAccountable',
+            'person_accnt' => $officeOfficer,
+            'remarks' => $inventory->remarks,
+            'comment' => 'Updating office officer',
+            ]);
         }
     
         return redirect()->route('officeEdit', ['id' => $office->id])->with('success', 'Updated Successfully');

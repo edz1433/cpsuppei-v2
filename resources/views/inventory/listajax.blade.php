@@ -16,13 +16,44 @@
 </style>
 
 <div class="container-fluid">
-    <div class="row" style="padding-top: 100px;">
+    <div class="row" style="padding-top: 100px;">            
+        @php
+            $grouped = $inventory->groupBy('office_name')->map(function($items, $name) {
+                return [
+                    'total' => $items->sum('total'),
+                    'done' => $items->sum('done')
+                ];
+            });
+        @endphp
+        @if(auth()->user()->role !== 'Campus Admin')
+            @foreach ($grouped as $office_name => $data)
+                <div class="col-1">
+                    <div class="small-box bg-muted">
+                        <div class="inner text-center flex-grow-1 d-flex flex-column justify-content-center">
+                            <h4 class="mb-1" style="font-size: 1.5rem;">{{ $data['done'] }} <span style="font-size:1.5rem;">/</span> {{ $data['total'] }}</h4>
+                        </div>
+                        <a href="#" class="small-box-footer text-truncate bg-secondary" style="height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.95rem;">
+                            {{ str_ireplace(['campus', 'extension', 'class'], '', $office_name) }}
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        @endif
+    </div>
+    <div class="row">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
                       <b>INVENTORY LIST</b>
                     </h3>
+                    @if(auth()->user()->role == 'Campus Admin')
+                        @foreach ($grouped as $office_name => $data)
+                            <div class="card-title" style="float: right;">
+                            <b class="badge badge-success">{{ $data['done'] }} / {{ $data['total'] }}</b>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
 
                 <!-- Modal -->

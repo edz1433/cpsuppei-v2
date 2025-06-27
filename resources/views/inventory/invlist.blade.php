@@ -3,6 +3,7 @@
 @section('body')
 
 <div class="container-fluid">
+
     <div class="row" style="padding-top: 100px;">
         <div class="col-8">
             <div class="card">
