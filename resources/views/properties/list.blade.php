@@ -63,7 +63,7 @@
                             <tbody>
                                 @php $no = 1; @endphp
                                 @foreach($properties as $data)
-                                <tr id="tr-{{ $data->id }}" class="uns-bg">
+                                <tr id="tr-{{ $data->enduserid }}" class="uns-bg">
                                     <td class="text-center align-middle">{{ $no++ }}</td>
                                     <td class="text-center align-middle">{{ $data->item_name }}</td>
                                     <td>
@@ -143,15 +143,15 @@
                                                     <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown">
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a href="{{ route('propertiesEdit', ['id' => $data->id] ) }}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
-                                                        <button id="{{ $data->id }}" onclick="printSticker(this.id)" class="dropdown-item btn-print" href="#"><i class="fas fa-print"></i> Sticker</button>
-                                                        <button value="{{ $data->id }}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
+                                                        <a href="{{ route('propertiesEdit', ['id' => $data->enduserid] ) }}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
+                                                        <button id="{{ $data->enduserid }}" onclick="printSticker(this.id)" class="dropdown-item btn-print" href="#"><i class="fas fa-print"></i> Sticker</button>
+                                                        <button value="{{ $data->enduserid }}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
                                                     </div>
                                                 @else
-                                                    <button class="btn btn-info end-user" onclick="endUser('{{ $data->id }}')" data-toggle="modal" data-target="#endUserModal"><i class="fas fa-exclamation-circle"></i></button>
+                                                    <button class="btn btn-info end-user" onclick="endUser('{{ $data->enduserid }}')" data-toggle="modal" data-target="#endUserModal"><i class="fas fa-exclamation-circle"></i></button>
                                                 @endif
                                             </div>
-                                        </div>
+                                        </div>  
                                     </td>
                                 </tr>
                                 @endforeach
