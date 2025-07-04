@@ -36,6 +36,10 @@ use App\Http\Controllers\TechController;
         return view('login');
     });
 
+    Route::get('/admin', function () {
+        return view('login-admin');
+    });
+
     //Login
     Route::get('/login',[LoginController::class,'getLogin'])->name('getLogin');
     Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');
