@@ -13,6 +13,7 @@ class Accountable extends Model
 
     protected $fillable = [
         'person_accnt',
-        'off_id'
+        'off_id',
+        'head',
     ];
 }

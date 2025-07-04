@@ -77,7 +77,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Accountable Person</th>
-                                    <th>Campus/Office</th>
+                                    <th>Campus{{ auth()->user()->role == "Administrator" ? '/Office/College' : '' }}</th>
                                     <th class="text-center" width="50">Action</th>
                                 </tr>
                             </thead>
@@ -86,7 +86,7 @@
                                 @foreach($accnt as $data)
                                 <tr id="tr-{{ $data->id }}" class="{{ $cr === 'accountableEdit' ? $data->id == $selectedAccnt->id ? 'bg-selectEdit' : '' : ''}}">
                                     <td>{{ $no++ }}</td>
-                                    <td>{{ $data->person_accnt }}</td>
+                                    <td>{{ $data->person_accnt }} {{ ($data->head == 1) ? '- HEAD' : '' }}</td>
                                     <td>{{ $data->office_name }}</td>
                                     <td class="text-center">
                                         <a href="{{ route('accountableEdit', $data->id) }}" class="btn btn-info btn-xs btn-edit">

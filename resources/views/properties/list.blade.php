@@ -84,9 +84,8 @@
                                         @else
                                             <b>MODEL:</b> N/A<br>
                                         @endif
-
                                         @if($data->serial_number)
-                                            <b>SERIAL NUMBER:</b> {{ $data->serial_number }}<br>
+                                            <b>SERIAL NUMBER:</b><br> {!! str_replace(';', '<br>', $data->serial_number) !!}<br>
                                         @else
                                             <b>SERIAL NUMBER:</b> N/A<br>
                                         @endif
@@ -176,7 +175,7 @@
                         <div class="form-row">
                             <div class="col-md-12 mt-3">
                                 <label>END USER:</label>
-                                <select class="form-control select2" name="person_accnt1[]" data-placeholder="--- Select End User ---" style="width: 100%;" multiple>
+                                <select class="form-control select2" name="person_accnt1[]" data-placeholder="--- Select End User ---" style="width: 100%;">
                                     <option value="0">N/A</option>
                                     @foreach ($accnt as $data)
                                         <option value="{{ $data->id }}">
