@@ -280,7 +280,6 @@ class PropertiesController extends Controller
                     'a2.person_accnt as person_accnt_fname2'
                 )
                 ->join('items', 'items.id', '=', 'enduser_property.item_id')
-                // ->join('properties', 'properties.category_id', '=', 'enduser_property.categories_id')
                 ->join('offices', 'offices.id', '=', 'enduser_property.office_id')
                 ->leftJoin('accountable as a1', 'enduser_property.person_accnt', '=', 'a1.id')
                 ->leftJoin('accountable as a2', 'enduser_property.person_accnt1', '=', 'a2.id')
@@ -292,10 +291,9 @@ class PropertiesController extends Controller
                 }, function ($query) use ($campus) {
                     $query->where('enduser_property.office_id', $campus);
                 })
-                ->orderBy('enduser_property.office_id')
-                ->orderBy('enduser_property.person_accnt')
-                ->orderBy('enduser_property.person_accnt1')
-                ->skip($start) // apply row range
+                ->orderByRaw('CAST(enduser_property.item_cost AS DECIMAL(15,2)) ASC') // priority 1
+                ->orderByRaw('(SELECT account_title_abbr FROM properties WHERE properties.category_id = enduser_property.categories_id LIMIT 1) ASC') // priority 2
+                ->skip($start)
                 ->take($length)
                 ->get();
 
@@ -771,7 +769,6 @@ class PropertiesController extends Controller
         $pdf = PDF::loadView('properties.printRPCPPE', $data)->setPaper('Legal', 'landscape');
         return $pdf->stream();
     }
-
     // public function propertiesStatUp() {
     //     $instat = InvSetting::first();        
     //     if ($instat) {

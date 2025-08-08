@@ -36,21 +36,9 @@ use App\Http\Controllers\TechController;
         return view('login');
     });
 
-    Route::get('/admin', function () {
-        return view('login-admin');
-    });
-
     //Login
     Route::get('/login',[LoginController::class,'getLogin'])->name('getLogin');
     Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');
-
-    // Route::get('/qr-check', [PropertiesController::class, 'geneCheck'])->name('gene-check');
-    // Route::get('/gene-qr', [InventoryController::class, 'geneQr'])->name('gene-qr');
-    // Route::middleware(['android'])->group(function () {
-    //     Route::get('/app-login',[UserController::class,'appLogin'])->name('appLogin');         
-    //     Route::get('/instat-update', [PropertiesController::class, 'propertiesStatUp'])->name('propertiesStatUp');
-    //     Route::get('/checkInv', [InventoryController::class, 'checkInv'])->name('check-inv');
-    // });    
     
     Route::prefix('/technician')->group(function () {
         Route::get('/repair', [TechController::class, 'repairRead'])->name('repairRead');

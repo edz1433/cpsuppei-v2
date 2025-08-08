@@ -289,7 +289,7 @@ class InventoryController extends Controller
             return response()->json(['success' => false, 'error' => 'Accountable person not found'], 404);
         }
         $accountable_name = $accountable->person_accnt;
-
+        
         // Validate property
         $userproperties = EnduserProperty::where('property_no_generated', $qr)->first();
         if (!$userproperties) {
