@@ -12,6 +12,7 @@ class Item extends Model
     protected $table = 'items';
 
     protected $fillable = [
-        'item_name'
+        'item_name',
+        'supply_type'
     ];
 }

@@ -38,6 +38,25 @@
                                 </div>
                             </div>
 
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Other Designated Office:</label>
+                                        <select class="form-control select2bs4" id="desig_offid" name="desig_offid[]" style="width: 100%;" multiple>
+                                            <option disabled> --- Select here --- </option>
+                                            @foreach ($office as $data)
+                                                @if($data->office_code != 0000)
+                                                    <option value="{{ $data->id }}"
+                                                        @if($cr === 'accountableEdit' && in_array($data->id, (array) json_decode($selectedAccnt->desig_offid))) selected @endif>
+                                                        {{ $data->office_abbr }} - {{ $data->office_name }}
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
                             @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
                             <div class="form-group">
                                 <div class="form-row">
@@ -77,26 +96,52 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Accountable Person</th>
-                                    <th>Campus{{ auth()->user()->role == "Administrator" ? '/Office/College' : '' }}</th>
+                                    <th>
+                                        Campus{{ auth()->user()->role == "Administrator" ? '/Office/College' : '' }}
+                                    </th>
+                                    <th>Other Designated Offices</th>
                                     <th class="text-center" width="50">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php $no = 1; @endphp
                                 @foreach($accnt as $data)
-                                <tr id="tr-{{ $data->id }}" class="{{ $cr === 'accountableEdit' ? $data->id == $selectedAccnt->id ? 'bg-selectEdit' : '' : ''}}">
-                                    <td>{{ $no++ }}</td>
-                                    <td>{{ $data->person_accnt }} {{ ($data->head == 1) ? '- HEAD' : '' }}</td>
-                                    <td>{{ $data->office_name }}</td>
-                                    <td class="text-center">
-                                        <a href="{{ route('accountableEdit', $data->id) }}" class="btn btn-info btn-xs btn-edit">
-                                            <i class="fas fa-exclamation-circle"></i>
-                                        </a>
-                                        {{-- <button value="{{ $data->id}}" class="btn btn-danger btn-xs accnt-delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button> --}}
-                                    </td>
-                                </tr>
+                                    <tr id="tr-{{ $data->id }}" class="{{ $cr === 'accountableEdit' ? $data->id == $selectedAccnt->id ? 'bg-selectEdit' : '' : ''}}">
+                                        <td>{{ $no++ }}</td>
+
+                                        {{-- Person with role --}}
+                                        <td>
+                                            {{ $data->person_accnt }}
+                                            @if($data->accnt_role == 1)
+                                                - HEAD
+                                            @elseif($data->accnt_role == 2)
+                                                - CUSTODIAN
+                                            @endif
+                                        </td>
+
+                                        {{-- Main Office --}}
+                                        <td>{{ $data->office_name ?? 'N/A' }}</td>
+
+                                        {{-- Other Designated Offices --}}
+                                        <td>
+                                            @php
+                                                $otherOffices = json_decode($data->desig_offid, true);
+                                                $offices = \App\Models\Office::whereIn('id', $otherOffices ?? [])->pluck('office_abbr')->toArray();
+                                            @endphp
+                                            @if (!empty($offices))
+                                                {{ implode(', ', $offices) }}
+                                            @else
+                                                
+                                            @endif
+                                        </td>
+
+                                        {{-- Actions --}}
+                                        <td class="text-center">
+                                            <a href="{{ route('accountableEdit', $data->id) }}" class="btn btn-info btn-xs btn-edit">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -128,21 +173,51 @@
                         </div>
 
                         @if(auth()->user()->role == "Supply Officer" || auth()->user()->role == "Administrator")
-                        <div class="form-group">
-                            <div class="form-row">
-                                <div class="col-md-12">
-                                    <label>Campus / Office:</label>
-                                    <select class="form-control select2bs4" id="off_id" name="off_id" style="width: 100%;">
-                                        <option disabled selected> --- Select here --- </option>
-                                        @foreach ($office as $data)
-                                            <option value="{{ $data->id }}" @if($cr === 'accountableEdit' && $data->id === $selectedAccnt->off_id) selected @endif>{{ $data->office_abbr }} - {{ $data->office_name }}</option>
-                                        @endforeach
-                                    </select>
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Role:</label>
+                                        <select class="form-control select2bs4" id="accnt_role" name="accnt_role" style="width: 100%;">
+                                            <option value="0" @if($cr === 'accountableEdit' && $selectedAccnt->accnt_role == 0) selected @endif> Staff </option>
+                                            <option value="1" @if($cr === 'accountableEdit' && $selectedAccnt->accnt_role == 1) selected @endif> Office Head </option>
+                                            <option value="2" @if($cr === 'accountableEdit' && $selectedAccnt->accnt_role == 2) selected @endif> Campus Custodian </option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Campus / Office:</label>
+                                        <select class="form-control select2bs4" id="off_id" name="off_id" style="width: 100%;">
+                                            <option disabled selected> --- Select here --- </option>
+                                            @foreach ($office as $data)
+                                                <option value="{{ $data->id }}" @if($cr === 'accountableEdit' && $data->id === $selectedAccnt->off_id) selected @endif>{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Other Designated Office:</label>
+                                        <select class="form-control select2bs4" id="desig_offid" name="desig_offid[]" style="width: 100%;" multiple>
+                                            <option disabled> --- Select here --- </option>
+                                            @foreach ($office as $data)
+                                                @if($data->office_code != 0000)
+                                                    <option value="{{ $data->id }}"
+                                                        @if($cr === 'accountableEdit' && in_array($data->id, (array) json_decode($selectedAccnt->desig_offid))) selected @endif>
+                                                        {{ $data->office_abbr }} - {{ $data->office_name }}
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
-
+                        
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">

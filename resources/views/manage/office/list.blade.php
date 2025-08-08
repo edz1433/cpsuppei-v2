@@ -71,11 +71,11 @@
                                     @if ($cr == 'officeEdit')
                                         <input type="hidden" name="id" value="{{ $selectedOffice->id }}">
                                     @endif
-                                    <input type="number" name="office_code" value="{{ $cr === 'officeEdit' ? $selectedOffice->office_code : '' }}" class="form-control" min="1" max="100" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength="3" required>
+                                    <input type="number" name="office_code" value="{{ $cr === 'officeEdit' ? $selectedOffice->office_code : '' }}" class="form-control" min="0" max="100" maxlength="4" required>
                                 </div>
                             </div>
                         </div>
-
+                        {{-- oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" --}}
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">

@@ -131,94 +131,204 @@ class InventoryController extends Controller
     
         return response()->json(['success' => 'Inventory created for all properties!'], 200);
     }
-
+    // public function checkInv(Request $request)
+    // {
+    //     $ongoingInventory = YearlyInventory::where('inv_status', 'Ongoing')->exists();        
+    //     return $ongoingInventory ? "1" : "0";
+    // }
+    // public function geneQr(Request $request)
+    // {
+    //     $uid = $request->query('uid');
+    //     $qr = $request->query('qrcode');
+    //     $accttype = $request->query('accnt_type'); //1=Office Officer || 2=Office Accountable
+    //     $item_status = $request->query('item_status');
+    //     $remarks = $request->query('remarks');
+    //     $person_accnt = $request->query('person_accnt');
+    //     $isInv = $request->query('isInv'); //1 || 0
+    //     // ?uid=1&qrcode=2024-06-05-030-135-035&accnt_type=2&item_status=Good Condition&remarks=balo&person_accnt=36
+    //     $accountableperson  = Accountable::find($person_accnt);
+    //     $officeaccountable = Office::find($person_accnt);        
+    //     // $accountable_name = ($accttype == 1) ? $accountableperson->person_accnt : $officeaccountable->office_officer;
+    //     if($accttype == 1){
+    //         $accountable_name = $accountableperson->person_accnt;
+    //     }
+    //     if($accttype == 2){
+    //         $accountable_name = $officeaccountable->office_officer;
+    //     }        
+    //     $userproperties = EnduserPropertyTest::where('property_no_generated', $qr)
+    //         ->leftJoin('offices', 'enduser_property_test.office_id', '=', 'offices.id')
+    //         ->select('enduser_property_test.id as prop_id', 'enduser_property_test.person_accnt', 'offices.office_officer')
+    //         ->first();        
+    //     if (!$userproperties) {
+    //         return response()->json(['error' => 'Property not found'], 404);
+    //     }     
+    //     $prop_id = $userproperties->prop_id;
+    //     // dd($paccount);  
+    //     if($isInv == 1){
+    //         $updated = InventoryHistory::where('prop_id', $prop_id)->update([
+    //             'uid' => $uid,
+    //             'accnt_type' => $accttype,
+    //             'person_accnt' => $accountable_name,
+    //             'item_status' => $item_status,
+    //             'remarks' => $remarks,
+    //             'inv_status' => '2',
+    //         ]);
+    //         $updateData = [
+    //             'person_accnt_name' => $accountable_name,
+    //             'remarks' => $item_status,
+    //         ];
+    //         if ($accttype == 2) {
+    //             $updateData['person_accnt'] = null;
+    //             $updateData['person_accnt1'] = null;
+    //             $updateData['office_id'] = $officeaccountable->id;
+    //         } else {
+    //             $updateData['person_accnt'] = $person_accnt;
+    //         }
+    //         $updated = EnduserPropertyTest::where('id', $prop_id)->update($updateData);
+    //         // Check if this is the last record with inv_status = 2
+    //         $remainingCount = InventoryHistory::where('inv_status', '2')->count();
+    //         if ($remainingCount == 0) {
+    //             YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
+    //         }
+    //     }else{
+    //         $updateData = [
+    //             'person_accnt_name' => $accountable_name,
+    //             'remarks' => $item_status,
+    //         ];
+    //         if ($accttype == 2) {
+    //             $updateData['person_accnt'] = null;
+    //             $updateData['person_accnt1'] = null;
+    //             $updateData['office_id'] = $officeaccountable->id;
+    //         } else {
+    //             $updateData['person_accnt'] = $person_accnt;
+    //         }
+    //         $updated = EnduserPropertyTest::where('id', $prop_id)->update($updateData);
+    //     }
+    //     return $updated ? "1" : "0";
+    // }    
+    // public function geneQr(Request $request)
+    // {
+    //     $uid = $request->input('uid');
+    //     $qr = $request->input('qrcode');
+    //     $accttype = $request->input('accnt_type');
+    //     $item_status = $request->input('item_status');
+    //     $remarks = $request->input('remarks');
+    //     $person_accnt = $request->input('person_accnt');
+    //     $isInv = $request->input('isInv');
+    //     $accountable_name = null;
+    //     if ($accttype == 1) {
+    //         $accountableperson = Accountable::find($person_accnt);
+    //         if (!$accountableperson) return response()->json(['error' => 'Accountable person not found'], 404);
+    //         $accountable_name = $accountableperson->person_accnt;
+    //     } elseif ($accttype == 2) {
+    //         $officeaccountable = Office::find($person_accnt);
+    //         if (!$officeaccountable) return response()->json(['error' => 'Office not found'], 404);
+    //         $accountable_name = $officeaccountable->office_officer;
+    //     } else {
+    //         return response()->json(['error' => 'Invalid account type'], 400);
+    //     }
+    //     $userproperties = EnduserPropertyTest::where('property_no_generated', $qr)
+    //         ->leftJoin('offices', 'enduser_property_test.office_id', '=', 'offices.id')
+    //         ->select('enduser_property_test.id as prop_id', 'enduser_property_test.person_accnt', 'offices.office_officer')
+    //         ->first();
+    //     if (!$userproperties) {
+    //         return response()->json(['error' => 'Property not found'], 404);
+    //     }
+    //     $prop_id = $userproperties->prop_id;
+    //     $updateData = [
+    //         'person_accnt_name' => $accountable_name,
+    //         'remarks' => $item_status,
+    //     ];
+    //     if ($accttype == 2) {
+    //         $updateData['person_accnt'] = null;
+    //         $updateData['person_accnt1'] = null;
+    //         $updateData['office_id'] = $officeaccountable->id ?? null;
+    //     } else {
+    //         $updateData['person_accnt'] = $person_accnt;
+    //     }
+    //     if ($isInv == 1) {
+    //         InventoryHistory::where('prop_id', $prop_id)->update([
+    //             'uid' => $uid,
+    //             'accnt_type' => $accttype,
+    //             'person_accnt' => $accountable_name,
+    //             'item_status' => $item_status,
+    //             'remarks' => $remarks,
+    //             'inv_status' => '2',
+    //         ]);
+    //     }
+    //     $updated = EnduserPropertyTest::where('id', $prop_id)->update($updateData);
+    //     if ($isInv == 1) {
+    //         $remainingCount = InventoryHistory::where('inv_status', '2')->count();
+    //         if ($remainingCount == 0) {
+    //             YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
+    //         }
+    //     }
+    //     return $updated
+    //         ? response()->json(['success' => true], 200)
+    //         : response()->json(['success' => false], 500);
+    // } 
+    public function checkInv(Request $request)
+    {
+        $ongoingInventory = YearlyInventory::where('inv_status', 'Ongoing')->exists();
+        return response()->json([
+            'status' => $ongoingInventory ? 'ongoing' : 'none'
+        ], 200);
+    }
     public function geneQr(Request $request)
     {
-        $uid = $request->query('uid');
-        $qr = $request->query('qrcode');
-        $accttype = $request->query('accnt_type'); //1=Office Officer || 2=Office Accountable
-        $item_status = $request->query('item_status');
-        $remarks = $request->query('remarks');
-        $person_accnt = $request->query('person_accnt');
-        $isInv = $request->query('isInv'); //1 || 0
+        $uid = $request->input('uid');
+        $qr = $request->input('qrcode');
+        $item_status = $request->input('item_status');
+        $remarks = $request->input('remarks');
+        $person_accnt = $request->input('person_accnt');
+        $isInv = $request->input('isInv');
 
-        // ?uid=1&qrcode=2024-06-05-030-135-035&accnt_type=2&item_status=Good Condition&remarks=balo&person_accnt=36
-
-        $accountableperson  = Accountable::find($person_accnt);
-        $officeaccountable = Office::find($person_accnt); 
-        
-        // $accountable_name = ($accttype == 1) ? $accountableperson->person_accnt : $officeaccountable->office_officer;
-
-        if($accttype == 1){
-            $accountable_name = $accountableperson->person_accnt;
+        // Validate accountable person
+        $accountable = Accountable::find($person_accnt);
+        if (!$accountable) {
+            return response()->json(['success' => false, 'error' => 'Accountable person not found'], 404);
         }
-        if($accttype == 2){
-            $accountable_name = $officeaccountable->office_officer;
-        }
-        
-        $userproperties = EnduserProperty::where('property_no_generated', $qr)
-            ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
-            ->select('enduser_property.id as prop_id', 'enduser_property.person_accnt', 'offices.office_officer')
-            ->first();
-        
+        $accountable_name = $accountable->person_accnt;
+
+        // Validate property
+        $userproperties = EnduserProperty::where('property_no_generated', $qr)->first();
         if (!$userproperties) {
-            return response()->json(['error' => 'Property not found'], 404);
+            return response()->json(['success' => false, 'error' => 'Property not found'], 404);
         }
-     
-        $prop_id = $userproperties->prop_id;
+        $prop_id = $userproperties->id;
 
-        // dd($paccount);
-        if($isInv == 1){
-            $updated = InventoryHistory::where('prop_id', $prop_id)->update([
+        // Prepare update data
+        $updateData = [
+            'person_accnt' => $person_accnt,
+            'person_accnt_name' => $accountable_name,
+            'remarks' => $item_status,
+        ];
+
+        // Update inventory history if applicable
+        if ((int) $isInv === 1) {
+            InventoryHistory::where('prop_id', $prop_id)->update([
                 'uid' => $uid,
-                'accnt_type' => $accttype,
                 'person_accnt' => $accountable_name,
                 'item_status' => $item_status,
                 'remarks' => $remarks,
                 'inv_status' => '2',
             ]);
-
-            $updateData = [
-                'person_accnt_name' => $accountable_name,
-                'remarks' => $item_status,
-            ];
-            if ($accttype == 2) {
-                $updateData['person_accnt'] = null;
-                $updateData['person_accnt1'] = null;
-                $updateData['office_id'] = $officeaccountable->id;
-            } else {
-                $updateData['person_accnt'] = $person_accnt;
-            }
-            $updated = EnduserProperty::where('id', $prop_id)->update($updateData);
-
-            // Check if this is the last record with inv_status = 2
-            $remainingCount = InventoryHistory::where('inv_status', '2')->count();
-            if ($remainingCount == 0) {
-                YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
-            }
-        }else{
-            $updateData = [
-                'person_accnt_name' => $accountable_name,
-                'remarks' => $item_status,
-            ];
-            if ($accttype == 2) {
-                $updateData['person_accnt'] = null;
-                $updateData['person_accnt1'] = null;
-                $updateData['office_id'] = $officeaccountable->id;
-            } else {
-                $updateData['person_accnt'] = $person_accnt;
-            }
-            $updated = EnduserProperty::where('id', $prop_id)->update($updateData);
         }
 
-        return $updated ? "1" : "0";
-    }  
+        // Update property record
+        $updated = EnduserProperty::where('id', $prop_id)->update($updateData);
+        if (!$updated) {
+            return response()->json(['success' => false, 'error' => 'Failed to update property record'], 500);
+        }
 
-    public function checkInv(Request $request)
-    {
-        $ongoingInventory = YearlyInventory::where('inv_status', 'Ongoing')->exists();
-        
-        return $ongoingInventory ? "1" : "0";
+        // Finalize yearly inventory if needed
+        if ((int) $isInv === 1) {
+            $remainingCount = InventoryHistory::where('inv_status', '2')->count();
+            if ($remainingCount === 0) {
+                YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
+            }
+        }
+
+        return response()->json(['success' => true], 200);
     }
-
 }

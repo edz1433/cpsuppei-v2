@@ -34,7 +34,8 @@ class Purchases extends Model
         'price_stat',
         'person_accnt',
         'person_accnt_name',
-        'print_stat'
+        'print_stat',
+        'supply_type'
     ];
     
 }

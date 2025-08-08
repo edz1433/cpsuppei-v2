@@ -16,27 +16,40 @@
                         var type = row.abbreviation ? '<br><b>TYPE:</b> ' + row.abbreviation : '';
                         var poNumber = row.po_number ? '<br><b>PO NUMBER:</b> ' + row.po_number : '';
                         var propertyCode = row.property_no_generated ? '<br><b>PROPERTY CODE:</b> ' + row.property_no_generated : '';
+                        var oldPropertyCode = row.property_no_generated_old ? '<br><b>OLD PROPERTY CODE:</b> ' + row.property_no_generated_old : '';
                         var itemmodel = row.item_model ? '<br><b>MODEL:</b> ' + row.item_model : '';
-                        var serialNumber = row.serial_number ? '<br><b>SERIAL NUMBER:</b> ' + row.serial_number : ''; // ✅ Added Serial Number
-                        var description = row.item_descrip ? '<b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
-                        var accountname = row.accountableName ? '<b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
-                        var accountname1 = row.accountableNames ? '<b>END USER:</b><br> ' + row.accountableNames : '';
-                        
-                        return campus + ' ' + type + ' ' + poNumber + ' ' + propertyCode + ' ' + itemmodel + ' ' + serialNumber + '<br><br> ' + description + '<br><br> ' + accountname + '<br><br> ' + accountname1;
+                        var serialNumber = row.serial_number ? '<br><b>SERIAL NUMBER:</b> ' + row.serial_number : '';
+                        var description = row.item_descrip ? '<br><br><b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
+                        var accountname = row.accountableName ? '<br><br><b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
+                        var accountname1 = row.accountableNames ? '<br><br><b>END USER:</b><br> ' + row.accountableNames : '';
+
+                        return campus + type + poNumber + propertyCode + oldPropertyCode + itemmodel + serialNumber + description + accountname + accountname1;
                     },
                     className: 'align-middle'
                 },
-                {data: 'item_cost',className: 'text-center align-middle',
+                {
+                    data: 'item_cost',
+                    className: 'text-center align-middle',
                     render: function(data, type, row) {
+                        const formatted = Number(data).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         if (row.price_stat === 'Uncertain') {
-                            return '<span style="color: red;">' + data + '</span>';
+                            return '<span style="color: red;">' + formatted + '</span>';
                         } else {
-                            return '<span>' + data + '</span>';
+                            return '<span>' + formatted + '</span>';
                         }
                     }
                 },
                 {data: 'qty', className: 'text-center align-middle'},
-                {data: 'total_cost', className: 'text-center align-middle'},
+                {
+                    data: 'total_cost',
+                    className: 'text-center align-middle',
+                    render: function(data, type, row) {
+                        return Number(data).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                    }
+                },
                 {data: 'date_acquired', className: 'text-center align-middle'},
                 {data: 'remarks', className: 'text-center align-middle'},
                 {data: 'id',

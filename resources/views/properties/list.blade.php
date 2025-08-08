@@ -142,7 +142,7 @@
                                                     <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown">
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a href="{{ route('propertiesEdit', ['id' => $data->enduserid] ) }}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
+                                                        <a href="{{ route('propertiesEdit', ['id' => $data->id] ) }}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
                                                         <button id="{{ $data->enduserid }}" onclick="printSticker(this.id)" class="dropdown-item btn-print" href="#"><i class="fas fa-print"></i> Sticker</button>
                                                         <button value="{{ $data->enduserid }}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
                                                     </div>

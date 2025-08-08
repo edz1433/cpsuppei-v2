@@ -30,18 +30,25 @@
                         }
                     }
                 },
-                {data: 'item_cost',
+                {
+                    data: 'item_cost',
                     render: function(data, type, row) {
+                        const formatted = Number(data).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         if (row.price_stat === 'Uncertain') {
-                            return '<span style="color: red;">' + data + '</span>';
+                            return '<span style="color: red;">' + formatted + '</span>';
                         } else {
-                            return '<span>' + data + '</span>';
+                            return '<span>' + formatted + '</span>';
                         }
                     }
                 },
                 {data: 'qty'},
                 {data: 'qty_release'},
-                {data: 'total_cost'},
+                { 
+                    data: 'total_cost',
+                    render: function (data, type, row) {
+                        return Number(data).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
+                },
                 {data: 'date_acquired'},
                 {data: 'id',
                     render: function(data, type, row) {
@@ -90,7 +97,6 @@
                 $('#qty-left').html('LEFT :'+ data.qty_left);
                 $('#png').val(data.pcode);
                 $('#property_no_generated').val(data.pcode);
-                $('#itemnum').val(data.itemnum);
                 $('#unrel_serial').html(data.unrel_serial);
             }
         });
@@ -98,12 +104,44 @@
 </script>
 
 <script>
-    function releasOffice(selectElement){
+    const routeTemplate = "{{ route('checkNextNumber', ['propertyno' => 'PROPERTYNO_PLACEHOLDER', 'officeCode' => 'OFFICECODE_PLACEHOLDER']) }}";
+
+    function releasOffice(selectElement) {
         var png = $('#png').val();
         var selectedOption = selectElement.options[selectElement.selectedIndex];
         var officeCode = selectedOption.getAttribute('data-officecode');
-        
-        $('#property_no_generated').val(png+'-'+officeCode)
+
+        let propertyno = png.replace(/^[^-]+-/, '');
+
+        let url = routeTemplate
+            .replace('PROPERTYNO_PLACEHOLDER', encodeURIComponent(propertyno))
+            .replace('OFFICECODE_PLACEHOLDER', encodeURIComponent(officeCode));
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function (data) {
+                if (data.next_item_number) {
+                    $('#itemnum').val(data.next_item_number);
+                    $('#property_no_generated').val(png + '-' + data.next_item_number + '-' + officeCode);
+                }
+
+                if (data.accountables) {
+                    let $select = $('#accountableSelect');
+                    $select.empty();
+                    $select.append(`<option value=""> ---Select Accountable Person--- </option>`);
+
+                    data.accountables.forEach(function (item) {
+                        $select.append(`<option value="${item.id}">${item.person_accnt}</option>`);
+                    });
+
+                    $select.trigger('change.select2');
+                }
+            },
+            error: function () {
+                alert("Error retrieving data.");
+            }
+        });
     }
 </script>
 

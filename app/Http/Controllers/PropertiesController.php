@@ -21,6 +21,8 @@ use App\Models\Setting;
 use App\Models\InvSetting;
 use App\Models\Log;
 use Carbon\Carbon;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\DB;
 use PDF;
 
@@ -52,7 +54,7 @@ class PropertiesController extends Controller
                     ->join('property', 'enduser_property.properties_id', '=', 'property.id')
                     ->join('items', 'enduser_property.item_id', '=', 'items.id')
                     ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
-                    ->select('enduser_property.*', 'enduser_property.id as enduserid', 'offices.id', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name', 'purchases.po_number');
+                    ->select('enduser_property.*', 'offices.id', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name', 'purchases.po_number');
 
         if ($exists){
             $properties->where('offices.camp_id', $ucampid);
@@ -130,35 +132,32 @@ class PropertiesController extends Controller
 
     public function getProperties() {
         $ucampid = auth()->user()->campus_id;
+
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
             ->exists();
-            
+
         $data = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
-                ->join('property', 'enduser_property.properties_id', '=', 'property.id')
-                ->join('items', 'enduser_property.item_id', '=', 'items.id')
-                ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
-                ->leftJoin('accountable as acc1', 'enduser_property.person_accnt', '=', 'acc1.id')
-                ->leftJoin(DB::raw('(SELECT person_accnt, GROUP_CONCAT(person_accnt SEPARATOR ", ") as accountable_names 
-                                     FROM accountable GROUP BY person_accnt) as acc2'), 
-                    function ($join) {
-                        $join->whereRaw("FIND_IN_SET(acc2.person_accnt, enduser_property.person_accnt1) > 0");
-                    })
-                ->select(
-                    'enduser_property.*',
-                    'offices.office_name',
-                    'property.abbreviation',
-                    'items.item_name',
-                    'purchases.po_number',
-                    'acc1.person_accnt as accountableName',
-                    'acc2.accountable_names as accountableNames'
-                );
+            ->join('property', 'enduser_property.properties_id', '=', 'property.id')
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->leftJoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
+            ->leftJoin('accountable as acc1', 'enduser_property.person_accnt', '=', 'acc1.id')
+            ->leftJoin('accountable as acc2', 'enduser_property.person_accnt1', '=', 'acc2.id')
+            ->select(
+                'enduser_property.*',
+                'offices.office_name',
+                'property.abbreviation',
+                'items.item_name',
+                'purchases.po_number',
+                'acc1.person_accnt as accountableName',
+                'acc2.person_accnt as accountableNames'
+            );
 
         if ($exists) {
             $data->where('enduser_property.office_id', $ucampid);
         }
-        
-        $data = $data->get();
+
+        $data = $data->where('deleted', 0)->get();
 
         return response()->json(['data' => $data]);
     }
@@ -221,14 +220,173 @@ class PropertiesController extends Controller
         return view('properties.listajax', compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
     }
     
+    public function stickerRead()
+    {
+        $setting = Setting::firstOrNew(['id' => 1]);
+
+        $campoff = DB::table('offices')
+            ->select(
+                'offices.id',
+                'offices.office_name',
+                DB::raw("COUNT(CASE
+                    WHEN offices.id = 1 AND (eo.camp_id IS NULL OR eo.camp_id = '') THEN 1
+                    WHEN offices.id != 1 AND enduser_property.office_id = offices.id THEN 1
+                    ELSE NULL
+                END) as property_count")
+            )
+            // Join all enduser_property rows
+            ->leftJoin('enduser_property', function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // cross join style (include all properties)
+            })
+            // Join to get camp_id for the office associated with each enduser_property
+            ->leftJoin('offices as eo', 'enduser_property.office_id', '=', 'eo.id')
+            ->where('offices.office_code', '!=', '0000')
+            ->groupBy('offices.id', 'offices.office_name')
+            ->get();
+
+        return view('properties.sticker', compact('setting', 'campoff'));
+    }
+
+    public function stickerReadPost(Request $request) {
+        $setting = Setting::firstOrNew(['id' => 1]);
+        $campoff = Office::where('office_code', '!=', '0000')->get();
+        $selectcampoff = Office::find($request->camp_id);
+        return view('properties.sticker', compact('setting', 'campoff', 'selectcampoff'));
+    }
+
+
+    public function stickerReadJson($range, $campus)
+    {
+        try {
+            [$start, $end] = explode('-', $range ?? '1-500');
+            $start = max(0, ((int)$start) - 1); // offset
+            $length = ((int)$end) - ((int)$start);
+
+            $properties = EnduserProperty::select(
+                    'enduser_property.id',
+                    'enduser_property.property_no_generated',
+                    'enduser_property.serial_number',
+                    'enduser_property.item_model',
+                    'enduser_property.item_cost',
+                    'enduser_property.date_acquired',
+                    'enduser_property.office_id',
+                    'enduser_property.categories_id',
+                    'enduser_property.person_accnt',
+                    'enduser_property.person_accnt1',
+                    'items.item_name',
+                    DB::raw('(SELECT account_title_abbr FROM properties WHERE properties.category_id = enduser_property.categories_id LIMIT 1) as account_title_abbr'),
+                    'offices.office_name',
+                    'a1.person_accnt as person_accnt_fname1',
+                    'a2.person_accnt as person_accnt_fname2'
+                )
+                ->join('items', 'items.id', '=', 'enduser_property.item_id')
+                // ->join('properties', 'properties.category_id', '=', 'enduser_property.categories_id')
+                ->join('offices', 'offices.id', '=', 'enduser_property.office_id')
+                ->leftJoin('accountable as a1', 'enduser_property.person_accnt', '=', 'a1.id')
+                ->leftJoin('accountable as a2', 'enduser_property.person_accnt1', '=', 'a2.id')
+                ->when($campus == 1, function ($query) {
+                    $query->where(function ($subQuery) {
+                        $subQuery->whereNull('offices.camp_id')
+                                ->orWhere('offices.camp_id', '');
+                    });
+                }, function ($query) use ($campus) {
+                    $query->where('enduser_property.office_id', $campus);
+                })
+                ->orderBy('enduser_property.office_id')
+                ->orderBy('enduser_property.person_accnt')
+                ->orderBy('enduser_property.person_accnt1')
+                ->skip($start) // apply row range
+                ->take($length)
+                ->get();
+
+            $data = [];
+
+            foreach ($properties as $property) {
+                $qrCode = new QrCode($property->property_no_generated);
+                $writer = new PngWriter();
+                $result = $writer->write($qrCode);
+                $qrBase64 = base64_encode($result->getString());
+
+                $data[] = [
+                    'id' => $property->id,
+                    'property_no_generated' => $property->property_no_generated,
+                    'serial_number' => $property->serial_number,
+                    'item_model' => $property->item_model,
+                    'item_cost' => $property->item_cost,
+                    'date_acquired' => $property->date_acquired,
+                    'item_name' => $property->item_name,
+                    'account_title_abbr' => $property->account_title_abbr,
+                    'office_name' => $property->office_name,
+                    'person_accnt_fname1' => $property->person_accnt_fname1,
+                    'person_accnt_fname2' => $property->person_accnt_fname2,
+                    'qr_base64' => $qrBase64,
+                ];
+            }
+
+            return response()->json([
+                'campus_id' => $campus,
+                'count' => count($data),
+                'stickers' => $data
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // public function stickerReadPdf($campus)
+    // {
+    //     $properties = EnduserProperty::select(
+    //             'enduser_property.id',
+    //             'enduser_property.property_no_generated',
+    //             'enduser_property.serial_number',
+    //             'enduser_property.item_model',
+    //             'enduser_property.item_cost',
+    //             'enduser_property.date_acquired',
+    //             'enduser_property.office_id',
+    //             'enduser_property.categories_id',
+    //             'enduser_property.person_accnt',
+    //             'enduser_property.person_accnt1',
+    //             'items.item_name',
+    //             'properties.account_title_abbr',
+    //             'offices.office_name',
+    //             'a1.person_accnt as person_accnt_fname1',
+    //             'a2.person_accnt as person_accnt_fname2'
+    //         )
+    //         ->join('items', 'items.id', '=', 'enduser_property.item_id')
+    //         ->join('properties', 'properties.category_id', '=', 'enduser_property.categories_id')
+    //         ->join('offices', 'offices.id', '=', 'enduser_property.office_id')
+    //         ->leftJoin('accountable as a1', 'enduser_property.person_accnt', '=', 'a1.id')
+    //         ->leftJoin('accountable as a2', 'enduser_property.person_accnt1', '=', 'a2.id')
+    //         ->where('enduser_property.office_id', $campus)
+    //         ->limit(100) // You can remove or increase this for more items
+    //         ->get();
+
+    //     $setting = Setting::firstOrNew(['id' => 1]);
+
+    //     foreach ($properties as $property) {
+    //         $qrCode = QrCode::create($property->property_no_generated);
+    //         $writer = new PngWriter();
+    //         $result = $writer->write($qrCode);
+    //         $property->qr_base64 = base64_encode($result->getString());
+    //     }
+
+    //     $pdf = \PDF::loadView('properties.sticker-pdf', compact('setting', 'properties'))
+    //         ->setPaper('A4', 'portrait');
+
+    //     return $pdf->stream('qr-stickers.pdf');
+    // }
+
+
     public function propertiesStickerTemplate() {
         $setting = Setting::firstOrNew(['id' => 1]);
-        return view('properties.sticker', compact('setting'));
+        return view('properties.blank-sticker', compact('setting'));
     }
 
     public function propertiesStickerTemplatePDF() {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $pdf = PDF::loadView('properties.blankSticker')->setPaper('A4', 'portrait');
+        $pdf = PDF::loadView('properties.blank-sticker-pdf')->setPaper('A4', 'portrait');
         return $pdf->stream();
     }
 
@@ -374,7 +532,7 @@ class PropertiesController extends Controller
         $selectedPerson1 = explode(';', $inventory->person_accnt1);
         $serialOwned = explode(';', $inventory->serial_owned);
 
-        return view('properties.edit-inventory', compact('setting', 'property', 'property1', 'inventory', 'office', 'accnt', 'item', 'unit', 'category', 'selectedOfficeId', 'selectedPerson', 'selectedPerson1', 'serialOwned', 'selectedItemId', 'selectedUnitId', 'currentPrice', 'selectedCatId', 'selectedAccId', 'selectedPropId'));
+        return view('properties.edit', compact('setting', 'property', 'property1', 'inventory', 'office', 'accnt', 'item', 'unit', 'category', 'selectedOfficeId', 'selectedPerson', 'selectedPerson1', 'serialOwned', 'selectedItemId', 'selectedUnitId', 'currentPrice', 'selectedCatId', 'selectedAccId', 'selectedPropId'));
     }
 
     public function propertiesUpdate(Request $request) {
@@ -404,10 +562,9 @@ class PropertiesController extends Controller
             'property_id' => $request->input('property_id'),
         ])->max('item_number');
         $newItemNumber = str_pad($lastItemNumber + 1, 3, '0', STR_PAD_LEFT);
-       
+        
         $officeCode = $office->office_code;
         $propertyCodeGen = $formattedDate.'-'.$propertyCode.'-'.$categoriesCode.'-'.$propertiesCode.'-'.$inventory->item_number.'-'.$officeCode;
-
 
         $request->validate([
             'id' => 'required',
@@ -420,11 +577,10 @@ class PropertiesController extends Controller
             'item_cost' => 'required',
             'total_cost' => 'required',
             'properties_id' => 'required',
-            'person_accnt1' => 'nullable|array',
-            'serial_owned' => 'nullable|array',
+            'person_accnt1' => 'nullable',
+            'serial_owned' => 'nullable',
         ]);
         
-      
         $inventory = EnduserProperty::findOrFail($request->input('id'));
         $inventory->update([
             'office_id' => $request->input('office_id'),
@@ -440,13 +596,20 @@ class PropertiesController extends Controller
             'properties_id' => $request->input('properties_id'),
             'categories_id' => $request->input('categories_id'),
             'property_id' => $request->input('property_id'),
-            'property_no_generated' => $propertyCodeGen,
             'selected_account_id' => $request->input('selected_account_id'),
             'remarks' => $request->input('remarks'),
             'price_stat' => $request->input('price_stat'),
             'person_accnt' => $request->input('person_accnt'),
-            'person_accnt1' => implode(';', $request->input('person_accnt1', [])),
-            'serial_owned' => implode(';', $request->input('serial_owned', [])),  
+            'person_accnt1' => $request->input('person_accnt1'),
+            'serial_owned' => null,
+        ]);
+
+        Log::create([
+            'camp_id' => auth()->user()->campus_id,
+            'user_id' => auth()->user()->id,
+            'module_id' => $request->input('id'),
+            'module' => 'enduser_property',
+            'action' => 'update',
         ]);
 
         return redirect()->route('propertiesEdit', ['id' => $inventory->id])->with('success', 'Updated Successfully');
@@ -455,7 +618,7 @@ class PropertiesController extends Controller
     public function enduserUpdate(Request $request){
         $request->validate([
             'prop_id' => 'required',
-            'person_accnt1' => 'nullable|array',
+            'person_accnt1' => 'nullable',
         ]);
 
         $properties = EnduserProperty::findOrFail($request->input('prop_id'));
@@ -468,7 +631,7 @@ class PropertiesController extends Controller
             'camp_id' => auth()->user()->campus_id,
             'user_id' => auth()->user()->id,
             'module_id' => $request->input('prop_id'),
-            'module' => 'properties',
+            'module' => 'enduser_property',
             'action' => 'update',
         ]);
 
@@ -520,13 +683,30 @@ class PropertiesController extends Controller
     }    
     
 
-    public function propertiesDelete($id){
-        $puchase = EnduserProperty::find($id);
-        $puchase->delete();
+    public function propertiesDelete($id, Request $request)
+    {
+        $property = EnduserProperty::find($id);
+
+        if (!$property) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+            ]);
+        }
+
+        $property->update(['deleted' => 1]);
+
+        Log::create([
+            'camp_id' => auth()->user()->campus_id,
+            'user_id' => auth()->user()->id,
+            'module_id' => $id,
+            'module' => 'enduser_property',
+            'action' => 'delete',
+        ]);
 
         return response()->json([
-            'status'=>200,
-            'message'=>'Deleted Successfully',
+            'status' => 200,
+            'message' => 'Deleted Successfully',
         ]);
     }
 
@@ -592,9 +772,62 @@ class PropertiesController extends Controller
         return $pdf->stream();
     }
 
-    public function geneCheck(Request $request){
-        $qr = $request->query('q');
-        
+    // public function propertiesStatUp() {
+    //     $instat = InvSetting::first();        
+    //     if ($instat) {
+    //         $instat->switch = $instat->switch == 1 ? 0 : 1;            
+    //         $instat->save();            
+    //         return $instat->switch;
+    //     }    
+    //     return null;
+    // }
+    // public function geneCheck(Request $request) {
+    //     $qr = $request->query('q');        
+    //     $inventoryQuery = EnduserProperty::where('property_no_generated', $qr)
+    //         ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
+    //         ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
+    //         ->leftJoin('accountable', 'enduser_property.person_accnt', '=', 'accountable.id')
+    //         ->select(
+    //             'enduser_property.id', 
+    //             'enduser_property.remarks', 
+    //             'enduser_property.property_no_generated', 
+    //             'enduser_property.office_id', 
+    //             'enduser_property.person_accnt', // Add this
+    //             'enduser_property.person_accnt_name', 
+    //             'items.item_name',
+    //             'offices.office_officer', 
+    //             'accountable.person_accnt as accntperson'
+    //         );        
+    //     $count = $inventoryQuery->count();    
+    //     if ($count == 1) {
+    //         $inventory = $inventoryQuery->first();            
+    //         $office = Office::where('id', '!=', 1)->select('id', 'office_name', 'office_officer')->get();
+    //         $accnt = Accountable::select('id', 'person_accnt')->get();            
+    //         $data = [
+    //             'invmatch' => $inventory,
+    //             'office' => $office,
+    //             'accnt' => $accnt,
+    //         ];    
+    //         return response()->json(['data' => $data], 200);    
+    //     } elseif ($count > 1) {
+    //         return 'multiple';
+    //     } else {
+    //         return '0';
+    //     }
+    // }
+    // public function propertiesStatUp(Request $request) {
+    //     $instat = InvSetting::first();
+    //     if ($instat) {
+    //         $instat->switch = $instat->switch == 1 ? 0 : 1;
+    //         $instat->save();
+    //         return response()->json(['switch' => $instat->switch], 200);
+    //     }
+    //     return response()->json(['error' => 'Not found'], 404);
+    // }
+    public function geneCheck(Request $request)
+    {
+        $qr = $request->input('q');
+
         $inventoryQuery = EnduserProperty::where('property_no_generated', $qr)
             ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
@@ -604,54 +837,30 @@ class PropertiesController extends Controller
                 'enduser_property.remarks', 
                 'enduser_property.property_no_generated', 
                 'enduser_property.office_id', 
-                'enduser_property.person_accnt', // Add this
+                'enduser_property.person_accnt',
                 'enduser_property.person_accnt_name', 
                 'items.item_name',
                 'offices.office_officer', 
                 'accountable.person_accnt as accntperson'
             );
-        
+
         $count = $inventoryQuery->count();
-    
+
         if ($count == 1) {
             $inventory = $inventoryQuery->first();
-            
-            $office = Office::where('id', '!=', 1)->select('id', 'office_name', 'office_officer')->get();
             $accnt = Accountable::select('id', 'person_accnt')->get();
-            
-            $data = [
-                'invmatch' => $inventory,
-                'office' => $office,
-                'accnt' => $accnt,
-            ];
-    
-            return response()->json(['data' => $data], 200);
-    
+
+            return response()->json([
+                'status' => 'match',
+                'data' => [
+                    'invmatch' => $inventory,
+                    'accnt' => $accnt,
+                ]
+            ]);
         } elseif ($count > 1) {
-            return 'multiple';
-        }else{
-            return '0';
-        } 
-
-    }  
-    
-    public function propertiesStat(){
-        $instat = InvSetting::first();
-
-        return $instat->switch;
-    }
-    
-    public function propertiesStatUp(){
-        $instat = InvSetting::first();
-        
-        if ($instat) {
-            $instat->switch = $instat->switch == 1 ? 0 : 1;
-            
-            $instat->save();
-            
-            return $instat->switch;
+            return response()->json(['status' => 'multiple']);
+        } else {
+            return response()->json(['status' => 'not_found']);
         }
-    
-        return null;
     }
 }

@@ -22,11 +22,19 @@
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-6">
+                                    <label>Supply Type</label>
+                                    <select class="form-control" name="supply_type">
+                                        <option value="1">Property Equipment</option>
+                                        <option value="2">Common Supplies</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
                                     <label>PO Number:</label>
                                     <input type="text" name="po_number" oninput="this.value = this.value.toUpperCase()" placeholder="PO Number" autocomplete="off" class="form-control" >
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <label>Item:</label>
                                     <select class="form-control select2bs4" name="item_id" data-placeholder=" ---Select Item--- " style="width: 100%;">
                                         <option value=""> </option>
@@ -190,7 +198,7 @@
                                     <label>PO Number</label>
                                     <input type="text" id="rel_po_number" name="po_number" class="form-control" autocomplete="off" readonly>
                                 </div>
-
+                                
                                 <div class="col-md-6">
                                     <label>Item Name</label>
                                     <input type="text" id="rel_item_name" name="item_name" class="form-control" autocomplete="off" readonly>
@@ -247,10 +255,8 @@
                                 <div class="col-md-5">
                                     <label>Accountable Person:</label>
                                     <select class="form-control select2bs4" id="accountableSelect" name="person_accnt" data-placeholder=" ---Select Accountable Person--- " style="width: 100%;">
-                                        <option> </option>
-                                        @foreach ($accnt as $data)
-                                            <option value="{{ $data->id }}">{{ $data->person_accnt }}</option>
-                                        @endforeach
+                                        <option value=""> ---Select Accountable Person--- </option>
+                                        <!-- Options are dynamically filled by JS -->
                                     </select>
                                 </div>
                             </div>

@@ -125,6 +125,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Failed to update User!');
         }
     }
+    
     public function userDelete($id){
         $users = User::find($id);
         $users->delete();
@@ -134,26 +135,44 @@ class UserController extends Controller
             'uid'=>$id,
         ]);
     }
+    // public function appLogin(Request $request)
+    // {
+    //     $credentials = $request->only('uname', 'pass');
+    //     $uname = $credentials['uname'];
+    //     $pass = $credentials['pass'];
 
+    //     if (Auth::attempt(['username' => $uname, 'password' => $pass])) {
+    //         $user = Auth::user();
+
+    //         $token = ([
+    //             'id' => $user->id,
+    //             'role' => $user->role,
+    //             'fname' => $user->fname,
+    //             'lname' => $user->lname
+    //         ]);
+    
+    //         return response()->json(['token' => $token]);
+    //     }
+
+    //     return response()->json(['error' => '0'], 401);
+    // }
     public function appLogin(Request $request)
     {
-        $credentials = $request->only('uname', 'pass');
-        $uname = $credentials['uname'];
-        $pass = $credentials['pass'];
-
-        if (Auth::attempt(['username' => $uname, 'password' => $pass])) {
+        $validated = $request->validate([
+            'uname' => 'required|string',
+            'pass' => 'required|string',
+        ]);
+        if (Auth::attempt(['username' => $validated['uname'], 'password' => $validated['pass']])) {
             $user = Auth::user();
-
-            $token = ([
-                'id' => $user->id,
-                'role' => $user->role,
-                'fname' => $user->fname,
-                'lname' => $user->lname
+            return response()->json([
+                'token' => [
+                    'id' => $user->id,
+                    'role' => $user->role,
+                    'fname' => $user->fname,
+                    'lname' => $user->lname
+                ]
             ]);
-    
-            return response()->json(['token' => $token]);
         }
-
-        return response()->json(['error' => '0'], 401);
+        return response()->json(['error' => 'Invalid credentials!'], 401);
     }
 }

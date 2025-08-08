@@ -23,10 +23,10 @@ class LoginController extends Controller
             'password' => $request->password,
         ])) {
             $user = auth()->user();
-            if ($user->role === 'Campus Admin') {
-                auth()->logout();
-                return redirect()->back()->with('error', 'Your account is disabled at this time.');
-            }
+            // if ($user->role === 'Campus Admin') {
+            //     auth()->logout();
+            //     return redirect()->back()->with('error', 'Your account is disabled at this time.');
+            // }
             return redirect()->route('dashboard')->with('success', 'Login Successfully');
         } else {
             return redirect()->back()->with('error', 'Invalid Credentials');

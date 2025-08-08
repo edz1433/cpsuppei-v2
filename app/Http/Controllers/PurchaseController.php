@@ -32,7 +32,7 @@ class PurchaseController extends Controller
     
     public function purchaseREAD(Request $request) {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::where('id', '!=', 1)->get();
+        $office = Office::where('id', '!=', 1)->where('office_code', '!=', '0000')->get();
         $accnt = Accountable::all();
         $item = Item::all();
         $unit = Unit::all();
@@ -94,8 +94,6 @@ class PurchaseController extends Controller
             }
             
             $concat_serial_number = (!empty($serial_numbers_array)) ? implode($concatlabel, $serial_numbers_array) : '';
-            
-          
 
             try {
                 Purchases::create([
@@ -107,14 +105,15 @@ class PurchaseController extends Controller
                     'date_acquired' => $request->input('date_acquired'),
                     'unit_id' => $request->input('unit_id'),
                     'qty' => $request->input('qty'),
-                    'item_cost' => $request->input('item_cost'),
-                    'total_cost' => $request->input('total_cost'),
+                    'item_cost' => str_replace(',', '', $request->input('item_cost')),
+                    'total_cost' => str_replace(',', '', $request->input('total_cost')),
                     'properties_id' => $request->input('properties_id'),
                     'categories_id' => $request->input('categories_id'),
                     'property_id' => $request->input('property_id'),
                     'selected_account_id' => $request->input('selected_account_id'),
+                    'supply_type' => $request->input('supply_type'),
                 ]);
-
+            
                 return redirect()->back()->with('success', 'Purchase Item  stored successfully!');
             } catch (\Exception $e) {
                 return redirect()->back()->with('error', 'Failed to store Purchase Item!');
@@ -151,9 +150,7 @@ class PurchaseController extends Controller
             'property_id' => $purchase->property_id,
         ])->max('item_number');
 
-        $newItemNumber = str_pad($lastItemNumber + 1, 3, '0', STR_PAD_LEFT);
-
-        $propertyCodeGen = $formattedDate.'-'.$propertyCode.'-'.$categoriesCode.'-'.$propertiesCode.'-'.$newItemNumber;
+        $propertyCodeGen = $formattedDate.'-'.$propertyCode.'-'.$categoriesCode.'-'.$propertiesCode;
 
         $unrel_serial = $purchase->serial_number;
         $array_serial = ($purchase->unit_id == 2) ? explode(':', $unrel_serial) : explode(';', $unrel_serial);
@@ -172,7 +169,6 @@ class PurchaseController extends Controller
         
         $data = [
             'purchase' => $purchase,
-            'itemnum' => $newItemNumber,
             'pcode' => $propertyCodeGen,
             'unrel_serial' => $options_serial,
             'qty_left' =>  $purchase->qty -  $purchase->qty_release,
@@ -243,6 +239,7 @@ class PurchaseController extends Controller
                     'price_stat' => 'certain',
                     'person_accnt' => ($request->person_accnt == "") ? '' : $request->person_accnt,
                     'person_accnt_name' => $accountablePer,
+                    'supply_type' => $purchase->supply_type,
                 ]);
             }
         }else{
@@ -268,6 +265,7 @@ class PurchaseController extends Controller
                 'price_stat' => 'certain',
                 'person_accnt' => ($request->person_accnt == "") ? '' : $request->person_accnt,
                 'person_accnt_name' => $accountablePer,
+                'supply_type' => $purchase->supply_type,
             ]);
         }
     
@@ -275,7 +273,57 @@ class PurchaseController extends Controller
         $purchase->save();
         
         // Redirect back with success message
-        return redirect()->back()->with('success', 'Purchase Item stored successfully!');
+        return redirect()->back()->with('success', 'Purchase Item added successfully!');
+    }
+
+    public function checkNextNumber($propertyno, $officeCode)
+    {
+        $parts = explode('-', $propertyno);
+        $code  = $parts[0];
+        $code1 = $parts[1]; 
+        $code2 = $parts[2];
+
+        $office = Office::where('office_code', $officeCode)->first();
+
+        if (!$office) {
+            return response()->json([]);
+        }
+
+        if ($office->camp_id !== null) {
+            $accountables = Accountable::where(function ($query) use ($office) {
+                    $query->where('off_id', $office->id)
+                        ->orWhereJsonContains('desig_offid', (string)$office->id);
+                })
+                ->where('accnt_role', 2)
+                ->get();
+        } else {
+            $accountables = Accountable::where(function ($query) use ($office) {
+                    $query->where('off_id', $office->id)
+                        ->orWhereJsonContains('desig_offid', (string)$office->id);
+                })
+                ->get();
+        }
+
+        $latest = EnduserProperty::join('offices', 'offices.id', '=', 'enduser_property.office_id')
+            ->where('prop_code', $code)
+            ->where('categories_id', $code1)
+            ->where('property_id', $code2)
+            ->where('offices.office_code', $officeCode)
+            ->orderByDesc('item_number')
+            ->select('enduser_property.item_number')
+            ->first();
+
+        $nextNumber = 1;
+        if ($latest && is_numeric($latest->item_number)) {
+            $nextNumber = (int)$latest->item_number + 1;
+        }
+
+        $nextFormatted = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        return response()->json([
+            'next_item_number' => $nextFormatted,
+            'accountables' => $accountables
+        ]);
     }
     
     public function purchaseRelDel($id){

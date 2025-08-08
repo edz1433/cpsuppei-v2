@@ -44,16 +44,13 @@ use App\Http\Controllers\TechController;
     Route::get('/login',[LoginController::class,'getLogin'])->name('getLogin');
     Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');
 
-    Route::get('/qr-check', [PropertiesController::class, 'geneCheck'])->name('gene-check');
-    Route::get('/gene-qr', [InventoryController::class, 'geneQr'])->name('gene-qr');
-
-    Route::middleware(['android'])->group(function () {
-        Route::get('/app-login',[UserController::class,'appLogin'])->name('appLogin');
-         
-        Route::get('/instat', [PropertiesController::class, 'propertiesStat'])->name('propertiesStat');
-        Route::get('/instat-update', [PropertiesController::class, 'propertiesStatUp'])->name('propertiesStatUp');
-        Route::get('/checkInv', [InventoryController::class, 'checkInv'])->name('check-inv');
-    });
+    // Route::get('/qr-check', [PropertiesController::class, 'geneCheck'])->name('gene-check');
+    // Route::get('/gene-qr', [InventoryController::class, 'geneQr'])->name('gene-qr');
+    // Route::middleware(['android'])->group(function () {
+    //     Route::get('/app-login',[UserController::class,'appLogin'])->name('appLogin');         
+    //     Route::get('/instat-update', [PropertiesController::class, 'propertiesStatUp'])->name('propertiesStatUp');
+    //     Route::get('/checkInv', [InventoryController::class, 'checkInv'])->name('check-inv');
+    // });    
     
     Route::prefix('/technician')->group(function () {
         Route::get('/repair', [TechController::class, 'repairRead'])->name('repairRead');
@@ -65,7 +62,7 @@ use App\Http\Controllers\TechController;
     });
 
     //Middleware
-    Route::group(['middleware'=>['login_auth']],function(){
+    Route::group(['middleware'=>['login_auth']], function() {
     Route::get('/dashboard',[MasterController::class,'dashboard'])->name('dashboard');
         
     //View
@@ -130,7 +127,7 @@ use App\Http\Controllers\TechController;
             Route::get('list/delete/{id}', [EnduserController::class, 'accountableDelete'])->name('accountableDelete');
         });
     });
-
+    
     //purchases
     Route::prefix('/purchases')->group(function() {
         Route::get('/list/all', [PurchaseController::class, 'purchaseREAD'])->name('purchaseREAD');
@@ -140,8 +137,10 @@ use App\Http\Controllers\TechController;
         Route::get('/list/purchase-get/{id}', [PurchaseController::class, 'purchaseReleaseGet'])->name('purchaseReleaseGet');
         Route::post('/list/purchase-post', [PurchaseController::class, 'purchaseReleasePost'])->name('purchaseReleasePost');
         Route::get('/list/ajax', [PurchaseController::class, 'getPurchase'])->name('getPurchase');
-    });
 
+        Route::get('/check-next-number/{propertyno}/{officeCode}', [PurchaseController::class, 'checkNextNumber'])->name('checkNextNumber');
+    });
+    
     //properties
     Route::prefix('/properties')->group(function () {
         Route::get('/list', [PropertiesController::class, 'propertiesRead'])->name('propertiesRead');
@@ -161,8 +160,16 @@ use App\Http\Controllers\TechController;
         Route::get('/list/delete/{id}', [PropertiesController::class, 'propertiesDelete'])->name('propertiesDelete'); 
         
         Route::post('/end-user/update', [PropertiesController::class, 'enduserUpdate'])->name('enduserUpdate');
-        Route::get('/list/sticker', [PropertiesController::class, 'propertiesStickerTemplate'])->name('propertiesStickerTemplate');
+
+        Route::get('/sticker', [PropertiesController::class, 'stickerRead'])->name('stickerRead');
+        Route::post('/sticker', [PropertiesController::class, 'stickerReadPost'])->name('stickerReadPost');
+        Route::get('/sticker-pdf/{campus}', [PropertiesController::class, 'stickerReadPdf'])->name('stickerReadPdf');
+        Route::get('/sticker-json/{range}/{campus}', [PropertiesController::class, 'stickerReadJson'])->name('stickerReadJson');
+
+        Route::get('/blank-sticker', [PropertiesController::class, 'propertiesStickerTemplate'])->name('propertiesStickerTemplate');
         Route::get('/list/sticker/pdf', [PropertiesController::class, 'propertiesStickerTemplatePDF'])->name('propertiesStickerTemplatePDF');
+
+        Route::get('/sticker/generate/', [PropertiesController::class, 'generateQRCodesAndDownloadPdf'])->name('stickers.pdf');
     });
     
     //inventory

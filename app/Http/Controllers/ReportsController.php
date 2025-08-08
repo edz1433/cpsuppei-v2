@@ -70,6 +70,8 @@ class ReportsController extends Controller
         $selectId = ($categoriesId == 'All') ? $selectId = '0' : $selectId;
         $categoriesId = ($categoriesId == 'All') ? $categoriesId = '0' : $categoriesId;
 
+        $location = $request->input('location');
+
         $purchase = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
@@ -93,6 +95,15 @@ class ReportsController extends Controller
                 } elseif ($endDate) {
                     $query->where('enduser_property.date_acquired', '<=', $endDate);
                 }
+            })
+            ->where(function ($query) use ($location) {
+                if ($location === 'All') {
+                    // No filter applied — get everything including nulls
+                } elseif ($location === 'null') {
+                    $query->whereNull('enduser_property.location'); // N/A option
+                } elseif (!empty($location)) {
+                    $query->where('enduser_property.location', $location); // Specific location
+                }
             });
 
         if ($exists){
@@ -100,7 +111,7 @@ class ReportsController extends Controller
         } 
 
         $purchase = $purchase->get();
-
+// dd($purchase);
         $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')

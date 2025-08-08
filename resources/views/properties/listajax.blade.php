@@ -47,7 +47,7 @@
                         <table id="example" class="table table-bordered table-hover properties-table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th>ID</th>
                                     <th width="250">ITEM NAME</th>
                                     <th width="400">DETAILS</th>
                                     <th>PRICE</th>

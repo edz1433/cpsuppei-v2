@@ -76,28 +76,28 @@
 				</tr>
 				<tr>
 					<th rowspan="9" class="sticker-text-label"><canvas id="qrcode" class="elevation-3"></canvas></th>
-					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $purchase->property_no_generated  }}</span class=""></th>
+					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $purchase->property_no_generated }}</span class=""></th>
 				</tr>
 				<tr>
-					<th>Classification: <span class="dataText">{{ $purchase->account_title_abbr  }}</span></th>
+					<th>Classification: <span class="dataText">{{ $purchase->account_title_abbr }}</span></th>
 				</tr>
 				<tr>
-					<th>Item/Model/Brand: <span class="dataText">{{ $purchase->item_model  }}</span></th>
+					<th>Item/Model/Brand: <span class="dataText">{{ $purchase->item_model }}</span></th>
 				</tr>
 				<tr>
 					<th>Serial No.: <span class="dataText">{{ strtok($purchase->serial_number, ';') }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Cost: <span class="dataText">{{ $purchase->item_cost  }}</span></th>
+					<th>Acquisition Cost: <span class="dataText">{{ number_format($purchase->item_cost, 2) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Date: <span class="dataText">{{ $purchase->date_acquired  }}</span></th>
+					<th>Acquisition Date: <span class="dataText">{{ $purchase->date_acquired }}</span></th>
 				</tr>
 				<tr>
-					<th>Person Accountable: <span class="dataText">{{ $purchase->office_officer  }}</span></th>
+					<th>Person Accountable: <span class="dataText">{{ $purchase->office_officer }}</span></th>
 				</tr>
 				<tr>
-					<th>Assignment: <span class="dataText">{{ $purchase->office_name  }}</span></th>
+					<th>Assignment: <span class="dataText">{{ $purchase->office_name }}</span></th>
 				</tr>
 				<tr>
 					<th>Validation Sign: <span class="dataText"></span></th>
@@ -126,28 +126,28 @@
 				</tr>
 				<tr>
 					<th rowspan="9" class="sticker-text-label"><canvas id="qrcode1" class="elevation-3"></canvas></th>
-					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $purchase->property_no_generated  }}</span class=""></th>
+					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $purchase->property_no_generated }}</span class=""></th>
 				</tr>
 				<tr>
-					<th>Classification: <span class="dataText">{{ $purchase->account_title_abbr  }}</span></th>
+					<th>Classification: <span class="dataText">{{ $purchase->account_title_abbr }}</span></th>
 				</tr>
 				<tr>
-					<th>Item/Model/Brand: <span class="dataText">{{ $purchase->item_model  }}</span></th>
+					<th>Item/Model/Brand: <span class="dataText">{{ $purchase->item_model }}</span></th>
 				</tr>
 				<tr>
 					<th>Serial No.: <span class="dataText">{{ substr(strstr($purchase->serial_number, ';'), 1) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Cost: <span class="dataText">{{ $purchase->item_cost  }}</span></th>
+					<th>Acquisition Cost: <span class="dataText">{{ number_format($purchase->item_cost, 2) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Date: <span class="dataText">{{ $purchase->date_acquired  }}</span></th>
+					<th>Acquisition Date: <span class="dataText">{{ $purchase->date_acquired }}</span></th>
 				</tr>
 				<tr>
-					<th>Person Accountable: <span class="dataText">{{ $purchase->office_officer  }}</span></th>
+					<th>Person Accountable: <span class="dataText">{{ $purchase->office_officer }}</span></th>
 				</tr>
 				<tr>
-					<th>Assignment: <span class="dataText">{{ $purchase->office_name  }}</span></th>
+					<th>Assignment: <span class="dataText">{{ $purchase->office_name }}</span></th>
 				</tr>
 				<tr>
 					<th>Validation Sign: <span class="dataText"></span></th>
@@ -178,28 +178,28 @@
 				</tr>
 				<tr>
 					<th rowspan="9" class="sticker-text-label"><canvas id="qrcode" class="elevation-3"></canvas></th>
-					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $purchase->property_no_generated  }}</span class=""></th>
+					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $purchase->property_no_generated }}</span class=""></th>
 				</tr>
 				<tr>
-					<th>Classification: <span class="dataText">{{ $purchase->account_title_abbr  }}</span></th>
+					<th>Classification: <span class="dataText">{{ $purchase->account_title_abbr }}</span></th>
 				</tr>
 				<tr>
-					<th>Item/Model/Brand: <span class="dataText">{{ $purchase->item_model  }}</span></th>
+					<th>Item/Model/Brand: <span class="dataText">{{ $purchase->item_model }}</span></th>
 				</tr>
 				<tr>
-					<th>Serial No.: <span class="dataText">{{ $purchase->serial_number  }}</span></th>
+					<th>Serial No.: <span class="dataText">{{ $purchase->serial_number }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Cost: <span class="dataText">{{ $purchase->item_cost  }}</span></th>
+					<th>Acquisition Cost: <span class="dataText">{{ number_format($purchase->item_cost, 2) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Date: <span class="dataText">{{ $purchase->date_acquired  }}</span></th>
+					<th>Acquisition Date: <span class="dataText">{{ $purchase->date_acquired }}</span></th>
 				</tr>
 				<tr>
-					<th>Person Accountable: <span class="dataText">{{ $purchase->office_officer  }}</span></th>
+					<th>Person Accountable: <span class="dataText">{{ $purchase->office_officer }}</span></th>
 				</tr>
 				<tr>
-					<th>Assignment: <span class="dataText">{{ $purchase->office_name  }}</span></th>
+					<th>Assignment: <span class="dataText">{{ $purchase->office_name }}</span></th>
 				</tr>
 				<tr>
 					<th>Validation Sign: <span class="dataText"></span></th>
@@ -216,7 +216,7 @@
 	@endif
 
 <script>
-    var inputText= "{{ $purchase->property_no_generated  }}";
+    var inputText= "{{ $purchase->property_no_generated }}";
     var qr = new QRious({
         element: document.getElementById("qrcode"),
         value: inputText,
@@ -225,7 +225,7 @@
 </script>
 
 <script>
-    var inputText= "{{ $purchase->property_no_generated  }}";
+    var inputText= "{{ $purchase->property_no_generated }}";
     var qr = new QRious({
         element: document.getElementById("qrcode1"),
         value: inputText,

@@ -25,7 +25,7 @@ class OfficeController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'office_code' => 'required||numeric|digits:3',
+                'office_code' => 'required||numeric|digits:4',
                 'office_name' => 'required',
                 'office_abbr' => 'required',
                 'office_officer' => 'required',
@@ -98,26 +98,7 @@ class OfficeController extends Controller
             'office_abbr' => $request->input('office_abbr'),
             'office_officer' => $officeOfficer,
         ]);
-    
-        $inventories = EnduserProperty::where('office_id', $officeId)
-            ->whereNull('person_accnt')
-            ->get();
-
-        foreach ($inventories as $inventory) {
-            $inventory->update([
-                'person_accnt_name' => $officeOfficer,
-            ]);
-
-            InvQR::create([
-            'uid' => auth()->check() ? auth()->user()->id : null,
-            'inv_id' => $inventory->id,
-            'accnt_type' => 'OfficeAccountable',
-            'person_accnt' => $officeOfficer,
-            'remarks' => $inventory->remarks,
-            'comment' => 'Updating office officer',
-            ]);
-        }
-    
+        
         return redirect()->route('officeEdit', ['id' => $office->id])->with('success', 'Updated Successfully');
     }    
     

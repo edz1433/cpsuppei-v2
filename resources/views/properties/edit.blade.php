@@ -100,7 +100,7 @@
 
                                 <div class="col-md-6">
                                     <label for="exampleInputName">Quantity:</label>
-                                    <input type="number" name="qty" value="{{ $inventory->qty }}"  class="form-control" onkeyup="calculateTotalCost()">
+                                    <input type="number" name="qty" value="{{ $inventory->qty }}"  class="form-control" onkeyup="calculateTotalCost()" readonly>
                                 </div>
                             </div>
                         </div>
@@ -164,7 +164,7 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-12 mt-3">
+                                <div class="col-md-4 mt-3">
                                     <label>Price Status:</label>
                                     <select class="form-control" name="price_stat" id="price_stat">
                                         <option value="Certain" @if ($inventory->price_stat == 'Certain') selected @endif>Certain</option>
@@ -172,8 +172,8 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-12 mt-3">
-                                    <label>Accountable Person 1:</label>
+                                <div class="col-md-4 mt-3">
+                                    <label>Accountable Person</label>
                                     <select class="form-control select2bs4" name="person_accnt" style="width: 100%;">
                                         <option value="">N/A</option>
                                         @foreach ($accnt as $data)
@@ -182,9 +182,9 @@
                                     </select> 
                                 </div>
 
-                                <div class="col-md-6 mt-3">
-                                    <label>Accountable Person 2:</label>
-                                    <select class="form-control select2bs4" name="person_accnt1[]" data-placeholder="--- Select Accountable Person 2 ---" style="width: 100%;" multiple>
+                                <div class="col-md-4 mt-3">
+                                    <label>End User</label>
+                                    <select class="form-control select2bs4" name="person_accnt1" data-placeholder="--- Select Accountable Person 2 ---" style="width: 100%;">
                                         <option value="0" {{ in_array('0', $selectedPerson1 ?? []) ? 'selected' : '' }}>N/A</option>
                                         @foreach ($accnt as $data)
                                             <option value="{{ $data->id }}" {{ in_array($data->id, $selectedPerson1 ?? []) ? 'selected' : '' }}>
@@ -192,23 +192,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                </div>
-                                
-                                <div class="col-md-6 mt-3">
-                                    <label>Item Serial Number Owned:</label>
-                                    <select class="form-control select2bs4" name="serial_owned[]" data-placeholder="--- Select Serial Number ---" style="width: 100%;" multiple>
-                                        <option value="0" {{ in_array('0', $serialOwned ?? []) ? 'selected' : '' }}>N/A</option>
-                                        @php
-                                            $serialNumbers = explode(';', $inventory->serial_number); // Assuming serial_number is separated by ;
-                                        @endphp
-                                        @foreach ($serialNumbers as $serial)
-                                            <option value="{{ trim($serial) }}" {{ in_array(trim($serial), $serialOwned ?? []) ? 'selected' : '' }}>
-                                                {{ trim($serial) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                                     
+                                </div>             
                             </div>
                         </div>
                         

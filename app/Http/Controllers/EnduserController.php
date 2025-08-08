@@ -30,36 +30,43 @@ class EnduserController extends Controller
         return view('manage.enduser.accntlist', compact('setting', 'accnt', 'office'));
     }
 
-    public function accountableCreate(Request $request) {
+    public function accountableCreate(Request $request)
+    {
         $setting = Setting::firstOrNew(['id' => 1]);
         $accnt = Accountable::all();
 
-        if ($request->isMethod('post')) {
-            $request->validate([
-                'person_accnt' => 'required|string|max:255',
-            ]);
-            
-            $accntName = $request->input('person_accnt');
-            $existingAccnt = Accountable::where('person_accnt', $accntName)->first();
+        $request->validate([
+            'person_accnt' => 'required|string|max:255',
+            'desig_offid' => 'nullable',
+            'off_id' => 'required',
+            'accnt_role' => 'required',
+        ]);
 
-            if ($existingAccnt) {
-                return redirect()->route('accountableRead')->with('error', 'Accountable Person already exists!');
-            }
+        $accntName = $request->input('person_accnt');
+        $accnt_role = $request->input('accnt_role');
+        $existingAccnt = Accountable::where('person_accnt', $accntName)->first();
 
-            try {
-                $role = auth()->user()->role;
-                $officeId = $request->input('off_id', auth()->user()->campus_id);
-
-                Accountable::create([
-                    'person_accnt' => $request->input('person_accnt'),
-                    'off_id' => $request->input('off_id', $officeId),
-                ]);
-
-                return redirect()->route('accountableRead')->with('success', 'Item stored successfully!');
-            } catch (\Exception $e) {
-                return redirect()->route()->with('error', 'Failed to store Accountable!');
-            }
+        if ($existingAccnt) {
+            return redirect()->route('accountableRead')->with('error', 'Accountable Person already exists!');
         }
+
+        // Normalize desig_offid to always be an array or empty array
+        $desigOffices = $request->input('desig_offid');
+
+        if (is_null($desigOffices)) {
+            $desigOffices = [];
+        } elseif (!is_array($desigOffices)) {
+            $desigOffices = [$desigOffices];
+        }
+
+        Accountable::create([
+            'person_accnt' => $accntName,
+            'desig_offid' => json_encode($desigOffices),
+            'off_id' => $request->input('off_id'),
+            'accnt_role' => $accnt_role,
+        ]);
+
+        return redirect()->route('accountableRead')->with('success', 'Item stored successfully!');
     }
 
     public function accountableEdit($id) {
@@ -83,69 +90,60 @@ class EnduserController extends Controller
         return view('manage.enduser.accntlist', compact('setting', 'accnt', 'selectedAccnt', 'office'));
     }
 
-    public function accountableUpdate(Request $request) {
+    public function accountableUpdate(Request $request)
+    {
         // Validate request data
         $request->validate([
-            'id' => 'required',
-            'person_accnt' => 'required',
+            'id' => 'required|integer|exists:accountable,id',
+            'person_accnt' => 'required|string|max:255',
+            'desig_offid' => 'nullable',
+            'off_id' => 'required',
+            'accnt_role' => 'required|in:0,1,2',
         ]);
-    
-        try {
-            $accountId = $request->input('id');
-            $accntName = $request->input('person_accnt');
 
-            $role = auth()->user()->role;
-            if ($role == "Campus Admin") {
-                $offId = Office::where('camp_id', auth()->user()->campus_id)->first()->id;
-            }else {
-                $offId = auth()->user()->campus_id;
-            }
-            
-            $existingAccnt = Accountable::where('person_accnt', $accntName)
-                                        ->where('id', '!=', $accountId)
-                                        ->first();
-    
-            if ($existingAccnt) {
-                return redirect()->back()->with('error', 'Accountable person already exists!');
-            }
-    
-            $existingPersonAccnt = Accountable::where('person_accnt', $accntName)
-                                              ->where('id', '!=', $accountId)
-                                              ->first();
-            if ($existingPersonAccnt) {
-                return redirect()->back()->with('error', 'Accountable person already assigned to another office!');
-            }
-    
-            $accnt = Accountable::findOrFail($accountId);
-            $accnt->update([
-                'person_accnt' => $accntName,
-                'off_id' => $offId,
-            ]);
-    
-            $inventories = Inventory::where('person_accnt', $accountId)->get();
-            foreach ($inventories as $inventory) {
-                if ($accntName != $inventory->person_accnt_name) {
-                    $inventory->update([
-                        'person_accnt_name' => $accntName,
-                    ]);
-    
-                    InvQR::create([
-                        'uid' => auth()->check() ? auth()->user()->id : null,
-                        'inv_id' => $inventory->id,
-                        'accnt_type' => 'accountable',
-                        'person_accnt' => $accntName,
-                        'remarks' => $inventory->remarks,
-                        'comment' => 'Updating accountable person',
-                    ]);
-                }
-            }
-    
-            return redirect()->route('accountableEdit', ['id' => $accnt->id])->with('success', 'Updated Successfully');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update Accountable!');
+        $accountId = $request->input('id');
+        $accntName = $request->input('person_accnt');
+        $accnt_role = $request->input('accnt_role');
+
+        // Normalize desig_offid to always be an array or empty array
+        $desigOffices = $request->input('desig_offid');
+        if (is_null($desigOffices)) {
+            $desigOffices = [];
+        } elseif (!is_array($desigOffices)) {
+            $desigOffices = [$desigOffices];
         }
+
+        // Determine off_id based on user role
+        $role = auth()->user()->role;
+        if ($role === "Campus Admin") {
+            $offId = Office::where('camp_id', auth()->user()->campus_id)->first()->id ?? 0;
+        } else {
+            $offId = $request->input('off_id');
+        }
+
+        // Check if person_accnt already exists (excluding current record)
+        $existingAccnt = Accountable::where('person_accnt', $accntName)
+                                    ->where('id', '!=', $accountId)
+                                    ->first();
+
+        if ($existingAccnt) {
+            return redirect()->back()->with('error', 'Accountable person already exists!');
+        }
+
+        // Find and update record
+        $accnt = Accountable::findOrFail($accountId);
+        $accnt->update([
+            'person_accnt' => $accntName,
+            'desig_offid' => json_encode($desigOffices),
+            'off_id' => $offId,
+            'accnt_role' => $accnt_role,
+        ]);
+
+        return redirect()->route('accountableEdit', ['id' => $accnt->id])
+                        ->with('success', 'Updated Successfully');
+
     }
-    
+
     public function accountableDelete($id){
         $accnt = Accountable::find($id);
         $accnt->delete();

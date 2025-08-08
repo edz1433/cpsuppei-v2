@@ -11,9 +11,11 @@ class EnduserProperty extends Model
     protected $fillable = [
         'purch_id',
         'property_id',	
+        'prop_code',
         'categories_id',
         'properties_id',	
         'office_id',
+        'location',
         'item_id',	
         'item_descrip',	
         'item_model',
@@ -24,6 +26,7 @@ class EnduserProperty extends Model
         'item_cost',	
         'qty',	
         'total_cost',	
+        'property_no_generated_old',
         'property_no_generated',
         'selected_account_id',
         'status',	
@@ -35,6 +38,8 @@ class EnduserProperty extends Model
         'person_accnt1',
         'serial_owned',
         'person_accnt_name',
-        'print_stat'
+        'print_stat',
+        'supply_type',
+        'deleted'
     ];
 }

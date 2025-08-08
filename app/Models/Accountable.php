@@ -14,6 +14,7 @@ class Accountable extends Model
     protected $fillable = [
         'person_accnt',
         'off_id',
-        'head',
+        'desig_offid',
+        'accnt_role',
     ];
 }

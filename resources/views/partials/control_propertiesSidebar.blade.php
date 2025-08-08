@@ -6,6 +6,8 @@
     $lowActive = in_array($curr_route, ['propertieslowRead', 'propertiesEdit']) ? 'active' : '';
     $intActive = in_array($curr_route, ['propertiesintangibleRead']) ? 'active' : '';
     $blankStickerActive = in_array($curr_route, ['propertiesStickerTemplate']) ? 'active' : '';
+    $stickerActive = in_array($curr_route, ['stickerRead']) ? 'active' : '';
+    $stickerActivePost = in_array($curr_route, ['stickerReadPost']) ? 'active' : '';
 @endphp
 
 <ul class="nav nav-pills nav-sidebar nav-compact flex-column">
@@ -39,11 +41,16 @@
         </a>
     </li>
     @if(auth()->user()->role !=='Campus Admin')
-    <li class="nav-item mb-1">
-        <a href="{{ route('propertiesStickerTemplate') }}" class="nav-link2 {{ $blankStickerActive }}">
-            Blank Sticker
-        </a>
-    </li>
+        <li class="nav-item mb-1">
+            <a href="{{ route('stickerRead') }}" class="nav-link2 {{ $stickerActive }} {{ $stickerActivePost }}">
+                Property Sticker
+            </a>
+        </li>
+        <li class="nav-item mb-1">
+            <a href="{{ route('propertiesStickerTemplate') }}" class="nav-link2 {{ $blankStickerActive }}">
+                Blank Sticker
+            </a>
+        </li>
     @endif
 </ul>
 
