@@ -263,10 +263,10 @@ class PropertiesController extends Controller
             $length = ((int)$end) - ((int)$start);
 
             $properties = EnduserProperty::select(
-                    'enduser_property.id',     
+                    'enduser_property.id',
                     'enduser_property.property_no_generated',
                     'enduser_property.serial_number',
-                    'enduser_property.item_model',  
+                    'enduser_property.item_model',
                     'enduser_property.item_cost',
                     'enduser_property.date_acquired',
                     'enduser_property.office_id',
