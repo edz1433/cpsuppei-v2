@@ -21,7 +21,7 @@
                 <i class="fas fa-shopping-cart"></i> Purchases
             </a>
 
-            <a href="@if(auth()->user()->role !== 'Technician'){{ route('propertiesRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician'])) disabled @endif {{ request()->is('properties*') ? 'active' : '' }}">
+            <a href="@if(auth()->user()->role !== 'Technician'){{ route('propertiesRead', 1) }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician'])) disabled @endif {{ request()->is('properties*') ? 'active' : '' }}">
                 <i class="fas fa-server"></i> Properties
             </a>
             

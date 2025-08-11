@@ -28,7 +28,7 @@ use PDF;
 
 class PropertiesController extends Controller
 {
-    public function propertiesRead(Request $request) {
+    public function propertiesRead(Request $request, $cat) {
         $ucampid = auth()->user()->campus_id;
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
@@ -55,14 +55,14 @@ class PropertiesController extends Controller
                     ->join('items', 'enduser_property.item_id', '=', 'items.id')
                     ->leftjoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
                     ->select('enduser_property.*', 'offices.id', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name', 'purchases.po_number');
-
+                    
         if ($exists){
             $properties->where('offices.camp_id', $ucampid);
         }
         
         $properties = $properties->get();
         $page = (auth()->user()->role == "Campus Admin") ? 'list' : 'listajax';
-        return view('properties.'.$page, compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
+        return view('properties.'.$page, compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'cat', 'properties'));
     }
 
     public function returnSlip($id){
@@ -71,66 +71,66 @@ class PropertiesController extends Controller
         return $pdf->stream();
     }
 
-    public function propertiesppeRead(Request $request) {
-        $ucampid = auth()->user()->campus_id;
-        $exists = Office::whereNotNull('camp_id')
-            ->where('camp_id', $ucampid)
-            ->exists();
+    // public function propertiesppeRead(Request $request) {
+    //     $ucampid = auth()->user()->campus_id;
+    //     $exists = Office::whereNotNull('camp_id')
+    //         ->where('camp_id', $ucampid)
+    //         ->exists();
 
-        $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
-        $accnt = Accountable::all();
-        $item = Item::all();
-        $unit = Unit::all();
-        $category = Category::all();
-        $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
-        $property = Property::whereIn('id', [1, 2, 3])->get();
-        $properties = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
-                    ->join('property', 'enduser_property.properties_id', '=', 'property.id')
-                    ->join('items', 'enduser_property.item_id', '=', 'items.id')
-                    ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
-                    ->where('enduser_property.properties_id', '=', '3');
+    //     $setting = Setting::firstOrNew(['id' => 1]);
+    //     $office = Office::all();
+    //     $accnt = Accountable::all();
+    //     $item = Item::all();
+    //     $unit = Unit::all();
+    //     $category = Category::all();
+    //     $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
+    //     $property = Property::whereIn('id', [1, 2, 3])->get();
+    //     $properties = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+    //                 ->join('property', 'enduser_property.properties_id', '=', 'property.id')
+    //                 ->join('items', 'enduser_property.item_id', '=', 'items.id')
+    //                 ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
+    //                 ->where('enduser_property.properties_id', '=', '3');
 
-        if ($exists){
-            $properties->where('offices.camp_id', $ucampid);
-        }
+    //     if ($exists){
+    //         $properties->where('offices.camp_id', $ucampid);
+    //     }
         
-        $properties = $properties->get();
+    //     $properties = $properties->get();
 
-        return view('properties.list', compact('setting', 'office', 'accnt','item', 'unit', 'property', 'currentPrice','category', 'properties'));
-    }
+    //     return view('properties.list', compact('setting', 'office', 'accnt','item', 'unit', 'property', 'currentPrice','category', 'properties'));
+    // }
     
-    public function propertieshighRead(Request $request) {
-        $ucampid = auth()->user()->campus_id;
-        $exists = Office::whereNotNull('camp_id')
-            ->where('camp_id', $ucampid)
-            ->exists();
+    // public function propertieshighRead(Request $request) {
+    //     $ucampid = auth()->user()->campus_id;
+    //     $exists = Office::whereNotNull('camp_id')
+    //         ->where('camp_id', $ucampid)
+    //         ->exists();
 
-        $setting = Setting::firstOrNew(['id' => 1]);    
-        $office = Office::all();
-        $accnt = Accountable::all();
-        $item = Item::all();
-        $unit = Unit::all();
-        $category = Category::all();
-        $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
-        $property = Property::whereIn('id', [1, 2, 3])->get();
-        $properties = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
-        ->join('property', 'enduser_property.properties_id', '=', 'property.id')
-        ->join('items', 'enduser_property.item_id', '=', 'items.id')
-        ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
-        ->where('enduser_property.properties_id', '=', '1');
+    //     $setting = Setting::firstOrNew(['id' => 1]);    
+    //     $office = Office::all();
+    //     $accnt = Accountable::all();
+    //     $item = Item::all();
+    //     $unit = Unit::all();
+    //     $category = Category::all();
+    //     $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
+    //     $property = Property::whereIn('id', [1, 2, 3])->get();
+    //     $properties = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+    //     ->join('property', 'enduser_property.properties_id', '=', 'property.id')
+    //     ->join('items', 'enduser_property.item_id', '=', 'items.id')
+    //     ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
+    //     ->where('enduser_property.properties_id', '=', '1');
     
-        if ($exists){
-            $properties->where('offices.camp_id', $ucampid);
-        }
+    //     if ($exists){
+    //         $properties->where('offices.camp_id', $ucampid);
+    //     }
         
-        $properties = $properties->get();
+    //     $properties = $properties->get();
 
 
-        return view('properties.list', compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
-    }
+    //     return view('properties.list', compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
+    // }
 
-    public function getProperties() {
+    public function getProperties($cat) {
         $ucampid = auth()->user()->campus_id;
 
         $exists = Office::whereNotNull('camp_id')
@@ -157,39 +157,43 @@ class PropertiesController extends Controller
             $data->where('enduser_property.office_id', $ucampid);
         }
 
+        if($cat != 4){
+            $data->where('enduser_property.properties_id', '=', $cat);
+        }
+        
         $data = $data->where('deleted', 0)->get();
 
         return response()->json(['data' => $data]);
     }
 
-    public function propertieslowRead(Request $request) {
-        $ucampid = auth()->user()->campus_id;
-        $exists = Office::whereNotNull('camp_id')
-            ->where('camp_id', $ucampid)
-            ->exists();
+    // public function propertieslowRead(Request $request) {
+    //     $ucampid = auth()->user()->campus_id;
+    //     $exists = Office::whereNotNull('camp_id')
+    //         ->where('camp_id', $ucampid)
+    //         ->exists();
 
-        $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
-        $accnt = Accountable::all();
-        $item = Item::all();
-        $unit = Unit::all();
-        $category = Category::all();
-        $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
-        $property = Property::whereIn('id', [1, 2, 3])->get();
-        $properties = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
-                    ->join('property', 'enduser_property.properties_id', '=', 'property.id')
-                    ->join('items', 'enduser_property.item_id', '=', 'items.id')
-                    ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
-                    ->where('enduser_property.properties_id', '=', '2');
+    //     $setting = Setting::firstOrNew(['id' => 1]);
+    //     $office = Office::all();
+    //     $accnt = Accountable::all();
+    //     $item = Item::all();
+    //     $unit = Unit::all();
+    //     $category = Category::all();
+    //     $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
+    //     $property = Property::whereIn('id', [1, 2, 3])->get();
+    //     $properties = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+    //                 ->join('property', 'enduser_property.properties_id', '=', 'property.id')
+    //                 ->join('items', 'enduser_property.item_id', '=', 'items.id')
+    //                 ->select('enduser_property.*', 'offices.office_abbr', 'property.abbreviation', 'offices.office_name', 'items.item_name')
+    //                 ->where('enduser_property.properties_id', '=', '2');
 
-        if ($exists){
-            $properties->where('offices.camp_id', $ucampid);
-        }
+    //     if ($exists){
+    //         $properties->where('offices.camp_id', $ucampid);
+    //     }
         
-        $properties = $properties->get();     
+    //     $properties = $properties->get();     
 
-        return view('properties.list', compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
-    }
+    //     return view('properties.list', compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'properties'));
+    // }
 
     public function propertiesintangibleRead(Request $request) {
         $ucampid = auth()->user()->campus_id;

@@ -131,8 +131,8 @@ use App\Http\Controllers\TechController;
     
     //properties
     Route::prefix('/properties')->group(function () {
-        Route::get('/list', [PropertiesController::class, 'propertiesRead'])->name('propertiesRead');
-        Route::get('/list/ajax', [PropertiesController::class, 'getProperties'])->name('getProperties');
+        Route::get('/list/{category}', [PropertiesController::class, 'propertiesRead'])->name('propertiesRead');
+        Route::get('/list/ajax/{category}', [PropertiesController::class, 'getProperties'])->name('getProperties');
         Route::get('/list/ppe', [PropertiesController::class, 'propertiesppeRead'])->name('propertiesppeRead');
         Route::get('/list/high', [PropertiesController::class, 'propertieshighRead'])->name('propertieshighRead');
         Route::get('/list/low', [PropertiesController::class, 'propertieslowRead'])->name('propertieslowRead');
