@@ -263,10 +263,10 @@ class PropertiesController extends Controller
             $length = ((int)$end) - ((int)$start);
 
             $properties = EnduserProperty::select(
-                    'enduser_property.id',
+                    'enduser_property.id',     
                     'enduser_property.property_no_generated',
                     'enduser_property.serial_number',
-                    'enduser_property.item_model',
+                    'enduser_property.item_model',  
                     'enduser_property.item_cost',
                     'enduser_property.date_acquired',
                     'enduser_property.office_id',
@@ -291,8 +291,9 @@ class PropertiesController extends Controller
                 }, function ($query) use ($campus) {
                     $query->where('enduser_property.office_id', $campus);
                 })
-                ->orderByRaw('CAST(enduser_property.item_cost AS DECIMAL(15,2)) ASC') // priority 1
-                ->orderByRaw('(SELECT account_title_abbr FROM properties WHERE properties.category_id = enduser_property.categories_id LIMIT 1) ASC') // priority 2
+                ->orderByRaw('CAST(enduser_property.item_cost AS DECIMAL(15,2)) ASC')
+                ->orderByRaw('(SELECT account_title_abbr FROM properties WHERE properties.category_id = enduser_property.categories_id LIMIT 1) ASC')
+                ->orderBy('enduser_property.office_id')
                 ->skip($start)
                 ->take($length)
                 ->get();
