@@ -36,7 +36,7 @@
             Low Value
         </a>
     </li>
-
+    
     {{-- <li class="nav-item mb-1">
         <a href="{{ route('propertiesintangibleRead') }}" class="nav-link2 {{ $intActive }}" id="lowButton">
             Intangible Value
