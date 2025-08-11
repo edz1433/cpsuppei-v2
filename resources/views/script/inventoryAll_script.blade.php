@@ -1,102 +1,111 @@
 <script>
-    $(document).ready(function() {
-        $('.properties-table').DataTable({
-            "ajax": "{{ route('getProperties') }}",
-            responsive: true,
-            lengthChange: true,
-            searching: true,
-            paging: true,
-            "columns": [
-                {data: 'id', name: 'id', className: 'align-middle', orderable: false, searchable: false},
-                { data: 'item_name', className: 'align-middle' },
-                {
-                    data: null,
-                    render: function(data, type, row) {
-                        var campus = row.office_name ? '<b>CAMPUS:</b> ' + row.office_name : '';
-                        var type = row.abbreviation ? '<br><b>TYPE:</b> ' + row.abbreviation : '';
-                        var poNumber = row.po_number ? '<br><b>PO NUMBER:</b> ' + row.po_number : '';
-                        var propertyCode = row.property_no_generated ? '<br><b>PROPERTY CODE:</b> ' + row.property_no_generated : '';
-                        var oldPropertyCode = row.property_no_generated_old ? '<br><b>OLD PROPERTY CODE:</b> ' + row.property_no_generated_old : '';
-                        var itemmodel = row.item_model ? '<br><b>MODEL:</b> ' + row.item_model : '';
-                        var serialNumber = row.serial_number ? '<br><b>SERIAL NUMBER:</b> ' + row.serial_number : '';
-                        var description = row.item_descrip ? '<br><br><b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
-                        var accountname = row.accountableName ? '<br><br><b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
-                        var accountname1 = row.accountableNames ? '<br><br><b>END USER:</b><br> ' + row.accountableNames : '';
-
-                        return campus + type + poNumber + propertyCode + oldPropertyCode + itemmodel + serialNumber + description + accountname + accountname1;
-                    },
-                    className: 'align-middle'
-                },
-                {
-                    data: 'item_cost',
-                    className: 'text-center align-middle',
-                    render: function(data, type, row) {
-                        const formatted = Number(data).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        if (row.price_stat === 'Uncertain') {
-                            return '<span style="color: red;">' + formatted + '</span>';
-                        } else {
-                            return '<span>' + formatted + '</span>';
-                        }
-                    }
-                },
-                {data: 'qty', className: 'text-center align-middle'},
-                {
-                    data: 'total_cost',
-                    className: 'text-center align-middle',
-                    render: function(data, type, row) {
-                        return Number(data).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        });
-                    }
-                },
-                {data: 'date_acquired', className: 'text-center align-middle'},
-                {data: 'remarks', className: 'text-center align-middle'},
-                {data: 'id',
-                    render: function(data, type, row) {
-                        if (type === 'display') {
-                            var editUrl = "{{ route('propertiesEdit', ['id' => ':id']) }}".replace(':id', data);
-                            var returnSlipUrl = "{{ route('returnSlip', ['id' => ':id']) }}".replace(':id', data);
-                            var urole = "{{ auth()->user()->role }}";
-                            if(urole !== "Campus Admin"){
-                                return `
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown"></button>
-                                        <div class="dropdown-menu">
-                                            <a href="${editUrl}" class="dropdown-item btn-edit" href="#"><i class="fas fa-exclamation-circle"></i> Edit</a>
-                                            <button id="${data}" onclick="printSticker(${data})" class="dropdown-item btn-print" href="#"><i class="fas fa-print"></i> Sticker</button>
-                                            <button value="${data}" class="dropdown-item inventory-delete" href="#"><i class="fas fa-trash"></i> Delete</button>
-                                            ${row.remarks === "Unserviceable" ? `<a href="${returnSlipUrl}" class="dropdown-item"><i class="fas fa-file-alt"></i> Return Slip</a>` : ""}
-                                        </div>
-                                    </div>
-                                `;
-                            }else{
-                                return `
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown"></button> 
-                                    </div>`;
-                            }
-                        } else {
-                            return data;
-                        }
-                    },
-                    className: 'text-center align-middle'
-                }
-            ],
-            initComplete: function(settings, json) {
-                var api = this.api();
-                api.column(0, {search: 'applied', order: 'applied'}).nodes().each(function(cell, i) {
-                    cell.innerHTML = i + 1;
-                });
+$(document).ready(function() {
+    $('.properties-table').DataTable({
+        ajax: "{{ route('getProperties') }}",
+        responsive: true,
+        lengthChange: true,
+        searching: true,
+        paging: true,
+        columns: [
+            {
+                data: 'id',
+                name: 'id',
+                className: 'align-middle',
+                orderable: false,
+                searchable: false
             },
-            "createdRow": function (row, data, dataIndex) {
-                $(row).attr('id', 'tr-' + data.id);
-                if (data.remarks === "Unserviceable") {
-                    $('td', row).addClass('un-bg');
+            { data: 'item_name', className: 'align-middle' },
+            {
+                data: null,
+                className: 'align-middle',
+                render: function(data, type, row) {
+                    var campus = row.office_name ? '<b>CAMPUS:</b> ' + row.office_name : '';
+                    var typeAbbr = row.abbreviation ? '<br><b>TYPE:</b> ' + row.abbreviation : '';
+                    var poNumber = row.po_number ? '<br><b>PO NUMBER:</b> ' + row.po_number : '';
+                    var propertyCode = row.property_no_generated ? '<br><b>PROPERTY CODE:</b> ' + row.property_no_generated : '';
+                    var oldPropertyCode = row.property_no_generated_old ? '<br><b>OLD PROPERTY CODE:</b> ' + row.property_no_generated_old : '';
+                    var itemModel = row.item_model ? '<br><b>MODEL:</b> ' + row.item_model : '';
+                    var serialNumber = row.serial_number ? '<br><b>SERIAL NUMBER:</b> ' + row.serial_number : '';
+                    var description = row.item_descrip ? '<br><br><b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
+                    var accountableName = row.accountableName ? '<br><br><b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
+                    var endUser = row.accountableNames ? '<br><br><b>END USER:</b><br> ' + row.accountableNames : '';
+
+                    return campus + typeAbbr + poNumber + propertyCode + oldPropertyCode + itemModel + serialNumber + description + accountableName + endUser;
+                }
+            },
+            {
+                data: 'item_cost',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    const formatted = Number(data).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    if (row.price_stat === 'Uncertain') {
+                        return '<span style="color: red;">' + formatted + '</span>';
+                    }
+                    return '<span>' + formatted + '</span>';
+                }
+            },
+            { data: 'qty', className: 'text-center align-middle' },
+            {
+                data: 'total_cost',
+                className: 'text-center align-middle',
+                render: function(data) {
+                    return Number(data).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            },
+            { data: 'date_acquired', className: 'text-center align-middle' },
+            { data: 'remarks', className: 'text-center align-middle' },
+            {
+                data: 'id',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        var editUrl = "{{ route('propertiesEdit', ':id') }}".replace(':id', data);
+                        var returnSlipUrl = "{{ route('returnSlip', ':id') }}".replace(':id', data);
+                        var urole = "{{ auth()->user()->role }}";
+                        if (urole !== "Campus Admin") {
+                            return `
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="${editUrl}" class="dropdown-item btn-edit"><i class="fas fa-exclamation-circle"></i> Edit</a></li>
+                                        <li><button id="${data}" onclick="printSticker(${data})" class="dropdown-item btn-print"><i class="fas fa-print"></i> Sticker</button></li>
+                                        <li><button value="${data}" class="dropdown-item inventory-delete"><i class="fas fa-trash"></i> Delete</button></li>
+                                        ${row.remarks === "Unserviceable" ? `<li><a href="${returnSlipUrl}" class="dropdown-item"><i class="fas fa-file-alt"></i> Return Slip</a></li>` : ""}
+                                    </ul>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                </div>
+                            `;
+                        }
+                    }
+                    return data;
                 }
             }
-        });
+        ],
+        initComplete: function() {
+            var api = this.api();
+            api.column(0, {search:'applied', order:'applied'}).nodes().each(function(cell, i) {
+                cell.innerHTML = i + 1;
+            });
+        },
+        createdRow: function(row, data) {
+            $(row).attr('id', 'tr-' + data.id);
+            if (data.remarks === "Unserviceable") {
+                $('td', row).addClass('un-bg');
+            }
+        }
     });
+});
 </script>
 
 <script>
