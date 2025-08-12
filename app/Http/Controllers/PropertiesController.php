@@ -245,6 +245,7 @@ class PropertiesController extends Controller
             // Join to get camp_id for the office associated with each enduser_property
             ->leftJoin('offices as eo', 'enduser_property.office_id', '=', 'eo.id')
             ->where('offices.office_code', '!=', '0000')
+            ->where('enduser_property.remarks', '!=', 'Unserviceable')
             ->groupBy('offices.id', 'offices.office_name')
             ->get();
 
@@ -262,7 +263,7 @@ class PropertiesController extends Controller
     public function stickerReadJson($range, $campus)
     {
         try {
-            [$start, $end] = explode('-', $range ?? '1-500');
+            [$start, $end] = explode('-', $range ?? '1-1000');
             $start = max(0, ((int)$start) - 1); // offset
             $length = ((int)$end) - ((int)$start);
 
@@ -295,6 +296,7 @@ class PropertiesController extends Controller
                 }, function ($query) use ($campus) {
                     $query->where('enduser_property.office_id', $campus);
                 })
+                ->where('enduser_property.remarks', '!=', 'Unserviceable')
                 ->orderByRaw('CAST(enduser_property.item_cost AS DECIMAL(15,2)) ASC')
                 ->orderByRaw('(SELECT account_title_abbr FROM properties WHERE properties.category_id = enduser_property.categories_id LIMIT 1) ASC')
                 ->orderBy('enduser_property.office_id')
