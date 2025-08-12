@@ -104,33 +104,44 @@ class InventoryController extends Controller
         $yearinve = YearlyInventory::create([
             'inv_status' => 'Ongoing', 
         ]);
-    
+
         $invId = $yearinve->id;
-    
+
         $properties = EnduserProperty::leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
-            ->select('enduser_property.id', 'enduser_property.person_accnt', 'enduser_property.person_accnt_name', 'enduser_property.remarks', 'enduser_property.office_id', 'offices.office_officer')
+            ->select(
+                'enduser_property.id', 
+                'enduser_property.person_accnt', 
+                'enduser_property.person_accnt_name', 
+                'enduser_property.remarks', 
+                'enduser_property.office_id', 
+                'offices.office_officer'
+            )
             ->get();
-        
+
         $inventoryData = [];
         foreach ($properties as $property) {
             $inventoryData[] = [
-                'prop_id' => $property->id,
-                'inv_id' => $invId,
-                'office_id' => $property->office_id,
-                'accnt_type' => !is_null($property->person_accnt) ? 1 : 2,
-                'person_accnt' => !empty($property->person_accnt_name) ? $property->person_accnt_name : $property->office_officer,
-                'item_status' => $property->remarks,
-                'created_at' => now(),
-                'updated_at' => now()
+                'prop_id'       => $property->id,
+                'inv_id'        => $invId,
+                'office_id'     => $property->office_id,
+                'accnt_type'    => !is_null($property->person_accnt) ? 1 : 2,
+                'person_accnt'  => !empty($property->person_accnt_name) ? $property->person_accnt_name : $property->office_officer,
+                'item_status'   => $property->remarks,
+                'created_at'    => now(),
+                'updated_at'    => now()
             ];
         }
-    
+
         if (!empty($inventoryData)) {
-            InventoryHistory::insert($inventoryData);
+            foreach (array_chunk($inventoryData, 500) as $batch) {
+                InventoryHistory::insert($batch);
+            }
         }
-    
-        return response()->json(['success' => 'Inventory created for all properties!'], 200);
+
+        return response()->json(['success' => 'Inventory created for all properties in batches of 500!'], 200);
     }
+
+
     // public function checkInv(Request $request)
     // {
     //     $ongoingInventory = YearlyInventory::where('inv_status', 'Ongoing')->exists();        

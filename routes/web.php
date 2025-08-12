@@ -165,7 +165,7 @@ use App\Http\Controllers\TechController;
         Route::get('/list', [InventoryController::class, 'inventoryRead'])->name('inventoryRead');
         Route::get('/view/{id}', [InventoryController::class, 'inventoryView'])->name('inventoryView');
         Route::get('/list/ajax', [InventoryController::class, 'getInventory'])->name('getInventory');
-        Route::post('/inventory/start', [InventoryController::class, 'startInventory'])->name('startInventory');
+        Route::post('/start', [InventoryController::class, 'startInventory'])->name('startInventory');
     });
      
     //Reports

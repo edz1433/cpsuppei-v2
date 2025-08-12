@@ -1,4 +1,4 @@
-@if(isset($category))
+@if(isset($category) && request()->is('properties*'))
     <script>
         $(document).ready(function() {
             $('.properties-table').DataTable({
