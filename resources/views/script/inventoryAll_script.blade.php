@@ -1,4 +1,4 @@
-@if(isset($category) && request()->is('properties*'))
+@if(isset($category) && request()->is('properties*') && isset($cat))
     <script>
         $(document).ready(function() {
             $('.properties-table').DataTable({
@@ -114,7 +114,10 @@
                 {
                     data: null,
                     render: function(data, type, row) {
-                        return '<b>CAMPUS:</b> ' + row.office_name + ' <br> <b>PROPERTY CODE</b>: ' + row.property_no_generated + ' <br><br> <b>DESCRIPTION</b><br>' + row.item_descrip;
+                        return '<b>CAMPUS:</b> ' + row.office_name +
+                            ' <br> <b>PROPERTY CODE</b>: ' + row.property_no_generated +
+                            ' <br> <b>OLD PROPERTY CODE</b>: ' + row.property_no_generated_old +
+                            ' <br><br> <b>DESCRIPTION</b><br>' + row.item_descrip;
                     },
                     className: 'align-middle'
                 },

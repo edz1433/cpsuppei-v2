@@ -21,7 +21,7 @@
                         <div class="col-md-4"></div>
                         <div class="col-md-8">
                             <button type="button" class="btn btn-default btn-sm float-md-right"> Edit</button>                            
-                            <a href="{{ route('propertiesRead') }}" class="btn btn-default btn-sm float-md-right pba"> Purchases</a>
+                            <a href="{{ route('propertiesRead', 4) }}" class="btn btn-default btn-sm float-md-right pba"> Purchases</a>
                         </div>
                     </div>
                 </div>
