@@ -279,7 +279,7 @@ class PropertiesController extends Controller
                     'enduser_property.person_accnt',
                     'enduser_property.person_accnt1',
                     'items.item_name',
-                    DB::raw('(SELECT account_title_abbr FROM properties WHERE properties.category_id = enduser_property.categories_id LIMIT 1) as account_title_abbr'),
+                    'properties.account_title_abbr',
                     'offices.office_name',
                     'a1.person_accnt as person_accnt_fname1',
                     'a2.person_accnt as person_accnt_fname2'
@@ -288,6 +288,7 @@ class PropertiesController extends Controller
                 ->join('offices', 'offices.id', '=', 'enduser_property.office_id')
                 ->leftJoin('accountable as a1', 'enduser_property.person_accnt', '=', 'a1.id')
                 ->leftJoin('accountable as a2', 'enduser_property.person_accnt1', '=', 'a2.id')
+                ->leftJoin('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
                 ->when($campus == 1, function ($query) {
                     $query->where(function ($subQuery) {
                         $subQuery->whereNull('offices.camp_id')
