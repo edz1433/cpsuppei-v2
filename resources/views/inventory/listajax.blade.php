@@ -73,9 +73,10 @@
                                     <th>QTY</th>
                                     <th>TOTAL COST</th>
                                     <th>DATE ACQ.</th>
-                                    <th>ITEM STATUS</th>
+                                    <th>STATUS</th>
                                     <th>REMARKS</th>
-                                    <th>INVENTORY STATUS</th>
+                                    <th></th>
+                                    <th>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -89,7 +90,71 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-remark" role="dialog" aria-labelledby="modalRemarkLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <form id="invsaveForm" method="POST" action="{{ route('invSave') }}">
+        @csrf
+        <div class="modal-header">
+            <h5 class="modal-title" id="item-name"></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="pcode" name="pcode">
 
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="person_accnt">Accountable Person</label>
+                    <select class="form-control select2bs4" id="person_accnt" name="person_accnt" style="width: 100%;">
+                    @foreach ($accnt as $data)
+                        <option value="{{ $data->id }}">
+                        {{ $data->person_accnt }} {{ ($data->accnt_role == 2) ? '- CUSTODIAN' : '' }} {{ ($data->accnt_role == 1) ? '- HEAD' : '' }}
+                        </option>
+                    @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group col-md-12">
+                    <label for="person_accnt1">End User</label>
+                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1" data-placeholder="--- Select Accountable Person 2 ---" style="width: 100%;">
+                    <option value="">N/A</option>
+                    @foreach ($accnt as $data)
+                        @if($data->accnt_role != 2)
+                            <option value="{{ $data->id }}">
+                            {{ $data->person_accnt }} {{ ($data->accnt_role == 1) ? '- HEAD' : '' }}
+                            </option>
+                        @endif
+                    @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+            <label for="remarks">Status:</label>
+            <select class="form-control" id="status" name="status">
+                <option value="Good Condition">Good Condition</option>
+                <option value="Needing Repair">Needing Repair</option>
+                <option value="Unserviceable">Unserviceable</option>
+                <option value="Obsolete">Obsolete</option>
+                <option value="No Longer Needed">No Longer Needed</option>
+                <option value="Not used since purchase">Not used since purchase</option>
+            </select>
+            </div>
+
+            <div class="form-group">
+            <label for="remarkText">Remarks</label>
+            <textarea class="form-control" id="remarkText" name="remarks" rows="4"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Submit</button>
+        </div>
+        </form>
+    </div>
+  </div>
+</div>
 <script>
 function formatNumber(input) {
     const value = input.value.replace(/[^\d.]/g, '');
@@ -114,7 +179,6 @@ function calculateTotalCost() {
     document.getElementsByName('total_cost')[0].value = formattedTotalCost;
 }
 </script>
-
 <script>
 function toggleSecondForm(selectElement) {
     const secondForm = document.getElementById('secondForm');
@@ -131,7 +195,6 @@ function toggleSecondForm(selectElement) {
     secondForm.style.display = 'block';
 }
 </script>
-
 <script>
 function categor(val) {
     var categoryId = val;
@@ -162,7 +225,6 @@ function categor(val) {
     }
 };
 </script>
-
 <script>
     function printSticker(purchase_id) {
         $.ajax({
@@ -183,7 +245,6 @@ function categor(val) {
         });
     }
 </script>
-
 <script>
     $(document).ready(function() {
         $('#accountableSelect').change(function() {

@@ -2,9 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\PropertiesController;
-use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\Api\AppController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,11 +20,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('app')->group(function () {
-    // UserController
-    Route::post('/login', [UserController::class, 'appLogin'])->name('appLogin');
-    // PropertiesController
-    Route::post('/gene-check', [PropertiesController::class, 'geneCheck'])->name('gene-check');
-    // InventoryController
-    Route::post('/check-inv', [InventoryController::class, 'checkInv'])->name('check-inv');
-    Route::post('/gene-qr', [InventoryController::class, 'geneQr'])->name('gene-qr');
+    Route::post('/login', [AppController::class, 'login']);
+    Route::post('/scan-qr', [AppController::class, 'scanQr']);
+    Route::post('/check-invstat', [AppController::class, 'checkInvstat']);
+    Route::post('/save-qr', [AppController::class, 'saveQr']);
 });

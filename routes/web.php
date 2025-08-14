@@ -163,13 +163,16 @@ use App\Http\Controllers\TechController;
     //inventory
     Route::prefix('/inventory')->group(function () {
         Route::get('/list', [InventoryController::class, 'inventoryRead'])->name('inventoryRead');
-        Route::get('/view/{id}', [InventoryController::class, 'inventoryView'])->name('inventoryView');
+        Route::get('/view/{id}/', [InventoryController::class, 'inventoryView'])->name('inventoryView');
         Route::get('/list/ajax', [InventoryController::class, 'getInventory'])->name('getInventory');
         Route::post('/start', [InventoryController::class, 'startInventory'])->name('startInventory');
+        Route::post('/save', [InventoryController::class, 'invSave'])->name('invSave');
     });
      
     //Reports
     Route::prefix('/reports')->group(function () {
+        Route::get('/{id}', [ReportsController::class, 'reportOption'])->name('reportOption');
+        Route::post('/report-option', [ReportsController::class, 'reportOptionView'])->name('reportOptionView');
         Route::get('/rpcppe/option', [ReportsController::class, 'rpcppeOption'])->name('rpcppeOption');
         Route::get('/rpcppe/reports/rpcppe', [ReportsController::class, 'rpcppeOptionReportGen'])->name('rpcppeOptionReportGen');
 

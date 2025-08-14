@@ -101,68 +101,121 @@
     </script>
 @endif
 <script>
+    var urole = "{{ auth()->user()->role }}";
+    var allowedRoles = ['Supply Officer', 'Administrator', 'Supply Staff'];
+
     $(document).ready(function() {
+        // Base columns without the Action column
+        var columns = [
+            {data: 'id', name: 'id', orderable: false, searchable: false, className: 'text-center align-middle'},
+            {data: 'item_name', className: 'align-middle'},
+            {
+                data: null,
+                render: function(data, type, row) {
+                    return '<b>CAMPUS:</b> ' + row.office_name +
+                        ' <br> <b>PROPERTY CODE</b>: ' + row.property_no_generated +
+                        ' <br> <b>OLD PROPERTY CODE</b>: ' + row.property_no_generated_old +
+                        ' <br><br> <b>DESCRIPTION</b><br>' + row.item_descrip +
+                        ' <br><br> <b>PERSON ACCOUNTABLE:</b> ' + (row.person_accnt_name ?? '') +
+                        ' <br> <b>END USER:</b> ' + (row.person_accnt_name1 ?? '');
+                },
+                className: 'align-middle'
+            },
+            {
+                data: 'item_cost',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    const formatted = Number(data).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    if (row.price_stat === 'Uncertain') {
+                        return '<span style="color: red;">' + formatted + '</span>';
+                    } else {
+                        return '<span>' + formatted + '</span>';
+                    }
+                }
+            },
+            {data: 'qty', className: 'text-center align-middle'},
+            {
+                data: 'total_cost',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    return Number(data).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            },
+            {data: 'date_acquired', 
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        var date = new Date(data);
+                        var options = { year: 'numeric', month: 'long', day: 'numeric' };
+                        return date.toLocaleDateString('en-US', options);
+                    } else {
+                        return data;
+                    }
+                },
+                className: 'text-center align-middle'
+            },
+            {
+                data: 'remarks',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    let displayValue = data ? data : ''; // avoid showing null
+                    return '<span class="item-status-' + row.property_no_generated + '">' + displayValue + '</span>';
+                }
+            },
+            {
+                data: 'his_remarks',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    let displayValue = data ? data : ''; // if null, show empty
+                    return '<span class="remarks-' + row.property_no_generated + '">' + displayValue + '</span>';
+                }
+            },
+            {
+                data: 'inv_status',
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    var badgeClass = data == 1 ? 'badge-warning' : 'badge-success';
+                    var statusText = data == 1 ? 'Ongoing' : 'Done';
+                    return '<span class="invstatus-' + row.property_no_generated + ' badge ' + badgeClass + '">' + statusText + '</span>';
+                }
+            }
+        ];
+        // Add action column only if user role is allowed
+        if (allowedRoles.includes(urole)) {
+            columns.push({
+                data: null,
+                orderable: false,
+                searchable: false,
+                className: 'text-center align-middle',
+                render: function(data, type, row) {
+                    return '<button class="btn btn-info btn-sm action-btn" ' +
+                        'data-toggle="modal" data-target="#modal-remark" ' +
+                        'data-pcode="' + row.property_no_generated  + '" ' +
+                        'data-person_accnt="' + (row.person_accnt ?? '') + '" ' +
+                        'data-person_accnt1="' + (row.person_accnt1 ?? '') + '" ' +
+                        'data-remarks="' + (row.remarks ?? '') + '" ' +
+                        'data-item_name="' + (row.item_name ?? '') + '">' +
+                        '<i class="fas fa-exclamation-circle"></i></button>';
+                }
+            });
+        }
+
         $('.inventory-table').DataTable({
-            "ajax": "{{ route('getInventory') }}",
+            ajax: "{{ route('getInventory') }}",
             responsive: true,
             lengthChange: true,
             searching: true,
             paging: true,
-            "columns": [
-                {data: 'id', name: 'id', orderable: false, searchable: false, className: 'text-center align-middle'},
-                {data: 'item_name', className: 'align-middle'},
-                {
-                    data: null,
-                    render: function(data, type, row) {
-                        return '<b>CAMPUS:</b> ' + row.office_name +
-                            ' <br> <b>PROPERTY CODE</b>: ' + row.property_no_generated +
-                            ' <br> <b>OLD PROPERTY CODE</b>: ' + row.property_no_generated_old +
-                            ' <br><br> <b>DESCRIPTION</b><br>' + row.item_descrip;
-                    },
-                    className: 'align-middle'
-                },
-                {data: 'item_cost',
-                    render: function(data, type, row) {
-                        if (row.price_stat === 'Uncertain') {
-                            return '<span style="color: red;">' + data + '</span>';
-                        } else {
-                            return '<span>' + data + '</span>';
-                        }
-                    },
-                    className: 'text-center align-middle'
-                },
-                {data: 'qty', className: 'text-center align-middle'},
-                {data: 'total_cost', className: 'text-center align-middle'},
-                {data: 'date_acquired', 
-                    render: function(data, type, row) {
-                        if (type === 'display') {
-                            var date = new Date(data);
-                            var options = { year: 'numeric', month: 'long', day: 'numeric' };
-                            return date.toLocaleDateString('en-US', options);
-                        } else {
-                            return data;
-                        }
-                    },
-                    className: 'text-center align-middle'
-                },
-                {data: 'remarks', className: 'text-center align-middle'},
-                {data: 'his_remarks', className: 'text-center align-middle'},
-                {data: 'inv_status',
-                    render: function(data, type, row) {
-                            var badgeClass = data == 1 ? 'badge-warning' : 'badge-success';
-                            var statusText = data == 1 ? 'Ongoing' : 'Done';
-                            return '<span class="badge ' + badgeClass + '">' + statusText + '</span>';
-                    },
-                    className: 'text-center align-middle'
-                }
-            ],
+            columns: columns,
             initComplete: function(settings, json) {
                 var api = this.api();
                 api.column(0, {search: 'applied', order: 'applied'}).nodes().each(function(cell, i) {
                     cell.innerHTML = i + 1;
                 });
             },
-            "createdRow": function (row, data, dataIndex) {
+            createdRow: function (row, data, dataIndex) {
                 $(row).attr('id', 'tr-' + data.id);
                 if (data.remarks === "Unserviceable") {
                     $('td', row).addClass('un-bg');
@@ -210,3 +263,76 @@
     });
 </script>
 
+<script>
+    $('#modal-remark').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+
+        // Read data attributes
+        var pcode = button.data('pcode');
+        var personAccnt = button.data('person_accnt');
+        var personAccnt1 = button.data('person_accnt1');
+        var remarks = button.data('remarks');
+        var itemName = button.data('item_name');
+
+        // Set modal title
+        $('#item-name').text(itemName);
+
+        // Set hidden input id
+        $('#pcode').val(pcode);
+
+        // Set selects values and trigger change for Select2
+        $('#person_accnt').val(personAccnt).trigger('change');
+        $('#person_accnt1').val(personAccnt1).trigger('change');
+
+        // Set status select value
+        $('#remarks').val(remarks);
+    });
+</script>
+<script>
+$(document).ready(function() {
+    $('#invsaveForm').on('submit', function(e) {
+        e.preventDefault();
+
+        // Get values directly from the form
+        let pcode = $('#pcode').val();        // property code
+        let status = $('#status').val();      // status select value
+        let remarks = $('#remarkText').val(); // remarks textarea
+
+        // Serialize the form for AJAX
+        let formData = $(this).serialize();
+
+        $.ajax({
+            url: $(this).attr('action'), // Route::post('/save', ...)
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Update remarks cell dynamically
+                    $('.item-status-' + pcode).text(status);
+                    $('.remarks-' + pcode).text(remarks);
+
+                    // Update inv_status cell dynamically
+                    // Example mapping: "Good Condition" -> Done, others -> Ongoing
+                    let invClass = (status === 'Good Condition') ? 'badge-success' : 'badge-warning';
+                    let invText = (status === 'Good Condition') ? 'Done' : 'Ongoing';
+
+                    $('.invstatus-' + pcode)
+                        .removeClass('badge-success badge-warning')
+                        .addClass(invClass)
+                        .text(invText);
+
+                    // Close the modal
+                    $('#modal-remark').modal('hide');
+
+                    toastr.success("Record updated successfully!");
+                } else {
+                    toastr.error(response.error || "Something went wrong.");
+                }
+            },
+            error: function(xhr) {
+                toastr.error("An error occurred while saving.");
+            }
+        });
+    });
+});
+</script>

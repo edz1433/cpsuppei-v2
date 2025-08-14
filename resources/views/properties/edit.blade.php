@@ -153,7 +153,7 @@
                                 <input type="hidden" id="selected_account_id" name="selected_account_id" value="{{ $inventory->selected_account_id }}">
 
                                 <div class="col-md-12 mt-3">
-                                    <label>Remarks:</label>
+                                    <label>Status:</label>
                                     <select class="form-control" name="remarks" id="remarks">
                                         <option value="Good Condition" @if($inventory->remarks == 'Good Condition') selected @endif>Good Condition</option>
                                         <option value="Needing Repair" @if($inventory->remarks == 'Needing Repair') selected @endif>Needing Repair</option>
