@@ -299,7 +299,7 @@ class PropertiesController extends Controller
                 })
                 ->where('enduser_property.remarks', '!=', 'Unserviceable')
                 ->orderByRaw('CAST(enduser_property.item_cost AS DECIMAL(15,2)) ASC')
-                ->orderBy('enduser_property.account_title_abbr', 'ASC')
+                ->orderBy('properties.account_title_abbr', 'ASC')
                 ->orderBy('enduser_property.office_id')
                 ->skip($start)
                 ->take($length)
