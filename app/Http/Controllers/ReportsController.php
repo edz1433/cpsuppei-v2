@@ -87,6 +87,7 @@ class ReportsController extends Controller
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
             ->where('enduser_property.selected_account_id', $cond, $selectId)
+            ->where('enduser_property.item_cost', '>', 20000)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
                     $query->whereBetween('enduser_property.date_acquired', [$startDate, $endDate]);
