@@ -29,7 +29,7 @@
                 <i class="fas fa-server"></i> Inventory
             </a>
 
-            <a href="{{ route('rpcppeOption') }}" class="btn btn-app {{ request()->is('reports*') ? 'active' : '' }}">
+            <a href="{{ route('reportOption', 1) }}" class="btn btn-app {{ request()->is('reports*') ? 'active' : '' }}">
                 <i class="fas fa-file-pdf"></i> Reports
             </a>
 
