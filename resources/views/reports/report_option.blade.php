@@ -18,7 +18,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="fas fa-file-pdf"></i> RPCPPE Reports
+                        <i class="fas fa-file-pdf"></i> Reports Option
                     </h3>
                 </div>
                 <div class="card-body">
@@ -57,9 +57,15 @@
                             <div class="form-row">
                                 <div class="col-md-6">
                                     <label>Property Type:</label>
-                                    <select class="form-control select2bs4" id="properties_id" name="properties_id" style="width: 100%;">
+                                    <input type="number" name="repcat" value="{{ $repcat }}" hidden>
+                                    <select class="form-control select2bs4" id="properties_id" name="properties_id[]" {{ isset($repcat) && $repcat != 1 ? 'multiple' : '' }} style="width: 100%;">
                                         @foreach ($property as $data)
-                                            <option value="{{ $data->id }}">{{ $data->abbreviation }} - {{ $data->property_name }}</option>
+                                            @if($repcat == 1 && $data->id == 3)
+                                                <option value="{{ $data->id }}">{{ $data->abbreviation }} - {{ $data->property_name }}</option>
+                                            @endif
+                                            @if($repcat == 2 && in_array($data->id, [1, 2]))
+                                                <option value="{{ $data->id }}" selected>{{ $data->abbreviation }} - {{ $data->property_name }}</option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
@@ -77,7 +83,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
+                            </div> 
                         </div>
 
                         <div class="form-group">

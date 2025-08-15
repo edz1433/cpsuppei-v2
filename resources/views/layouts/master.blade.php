@@ -26,7 +26,6 @@
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 
-
     <!-- Logo  -->
     <link rel="shortcut icon" type="" href="{{ asset('template/img/CPSU_L.png') }}">
 

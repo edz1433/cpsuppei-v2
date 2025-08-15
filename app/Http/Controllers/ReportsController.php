@@ -25,15 +25,15 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class ReportsController extends Controller
 {
-    public function reportOption($id) {
+    public function reportOption($repcat) {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
         $uid = auth()->user()->campus_id;
         $uoffice = Office::where('camp_id', $uid)->first();
-        $property = Property::whereIn('id', [3])->get();
+        $property = Property::all();
         $category = Category::all();
 
-        return view('reports.report_option', compact('setting', 'uoffice', 'office', 'property', 'category'));
+        return view('reports.report_option', compact('setting', 'uoffice', 'office', 'property', 'category', 'repcat'));
     }
 
     public function reportOptionView(Request $request) {
@@ -41,7 +41,8 @@ class ReportsController extends Controller
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
             ->exists();
-
+        $repcat = $request->repcat;
+        // dd($repcat);
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::all();
         $item = Item::all();
@@ -83,7 +84,13 @@ class ReportsController extends Controller
                     $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
-            ->where('enduser_property.properties_id', $propertiesId)
+            ->when(!empty($propertiesId), function ($query) use ($propertiesId) {
+                if (is_array($propertiesId)) {
+                    $query->whereIn('enduser_property.properties_id', $propertiesId);
+                } else {
+                    $query->where('enduser_property.properties_id', $propertiesId);
+                }
+            })
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
             ->where('enduser_property.selected_account_id', $cond, $selectId)
@@ -100,99 +107,71 @@ class ReportsController extends Controller
                 if ($location === 'All') {
                     // No filter applied — get everything including nulls
                 } elseif ($location === 'null') {
-                    $query->whereNull('enduser_property.location'); // N/A option
+                    $query->whereNull('enduser_property.location');
                 } elseif (!empty($location)) {
-                    $query->where('enduser_property.location', $location); // Specific location
+                    $query->where('enduser_property.location', $location);
                 }
             });
 
-        if ($exists){
+        if ($exists) {
             $purchase->where('offices.camp_id', $ucampid);
-        } 
+        }
 
         $purchase = $purchase->get();
-        
-        // dd($purchase->count());
 
-          $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+        // dd($purchase);
+
+        $baseQuery = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
-            ->where(function ($query) use ($officeId, $allOffice, $cond) {
-                if ($officeId == 1) {
-                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
-                } else {
-                    $query->where('enduser_property.office_id', $allOffice, $officeId);
-                }
-            })
             ->where('enduser_property.properties_id', $propertiesId)
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
             ->where('enduser_property.selected_account_id', $cond, $selectId)
-            ->where(function ($query) use ($startDate) {
-                if ($startDate) {
-                    $query->where('enduser_property.date_acquired', '<', $startDate);
-                }
+            ->when($exists, function ($query) use ($ucampid) {
+                $query->where('offices.camp_id', $ucampid);
             });
 
-        if ($exists){
-            $purchase1->where('offices.camp_id', $ucampid);
-        } 
-        
-        $purchase1 = $purchase1->select('enduser_property.total_cost')->get();
-
-
-        $purchase2 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
-            ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
-            ->join('units', 'enduser_property.unit_id', '=', 'units.id')
-            ->join('items', 'enduser_property.item_id', '=', 'items.id')
-            // ->where('enduser_property.office_id', $allOffice, $officeId)
-            ->where(function ($query) use ($officeId, $allOffice, $cond) {
-                if ($officeId == 1) {
-                    $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
-                } else {
-                    $query->where('enduser_property.office_id', $cond, $allOffice);
-                }
-            })
-            ->where('enduser_property.properties_id', $propertiesId)
-            ->where('enduser_property.categories_id', $cond, $categoriesId)
-            ->where('enduser_property.property_id', $cond, $propId)
-            ->where('enduser_property.selected_account_id', $cond, $selectId)
-            ->where(function ($query) use ($endDate) {
-                if ($endDate) {
-                    $query->where('enduser_property.date_acquired', '>', $endDate);
-                }
-            });
-
-        if ($exists){
-            $purchase2->where('offices.camp_id', $ucampid);
-        } 
-        
-        $purchase2 = $purchase2->select('enduser_property.total_cost')->get();
-
-        $bforward = $purchase1->sum(function ($purchase1) {
-            return str_replace(',', '', $purchase1->total_cost);
-        });
-
-        // Ensure $purchase2 is not null or empty before attempting to use it
-        $bforward1 = $purchase2->isEmpty() ? 0 : $purchase2->sum(function ($purchase) {
-            return str_replace(',', '', $purchase->total_cost);
-        });
-        
-        $countBforward  = 0;
-        $countBforward1 = 0;
-
-        foreach($purchase1 as $purchaseData){
-            if (is_numeric(str_replace(',', '', $purchaseData->qty))){
-                $countBforward += (float) str_replace(',', '', $purchaseData->qty); 
+        // PURCHASE 1
+        $purchase1Query = clone $baseQuery;
+        $purchase1Query->where(function ($query) use ($officeId, $cond) {
+            if ($officeId == 1) {
+                $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+            } else {
+                $query->where('enduser_property.office_id', $cond, $officeId);
             }
+        });
+        if ($startDate) {
+            $purchase1Query->where('enduser_property.date_acquired', '<', $startDate);
         }
+        $purchase1 = $purchase1Query->selectRaw("
+            SUM(total_cost) as total_cost_sum,
+            SUM(qty) as qty_sum
+        ")->first();
 
-        foreach($purchase as $purchaseData1){
-            if (is_numeric(str_replace(',', '', $purchaseData1->qty))){
-                $countBforward1 += (float) str_replace(',', '', $purchaseData1->qty);
+        // PURCHASE 2
+        $purchase2Query = clone $baseQuery;
+        $purchase2Query->where(function ($query) use ($officeId, $allOffice, $cond) {
+            if ($officeId == 1) {
+                $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
+            } else {
+                $query->where('enduser_property.office_id', $cond, $allOffice);
             }
+        });
+        if ($endDate) {
+            $purchase2Query->where('enduser_property.date_acquired', '>', $endDate);
         }
+        $purchase2 = $purchase2Query->selectRaw("
+            SUM(total_cost) as total_cost_sum,
+            SUM(qty) as qty_sum
+        ")->first();
+
+        // Assign sums
+        $bforward  = $purchase1->total_cost_sum ?? 0;
+        $bforward1 = $purchase2->total_cost_sum ?? 0;
+        $countBforward  = $purchase1->qty_sum ?? 0;
+        $countBforward1 = $purchase2->qty_sum ?? 0;
 
         $data = [
             'purchase' => $purchase,
@@ -203,12 +182,21 @@ class ReportsController extends Controller
             'bforward' => $bforward, 
             'bforward1' => $bforward1, 
             'countBforward' => $countBforward,
+            'countBforward1' => $countBforward1,
             'serial' => $serial,
             'acquired' => $acquired,
         ];
- 
+
+        $page = ($repcat == 1)
+            ? 'reports.report_generated'
+            : (($repcat == 2)
+                ? 'reports.rpcsep_option_reportsGen'
+                : '');
+
         if($request->file_type == "PDF"){
-            $pdf = PDF::loadView('reports.report_generated', $data)->setPaper('Legal', 'landscape');
+            ini_set('memory_limit', '1024M'); // Increase to 1GB
+            set_time_limit(300);
+            $pdf = PDF::loadView($page, $data)->setPaper('Legal', 'landscape');
             return $pdf->stream();
         }else {
             $filePath = public_path('Forms/RPCPPE Reports.xlsx');
