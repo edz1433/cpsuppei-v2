@@ -87,7 +87,6 @@ class ReportsController extends Controller
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
             ->where('enduser_property.selected_account_id', $cond, $selectId)
-            ->where('enduser_property.item_cost', '>', 20000)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
                     $query->whereBetween('enduser_property.date_acquired', [$startDate, $endDate]);
@@ -113,9 +112,9 @@ class ReportsController extends Controller
 
         $purchase = $purchase->get();
         
-        dd($purchase->count());
+        // dd($purchase->count());
 
-        $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+          $purchase1 = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')

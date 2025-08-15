@@ -74,7 +74,7 @@
                             <option value="">-- Select Campus/Office --</option>
                             @foreach ($campoff as $office)
                                 <option value="{{ $office->id }}">
-                                    {{ $office->office_name }} - {{ $office->property_count }}
+                                    {{ $office->office_name }} - {{ number_format($office->property_count) }}
                                 </option>
                             @endforeach
                         </select>

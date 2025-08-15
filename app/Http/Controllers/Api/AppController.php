@@ -34,11 +34,52 @@ class AppController extends Controller
         return response()->json(['error' => 'Invalid credentials!'], 401);
     }
 
+    // public function scanQr(Request $request)
+    // {
+    //     $qr = $request->input('q');
+
+    //     $inventoryQuery = EnduserProperty::where('property_no_generated', $qr)
+    //         ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
+    //         ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
+    //         ->leftJoin('accountable as person_accountable', 'enduser_property.person_accnt', '=', 'person_accountable.id')
+    //         ->leftJoin('accountable as end_user', 'enduser_property.person_accnt1', '=', 'end_user.id')
+    //         ->select(
+    //             'enduser_property.id',
+    //             'enduser_property.office_id',
+    //             'enduser_property.property_no_generated as property_number',
+    //             'items.item_name as property_name',
+    //             'enduser_property.person_accnt as accountable_person_id',
+    //             'person_accountable.person_accnt as accountable_person_name',
+    //             'enduser_property.person_accnt1 as enduser_id',
+    //             'end_user.person_accnt as enduser_name',
+    //             'enduser_property.remarks as status'                
+    //         );
+
+    //     $count = $inventoryQuery->count();
+
+    //     if ($count == 1) {
+    //         $inventory = $inventoryQuery->first();
+    //         $accnt = Accountable::select('id', 'person_accnt')->get();
+
+    //         return response()->json([
+    //             'status' => 'match',
+    //             'data' => [
+    //                 'invmatch' => $inventory,
+    //                 'accnt' => $accnt,
+    //             ]
+    //         ]);
+    //     } elseif ($count > 1) {
+    //         return response()->json(['status' => 'multiple']);
+    //     } else {
+    //         return response()->json(['status' => 'not_found']);
+    //     }
+    // }
     public function scanQr(Request $request)
     {
-        $qr = $request->input('q');
+        $qr = trim((string) $request->input('q', ''));
 
-        $inventoryQuery = EnduserProperty::where('property_no_generated', $qr)
+        // One lightweight fetch: limit 2 to detect 0/1/many without pulling everything
+        $inventoryRows = EnduserProperty::where('property_no_generated', $qr)
             ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
             ->leftJoin('accountable as person_accountable', 'enduser_property.person_accnt', '=', 'person_accountable.id')
@@ -52,27 +93,31 @@ class AppController extends Controller
                 'person_accountable.person_accnt as accountable_person_name',
                 'enduser_property.person_accnt1 as enduser_id',
                 'end_user.person_accnt as enduser_name',
-                'enduser_property.remarks as status'                
-            );
+                'enduser_property.remarks as status'
+            )
+            ->limit(2)
+            ->get();
 
-        $count = $inventoryQuery->count();
+        $count = $inventoryRows->count();
 
-        if ($count == 1) {
-            $inventory = $inventoryQuery->first();
-            $accnt = Accountable::select('id', 'person_accnt')->get();
-
-            return response()->json([
-                'status' => 'match',
-                'data' => [
-                    'invmatch' => $inventory,
-                    'accnt' => $accnt,
-                ]
-            ]);
-        } elseif ($count > 1) {
-            return response()->json(['status' => 'multiple']);
-        } else {
+        if ($count === 0) {
             return response()->json(['status' => 'not_found']);
         }
+
+        if ($count > 1) {
+            return response()->json(['status' => 'multiple']);
+        }
+
+        // Exactly one match — now (and only now) fetch the accountable list
+        $accnt = Accountable::select('id', 'person_accnt')->get();
+
+        return response()->json([
+            'status' => 'match',
+            'data' => [
+                'invmatch' => $inventoryRows->first(),
+                'accnt'    => $accnt,
+            ],
+        ]);
     }
 
     public function checkInvstat(Request $request)

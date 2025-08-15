@@ -244,7 +244,10 @@ class PropertiesController extends Controller
             })
             // Join to get camp_id for the office associated with each enduser_property
             ->leftJoin('offices as eo', 'enduser_property.office_id', '=', 'eo.id')
+            ->join('items', 'items.id', '=', 'enduser_property.item_id')
             ->where('offices.office_code', '!=', '0000')
+            ->where('items.ct', 1)
+            ->where('enduser_property.deleted', 0)
             ->where('enduser_property.remarks', '!=', 'Unserviceable')
             ->groupBy('offices.id', 'offices.office_name')
             ->get();
@@ -258,7 +261,6 @@ class PropertiesController extends Controller
         $selectcampoff = Office::find($request->camp_id);
         return view('properties.sticker', compact('setting', 'campoff', 'selectcampoff'));
     }
-
 
     public function stickerReadJson($range, $campus)
     {
@@ -298,6 +300,8 @@ class PropertiesController extends Controller
                     $query->where('enduser_property.office_id', $campus);
                 })
                 ->where('enduser_property.remarks', '!=', 'Unserviceable')
+                ->where('items.ct', 1)
+                ->where('enduser_property.deleted', 0)
                 ->orderByRaw('CAST(enduser_property.item_cost AS DECIMAL(15,2)) ASC')
                 ->orderBy('properties.account_title_abbr', 'ASC')
                 ->orderBy('enduser_property.office_id')
