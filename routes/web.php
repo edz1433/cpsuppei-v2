@@ -100,9 +100,9 @@ use App\Http\Controllers\TechController;
         });
 
         Route::prefix('/office')->group(function () {
-            Route::get('/list', [OfficeController::class, 'officeRead'])->name('officeRead');
+            Route::get('/list/{code}', [OfficeController::class, 'officeRead'])->name('officeRead');
             Route::post('/list', [OfficeController::class, 'officeCreate'])->name('officeCreate');
-            Route::get('list/edit/{id}', [OfficeController::class, 'officeEdit'])->name('officeEdit');
+            Route::get('list/edit/{id}/{code}', [OfficeController::class, 'officeEdit'])->name('officeEdit');
             Route::post('list/update', [OfficeController::class, 'officeUpdate'])->name('officeUpdate');
             Route::get('list/delete/{id}', [OfficeController::class, 'officeDelete'])->name('officeDelete');
         });

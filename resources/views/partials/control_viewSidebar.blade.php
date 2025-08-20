@@ -1,18 +1,23 @@
 @php
     $curr_route = request()->route()->getName();
+    $param = request()->route()?->parameter('code'); // safe access to parameter
+
     $ppeActive = in_array($curr_route, ['ppeRead', 'ppeEdit']) ? 'active' : '';
     $lvActive = in_array($curr_route, ['lvRead', 'lvEdit']) ? 'active' : '';
     $hvActive = in_array($curr_route, ['hvRead', 'hvEdit']) ? 'active' : '';
     $intActive = in_array($curr_route, ['intRead', 'intEdit']) ? 'active' : '';
     $unitActive = in_array($curr_route, ['unitRead', 'unitEdit']) ? 'active' : '';
     $itemtActive = in_array($curr_route, ['itemRead', 'itemEdit']) ? 'active' : '';
-    $officeActive = in_array($curr_route, ['officeRead', 'officeEdit']) ? 'active' : '';
     $accountableActive = in_array($curr_route, ['accountableRead', 'accountableEdit']) ? 'active' : '';
+
+    $officeCampusActive   = (in_array($curr_route, ['officeRead', 'officeEdit']) && $param == 1) ? 'active' : '';
+    $officeLocationActive = (in_array($curr_route, ['officeRead', 'officeEdit']) && $param == 2) ? 'active' : '';
 @endphp
+
 
 <ul class="nav nav-pills nav-sidebar nav-compact flex-column">
     <li class="nav-item mb-1 {{ $ppeActive  || $lvActive || $hvActive || $intActive ? 'menu-open' : '' }}">
-        <a href="#" data-toggle="collapse" aria-expanded="false" class="nav-link2 {{ ($ppeActive || $lvActive || $hvActive) ? 'active' : '' }}" style="color: #000;" onclick="toggleSubmenu(this)">
+        <a href="#" data-toggle="collapse" aria-expanded="false" class="nav-link2 {{ ($ppeActive || $lvActive || $hvActive || $intActive) ? 'active' : '' }}" style="color: #000;" onclick="toggleSubmenu(this)">
             Property Type <i class="fas fa-angle-down right float-right"></i> 
         </a>
         <ul class="nav nav-treeview">
@@ -55,8 +60,14 @@
     </li>
     
     <li class="nav-item mb-1">
-        <a href="{{ route('officeRead') }}" class="nav-link2 {{ $officeActive }}" style="color: #000;">
+        <a href="{{ route('officeRead', 1) }}" class="nav-link2 {{ $officeCampusActive }}" style="color: #000;">
             Campus & Offices
+        </a>
+    </li>
+
+    <li class="nav-item mb-1">
+        <a href="{{ route('officeRead', 2) }}" class="nav-link2 {{ $officeLocationActive }}" style="color: #000;">
+            Location
         </a>
     </li>
 
@@ -66,4 +77,3 @@
         </a>
     </li>
 </ul>
-

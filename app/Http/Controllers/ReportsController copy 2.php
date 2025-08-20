@@ -1336,26 +1336,27 @@ class ReportsController extends Controller
             "options" => $options,
         ]);
     }
-    
+
     public function allgenOption(Request $request) {
-        $id = $request->id;
+        $val = $request->val;
         $type = $request->type;
         $properties_id = $request->properties_id;
+
         $startDate = $request->start_date_acquired;
         $endDate = $request->end_date_acquired;
 
-        if ($properties_id == 'ics') {
-            $propertiesid = [1, 2];
-        } elseif ($properties_id == 'par') {
-            $propertiesid = [3];
-        } else {
-            $propertiesid = [1, 2, 3];
-        }
+        // Determine properties IDs based on input
+        $propertiesid = match ($properties_id) {
+            'ics' => [1, 2],
+            'par' => [3],
+            default => [1, 2, 3],
+        };
 
         $categoriesId = $request->category;
         $propId = $request->accnt_title;
         $selaccnt = $request->selected_account_id;
 
+        // Set conditions and values for filtering
         $condcategories = ($categoriesId == 'All') ? '!=' : '=';
         $categoriesId = ($categoriesId == 'All') ? '0' : $categoriesId;
 
@@ -1366,94 +1367,47 @@ class ReportsController extends Controller
         $selaccnt = ($selaccnt == 'All') ? '0' : $selaccnt;
 
         if ($type == 'campus') {
-            $office = Office::find($id);
-            
-            $endusers = "<option value=''>None</option>";
-
-            if ($office->camp_id == '') { 
-               $userAccountable = Accountable::where('off_id', $id)
-                    ->select('person_accnt', 'id')
-                    ->get();
-
-                $options = "<option value=''>Select Accountable</option>";
-            
-                foreach ($userAccountable as $accnt) {
-                    $roleLabel = '';
-                    if ($accnt->accnt_role == 1) {
-                        $roleLabel = ' - HEAD';
-                    }
-
-                    $options .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
-                }
-            }else{
-                $userAccountable = Accountable::where('off_id', $id)
-                    ->where('accnt_role', 2)
-                    ->select('person_accnt', 'id')
-                    ->get();
-
-                $options = "<option value=''>Select Accountable</option>";
-            
-                foreach ($userAccountable as $accnt) {
-                    $roleLabel = ' - CUSTODIAN';
-
-                    $options .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
-                }
-
-                $endUsersAccountable = Accountable::where('off_id', $id)
-                    ->where('accnt_role', '!=', 2)
-                    ->select('person_accnt', 'id')
-                    ->get();
-
-                $endusers = "<option value='All'>All</option>";
-
-                foreach ($endUsersAccountable as $accnt) {
-                    $roleLabel = '';
-                    if ($accnt->accnt_role == 1) {
-                        $roleLabel = ' - HEAD';
-                    }
-
-                    $endusers .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
-                }
-
-            }
-
-            // Get the campus location options
-            $officeloc = Office::find($id);
-            $locations = Office::where('office_code', '0000')
-                ->when($officeloc->camp_id, function($query) use ($officeloc) {
-                    return $query->where('loc_camp', $officeloc->camp_id);
-                }, function($query) {
-                    return $query->where('loc_camp', 1)
-                        ->where(function($q) {
-                            $q->whereNull('camp_id')
-                            ->orWhere('camp_id', '');
-                        });
-                })
+            $userAccountable = Accountable::where('off_id', $val)
+                ->select('person_accnt', 'id')
                 ->get();
 
-            $locoptions = "<option value='All' selected>All Locations</option>";
+            $options = "<option>All</option>";
+            foreach ($userAccountable as $accnt) {
+                $options .= "<option value='" . $accnt->id . "' data-account-id='" . $accnt->id . "'>" 
+                        . htmlspecialchars($accnt->person_accnt) 
+                        . "</option>";
+            }
+
+            $officeloc = Office::find($val);
+
+            $locations = ($officeloc->camp_id != null && $officeloc->camp_id !== '')
+                ? Office::where('loc_camp', $officeloc->camp_id)->get()
+                : Office::where('loc_camp', 1)
+                        ->where('office_code', '0000')
+                        ->where(function ($q) {
+                            $q->whereNull('camp_id')
+                            ->orWhere('camp_id', '');
+                        })
+                        ->get();
+
+            $locoptions = "<option selected>All</option>";
             foreach ($locations as $location) {
                 $locoptions .= "<option value='" . $location->id . "'>" . htmlspecialchars($location->office_name) . "</option>";
             }
+            
         } else {
-            $itempar = EnduserProperty::orwhere('person_accnt', $id)
-                ->orwhere('person_accnt1', $id)
+            $itempar = EnduserProperty::where('person_accnt', $val)
                 ->join('items', 'items.id', '=', 'enduser_property.item_id')
                 ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
-                ->when($properties_id == 'ics', function ($query) {
-                    return $query->whereIn('enduser_property.properties_id', [1, 2]);
-                })
-                ->when($properties_id == 'par', function ($query) {
-                    return $query->whereIn('enduser_property.properties_id', [3]);
-                })
+                ->whereIn('enduser_property.properties_id', $propertiesid)
                 ->where('enduser_property.categories_id', $condcategories, $categoriesId)
                 ->where('enduser_property.property_id', $condpropid, $propId)
                 ->when($startDate || $endDate, function ($query) use ($startDate, $endDate) {
                     if ($startDate && $endDate) {
-                        $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                        $query->whereBetween('enduser_property.date_acquired', [
+                            $startDate . ' 00:00:00', 
+                            $endDate . ' 23:59:59'
+                        ]);
                     } elseif ($startDate) {
                         $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                     } elseif ($endDate) {
@@ -1462,23 +1416,20 @@ class ReportsController extends Controller
                 })
                 ->get();
 
-            $options = "<option value=''>Select Items</option>";
-            foreach ($itempar as $icsItem) {
-                $options .= "<option value='" . $icsItem->pid . "'>"
-                    . $icsItem->item_name . ' ' 
-                    . $icsItem->item_descrip 
-                    . ' (Acquired: ' . date('Y-m-d', strtotime($icsItem->date_acquired)) . ")"
-                    . "</option>";
+
+            
+            foreach ($itempar as $item) {
+                $optionText = htmlspecialchars($item->item_name . ' ' . $item->item_descrip)
+                            . ' (Acquired: ' . date('Y-m-d', strtotime($item->date_acquired)) . ')';
+                
+                $options .= "<option value='" . $item->pid . "'>" . $optionText . "</option>";
             }
 
-            // For non-campus type, return empty location options
-            $locoptions = "<option value='All' selected>All Locations</option>";
-            $endusers = "<option value=''>None</option>";
+            $locoptions = "<option>All</option>";
         }
 
         return response()->json([
             "options" => $options,
-            "endusers" => $endusers,
             "location" => $locoptions,
         ]);
     }

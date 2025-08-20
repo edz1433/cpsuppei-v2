@@ -32,14 +32,15 @@ class PropertiesController extends Controller
         $ucampid = auth()->user()->campus_id;
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
+            ->where('office_code', '!=', '0000')
             ->exists();
 
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
-        
+        $office = Office::where('office_code', '!=', '0000')->get();
+
         $role = auth()->user()->role;
         if ($role == "Campus Admin") {
-            $officeId = Office::where('camp_id', auth()->user()->campus_id)->first()->id;
+            $officeId = Office::where('camp_id', auth()->user()->campus_id)->where('office_code', '!=', '0000')->first()->id;
             $accnt = Accountable::where('off_id', $officeId)->get();
         }else{
             $accnt = Accountable::all();

@@ -107,7 +107,7 @@
 					<th>Serial No.: <span class="dataText">{{ trim($serial) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Cost: <span class="dataText">{{ $inventory->item_cost  }}</span></th>
+					<th>Acquisition Cost: <span class="dataText">{{ number_format($inventory->item_cost, 2) }}</span></th>
 				</tr>
 				<tr>
 					<th>Acquisition Date: <span class="dataText">{{ $inventory->date_acquired  }}</span></th>

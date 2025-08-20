@@ -167,6 +167,10 @@
                                 font-size: 8.35pt;
                             }
 
+                            .text-light-mod{
+                                color: #FFFF !important;
+                            }
+
                             .layout {
                                 width: 100%;
                                 border-collapse: collapse;
@@ -270,7 +274,7 @@
                             row.forEach(inventory => {
                                 const serial = (inventory.serial_number || 'N/A').split(';')[0].trim();
                                 const cost = parseFloat(inventory.item_cost || 0);
-                                const bgClass = cost < 5000 ? 'bg-lightgreen' : (cost < 50000 ? 'bg-green' : 'bg-yellow');
+                                const bgClass = cost <= 5000 ? 'bg-lightgreen' : (cost < 50000 ? 'bg-green text-light-mod' : 'bg-yellow');
 
                                 html += `
                                 <td class="sticker-cell">
@@ -281,24 +285,24 @@
                                                     <th class="sticker-text-label" style="width: 55px; text-align: center;">
                                                         <img src="${logoPath}" class="logo-sticker">
                                                     </th>
-                                                    <th colspan="4" class="sticker-text-label" style="font-size: 12px; text-align: center; vertical-align: middle;">Central Philippines State University</th>
+                                                    <th colspan="4" class="sticker-text-label ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}" style="font-size: 12px; text-align: center; vertical-align: middle;">Central Philippines State University</th>
                                                 </tr>
                                                 <tr>
                                                     <th rowspan="10" class="sticker-text-label" style="text-align: center; vertical-align: middle;"><img src="data:image/png;base64,${inventory.qr_base64}" width="55"></th>
-                                                    <th colspan="4"><div class="label-inline"><span class="dataText-inline">Property No.: <i>${inventory.property_no_generated}</i></span></div></th>
+                                                    <th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Property No.: <i>${inventory.property_no_generated}</i></span></div></th>
                                                 </tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Item: <i>${titleCase(inventory.item_name)}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Classification: <i>${titleCase(inventory.account_title_abbr)}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Model/Brand: <i>${inventory.item_model || ''}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Serial No.: <i>${serial}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Acquisition Cost: <i>${cost.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Acquisition Date: <i>${inventory.date_acquired}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Person Accountable: <i>${titleCase(inventory.person_accnt_fname2 || inventory.person_accnt_fname1 || '')}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Assignment: <i>${titleCase(inventory.office_name)}</i></span></div></th></tr>
-                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline">Validation Sign:</span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Item: <i>${titleCase(inventory.item_name)}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Classification: <i>${titleCase(inventory.account_title_abbr)}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Model/Brand: <i>${inventory.item_model || ''}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Serial No.: <i>${serial}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Acquisition Cost: <i>${cost.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Acquisition Date: <i>${inventory.date_acquired}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Person Accountable: <i>${titleCase(inventory.person_accnt_fname2 || inventory.person_accnt_fname1 || '')}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Assignment: <i>${titleCase(inventory.office_name)}</i></span></div></th></tr>
+                                                <tr><th colspan="4"><div class="label-inline"><span class="dataText-inline ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">Validation Sign:</span></div></th></tr>
                                             </thead>
                                             <tfoot>
-                                                <tr><td colspan="5" class="sticker-text-label">*Removing or tampering of this sticker is punishable by Law*</td></tr>
+                                                <tr><td colspan="5" class="sticker-text-label text-center ${(cost > 5000 && cost < 50000) ? 'text-light-mod' : ''}">*Removing or tampering of this sticker is punishable by Law*</td></tr>
                                             </tfoot>
                                         </table>
                                     </div>

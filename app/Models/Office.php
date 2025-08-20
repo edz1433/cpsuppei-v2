@@ -11,10 +11,12 @@ class Office extends Model
     protected $table = 'offices';
 
     protected $fillable = [
-        'office_code', 'office_code',
-        'office_code', 'office_name',
-        'office_abbr', 'office_abbr',
-        'office_officer', 'office_officer',
+        'office_code',
+        'office_name',
+        'office_abbr',
+        'office_officer',
+        'camp_id',
+        'loc_camp'
     ];
 
 }

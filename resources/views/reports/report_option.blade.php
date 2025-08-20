@@ -42,9 +42,10 @@
                                     <select class="form-control select2bs4" id="location" name="location" style="width: 100%;">
                                         <option disabled selected value=""> --- Select Location --- </option>
                                         <option value="All" selected>All</option>
-                                        <option value="null">Office/Campus</option>
                                         @foreach ($office as $data)
-                                            <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @if ($data->office_code == '0000')
+                                                <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
@@ -98,10 +99,10 @@
                                     <label>Date Range:</label>
                                     <div class="input-group">
                                         <div class="sdate col-md-6">
-                                            <input type="date" name="start_date_acquired" class="form-control" placeholder="Start Date">
+                                            <input type="date" id="date1" name="start_date_acquired" class="form-control" placeholder="Start Date">
                                         </div>
                                         <div class="edate col-md-6">
-                                            <input type="date" name="end_date_acquired" class="form-control" placeholder="End Date">
+                                            <input type="date" id="date2" name="end_date_acquired" class="form-control" placeholder="End Date">
                                         </div>
                                     </div>
                                 </div>
@@ -110,22 +111,20 @@
                         
                         <div class="form-group">
                             <div class="form-row">
-                                 @if(auth()->user()->role == 'Campus Admin')
-                                    <div class="col-md-6">
-                                        <label>Location:</label>
-                                        <select class="form-control select2bs4" id="location" name="location" style="width: 100%;">
-                                            <option disabled selected value=""> ---Select Campus or Office Type--- </option>
-                                            <option value="" selected>N/A</option>
-                                            <option value="All">All</option>
-                                            @foreach ($office as $data)
-                                                @if ($data->office_code == '0000')
-                                                    <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
-                                                @endif
-                                            @endforeach
-                                        </select>
-                                        <input type="hidden" name="file_type" value="PDF">
-                                    </div>
-                                @endif  
+                                <div class="col-md-6">
+                                    <label>Location:</label>
+                                    <select class="form-control select2bs4" id="location" name="location" style="width: 100%;">
+                                        <option disabled selected value=""> ---Select Campus or Office Type--- </option>
+                                        <option value="" selected>N/A</option>
+                                        <option value="All">All</option>
+                                        @foreach ($office as $data)
+                                            @if ($data->office_code == '0000')
+                                                <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                    <input type="hidden" name="file_type" value="PDF">
+                                </div>
                                 
                                 @if(auth()->user()->role !== 'Campus Admin')
                                     <div class="col-md-6">
