@@ -20,11 +20,12 @@
                             var oldPropertyCode = row.property_no_generated_old ? '<br><b>OLD PROPERTY CODE:</b> ' + row.property_no_generated_old : '';
                             var itemmodel = row.item_model ? '<br><b>MODEL:</b> ' + row.item_model : '';
                             var serialNumber = row.serial_number ? '<br><b>SERIAL NUMBER:</b> ' + row.serial_number : '';
+                            var location = row.location_name ? '<br><b>LOCATION:</b> ' + row.location_name : '';
                             var description = row.item_descrip ? '<br><br><b>DESCRIPTION:</b><br> ' + row.item_descrip : '';
                             var accountname = row.accountableName ? '<br><br><b>PERSON ACCOUNTABLE:</b><br> ' + row.accountableName : '';
                             var accountname1 = row.accountableNames ? '<br><br><b>END USER:</b><br> ' + row.accountableNames : '';
 
-                            return campus + type + poNumber + propertyCode + oldPropertyCode + itemmodel + serialNumber + description + accountname + accountname1;
+                            return campus + type + poNumber + propertyCode + oldPropertyCode + itemmodel + serialNumber + location + description + accountname + accountname1;
                         },
                         className: 'align-middle'
                     },
@@ -74,8 +75,11 @@
                                 }else{
                                     return `
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown"></button> 
-                                        </div>`;
+                                            <button class="btn btn-info end-user" onclick="endUser('${row.id}')" data-toggle="modal" data-target="#endUserModal">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                            </button>
+                                        </div>
+                                    `;  
                                 }
                             } else {
                                 return data;
@@ -99,6 +103,11 @@
             });
         });
     </script>
+    <script>
+        function endUser(id){
+            document.getElementById('prop-id').value=id;
+        }
+    </script>
 @endif
 <script>
     var urole = "{{ auth()->user()->role }}";
@@ -112,12 +121,17 @@
             {
                 data: null,
                 render: function(data, type, row) {
-                    return '<b>CAMPUS:</b> ' + row.office_name +
-                        ' <br> <b>PROPERTY CODE</b>: ' + row.property_no_generated +
-                        ' <br> <b>OLD PROPERTY CODE</b>: ' + row.property_no_generated_old +
-                        ' <br><br> <b>DESCRIPTION</b><br>' + row.item_descrip +
-                        ' <br><br> <b>PERSON ACCOUNTABLE:</b> ' + (row.person_accnt_name ?? '') +
-                        ' <br> <b>END USER:</b> ' + (row.person_accnt_name1 ?? '');
+                    return '<b>CAMPUS:</b> ' + (row.office_name ?? '') +
+                        ' <br><b>TYPE:</b> ' + (row.abbreviation ?? '') +
+                        ' <br><b>PO NUMBER:</b> ' + (row.po_number ?? '') +
+                        ' <br><b>PROPERTY CODE:</b> ' + (row.property_no_generated ?? '') +
+                        ' <br><b>OLD PROPERTY CODE:</b> ' + (row.property_no_generated_old ?? '') +
+                        ' <br><b>MODEL:</b> ' + (row.item_model ?? '') +
+                        ' <br><b>SERIAL NUMBER:</b> ' + (row.serial_number ?? '') +
+                        ' <br><b>LOCATION:</b> ' + (row.location_name ?? '') +
+                        ' <br><br><b>DESCRIPTION</b><br>' + (row.item_descrip ?? '') +
+                        ' <br><br><b>PERSON ACCOUNTABLE:</b> ' + (row.accountableName ?? '') +
+                        ' <br><b>END USER:</b> ' + (row.accountableNames ?? '');
                 },
                 className: 'align-middle'
             },

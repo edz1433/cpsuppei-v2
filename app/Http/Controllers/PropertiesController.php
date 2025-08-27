@@ -39,9 +39,11 @@ class PropertiesController extends Controller
         $office = Office::where('office_code', '!=', '0000')->get();
 
         $role = auth()->user()->role;
+        $locations = [];
         if ($role == "Campus Admin") {
             $officeId = Office::where('camp_id', auth()->user()->campus_id)->where('office_code', '!=', '0000')->first()->id;
-            $accnt = Accountable::where('off_id', $officeId)->get();
+            $accnt = Accountable::where('off_id', $officeId)->where('accnt_role', '!=', 2)->get();
+            $locations = Office::where('loc_camp', auth()->user()->campus_id)->where('office_code', '0000')->get();
         }else{
             $accnt = Accountable::all();
         }
@@ -62,8 +64,9 @@ class PropertiesController extends Controller
         }
         
         $properties = $properties->get();
-        $page = (auth()->user()->role == "Campus Admin") ? 'list' : 'listajax';
-        return view('properties.'.$page, compact('setting', 'office', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'cat', 'properties'));
+        // $page = (auth()->user()->role == "Campus Admin") ? 'list' : 'listajax';
+        $page = 'listajax';
+        return view('properties.'.$page, compact('setting', 'office', 'locations', 'accnt', 'item', 'unit', 'property', 'currentPrice','category', 'cat', 'properties'));
     }
 
     public function returnSlip($id){
@@ -136,14 +139,15 @@ class PropertiesController extends Controller
 
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
-            ->exists();
-
+            ->first();
+           
         $data = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('property', 'enduser_property.properties_id', '=', 'property.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->leftJoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
             ->leftJoin('accountable as acc1', 'enduser_property.person_accnt', '=', 'acc1.id')
             ->leftJoin('accountable as acc2', 'enduser_property.person_accnt1', '=', 'acc2.id')
+            ->leftJoin('offices as location', 'enduser_property.location', '=', 'location.id') // ✅ join offices as location
             ->select(
                 'enduser_property.*',
                 'offices.office_name',
@@ -151,11 +155,13 @@ class PropertiesController extends Controller
                 'items.item_name',
                 'purchases.po_number',
                 'acc1.person_accnt as accountableName',
-                'acc2.person_accnt as accountableNames'
+                'acc2.person_accnt as accountableNames',
+                'location.office_name as location_name'
             );
 
-        if ($exists) {
-            $data->where('enduser_property.office_id', $ucampid);
+
+        if ($exists){
+            $data->where('offices.camp_id', $ucampid);
         }
 
         if($cat != 4){
@@ -626,27 +632,38 @@ class PropertiesController extends Controller
         return redirect()->route('propertiesEdit', ['id' => $inventory->id])->with('success', 'Updated Successfully');
     }
 
-    public function enduserUpdate(Request $request){
+    public function enduserUpdate(Request $request)
+    {
         $request->validate([
             'prop_id' => 'required',
             'person_accnt1' => 'nullable',
+            'location' => 'nullable',
         ]);
 
-        $properties = EnduserProperty::findOrFail($request->input('prop_id'));
+        $properties = EnduserProperty::find($request->input('prop_id'));
 
-        $properties->update([
-            'person_accnt1' => implode(';', $request->input('person_accnt1', [])),
+        if (!$properties) {
+            return redirect()->back()->with('error', 'Property not found.');
+        }
+// dd($request->input('person_accnt1'));
+        $updated = $properties->update([
+            'person_accnt1' => $request->input('person_accnt1'),
+            'location' => $request->input('location'),
         ]);
 
-        Log::create([
-            'camp_id' => auth()->user()->campus_id,
-            'user_id' => auth()->user()->id,
-            'module_id' => $request->input('prop_id'),
-            'module' => 'enduser_property',
-            'action' => 'update',
-        ]);
+        if ($updated) {
+            Log::create([
+                'camp_id'   => auth()->user()->campus_id,
+                'user_id'   => auth()->user()->id,
+                'module_id' => $request->input('prop_id'),
+                'module'    => 'enduser_property',
+                'action'    => 'update',
+            ]);
 
-        return redirect()->back()->with('success', 'Updated Successfully');
+            return redirect()->back()->with('success', 'Updated successfully!');
+        } else {
+            return redirect()->back()->with('error', 'Update failed, please try again.');
+        }
     }
 
     public function propertiesCat($id, $mode) {

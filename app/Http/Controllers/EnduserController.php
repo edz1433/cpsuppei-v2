@@ -22,9 +22,9 @@ class EnduserController extends Controller
             ->select('accountable.*', 'offices.office_name', 'accountable.id as aid');
 
         if (auth()->user()->role == "Campus Admin") {
-            $accnt->where('camp_id', auth()->user()->campus_id);
+            $accnt->where('camp_id', auth()->user()->campus_id)->where('accountable.accnt_role', '!=', 2);
         }
-
+        
         $accnt = $accnt->get();
                 
         return view('manage.enduser.accntlist', compact('setting', 'accnt', 'office'));
@@ -39,7 +39,7 @@ class EnduserController extends Controller
             'person_accnt' => 'required|string|max:255',
             'desig_offid' => 'nullable',
             'off_id' => 'required',
-            'accnt_role' => 'required',
+            'accnt_role' => 'nullable',
         ]);
 
         $accntName = $request->input('person_accnt');

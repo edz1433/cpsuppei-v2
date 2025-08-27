@@ -121,7 +121,9 @@
                         alt="User profile picture">
                     </div>
                     <h3 class="profile-username text-center">{{auth()->user()->fname}}</h3>
-                    <a href="#" class="btn btn-default btn-block btn-muted" ><b>{{auth()->user()->role}}</b></a>
+                    <a href="#" class="btn btn-default btn-block btn-muted" >
+                        <b>{{ (auth()->user()->role != 'Campus Admin') ? auth()->user()->role : 'Campus Custodian' }}</b>
+                    </a>
                 </div>
             </div>
         </div>

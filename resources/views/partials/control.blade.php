@@ -13,8 +13,8 @@
                 <i class="fas fa-list"></i> View
             </a>
             @else 
-                <a href="{{ route('accountableRead') }}" class="btn btn-app {{ request()->is('view/accntperson*') ? 'active' : '' }}">
-                    <i class="fas fa-user-check"></i> Accountable
+                <a href="{{ route('accountableRead') }}" class="btn btn-app {{ request()->is('view*') ? 'active' : '' }}">
+                    <i class="fas fa-list"></i> View
                 </a>
             @endif
             <a href="@if(auth()->user()->role !== 'Technician'){{ route('purchaseREAD') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('purchases*') ? 'active' : '' }}">
@@ -29,7 +29,7 @@
                 <i class="fas fa-server"></i> Inventory
             </a>
 
-            <a href="{{ route('reportOption', 1) }}" class="btn btn-app {{ request()->is('reports*') ? 'active' : '' }}">
+            <a href="@if(auth()->user()->role !== 'Technician'){{ route('reportOption', 1) }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('purchases*') ? 'active' : '' }}" class="btn btn-app {{ request()->is('reports*') ? 'active' : '' }}">
                 <i class="fas fa-file-pdf"></i> Reports
             </a>
 

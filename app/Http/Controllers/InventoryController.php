@@ -71,9 +71,10 @@ class InventoryController extends Controller
     public function getInventory()
     {
         $ucampid = auth()->user()->campus_id;
+
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
-            ->exists();
+            ->first();
 
         $inventory = InventoryHistory::join('enduser_property', 'inventory_histories.prop_id', '=', 'enduser_property.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
@@ -82,6 +83,7 @@ class InventoryController extends Controller
             ->leftJoin('purchases', 'enduser_property.purch_id', '=', 'purchases.id')
             ->leftJoin('accountable as acc1', 'enduser_property.person_accnt', '=', 'acc1.id')      // join for person_accnt
             ->leftJoin('accountable as acc2', 'enduser_property.person_accnt1', '=', 'acc2.id')     // join for person_accnt1
+            ->leftJoin('offices as location', 'enduser_property.location', '=', 'location.id')
             ->select(
                 'inventory_histories.*',
                 'inventory_histories.remarks as his_remarks',
@@ -91,14 +93,15 @@ class InventoryController extends Controller
                 'items.item_name',
                 'purchases.po_number',
                 'acc1.person_accnt as person_accnt_name',
-                'acc2.person_accnt as person_accnt_name1'
+                'acc2.person_accnt as person_accnt_name1',
+                'location.office_name as location_name'
             );
             
         if ($exists){
             $inventory->where('offices.camp_id', $ucampid);
         }
-        
-        $data = $inventory->get();
+         
+        $data = $inventory->where('deleted', 0)->get();
 
         return response()->json(['data' => $data]);
     }

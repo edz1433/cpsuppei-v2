@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-
 use App\Models\User;
 use App\Models\Campus;
 use App\Models\Setting;
+
+use Exception;
 
 class SettingsController extends Controller
 {
@@ -32,18 +34,28 @@ class SettingsController extends Controller
                 'lname' => 'required|string|max:255',
                 'fname' => 'required|string|max:255',
                 'mname' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:users,username,' . Auth::id(),
+                'username' => 'required|string|max:255',
                 'role' => 'required',
                 'gender' => 'required',
             ]);
 
-            Auth::guard('web')->user()->update([
-                'lname' => $request->input('lname'),
-                'fname' => $request->input('fname'),
-                'mname' => $request->input('mname'),
-                'username' => $request->input('username'),
+            $user = Auth::user();
+            $exist = User::where('username', $request->input('username'))
+                        ->where('id', '!=', $user->id)
+                        ->first();
+
+            $updateData = [
+                'lname'  => $request->input('lname'),
+                'fname'  => $request->input('fname'),
+                'mname'  => $request->input('mname'),
                 'gender' => $request->input('gender'),
-            ]);
+            ];
+
+            if (!$exist) {
+                $updateData['username'] = $request->input('username');
+            }
+
+            $user->update($updateData);
 
             return redirect()->route('user_settings')->with('success', 'Profile updated successfully');
         } catch (Exception $e) {

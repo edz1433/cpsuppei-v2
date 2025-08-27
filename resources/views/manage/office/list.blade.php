@@ -125,22 +125,26 @@
                         @endif
 
                         @if($code == 2)
-                        <div class="form-group">
-                            <div class="form-row">
-                                <div class="col-md-12">
-                                    <label>Campus:</label>
-                                    <select name="loc_camp" class="form-control select2bs4" required>
-                                        <option value="">Select Campus</option>
-                                        <option value="1" {{ $cr === 'officeEdit' && $selectedOffice->loc_camp == 1 ? 'selected' : '' }}>MAIN CAMPUS</option>
-                                        @foreach($campus as $camp)
-                                            <option value="{{ $camp->camp_id }}" {{ $cr === 'officeEdit' && $selectedOffice->loc_camp == $camp->camp_id ? 'selected' : '' }}>
-                                                {{ $camp->office_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                            @if(auth()->user()->role == "Administrator" || auth()->user()->role == "Supply Officer")
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col-md-12">
+                                        <label>Campus:</label>
+                                        <select name="loc_camp" class="form-control select2bs4" required>
+                                            <option value="">Select Campus</option>
+                                            <option value="1" {{ $cr === 'officeEdit' && $selectedOffice->loc_camp == 1 ? 'selected' : '' }}>MAIN CAMPUS</option>
+                                            @foreach($campus as $camp)
+                                                <option value="{{ $camp->camp_id }}" {{ $cr === 'officeEdit' && $selectedOffice->loc_camp == $camp->camp_id ? 'selected' : '' }}>
+                                                    {{ $camp->office_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            @else
+                                <input type="hidden" name="loc_camp" value="{{ auth()->user()->campus_id }}">
+                            @endif
                         @endif
                         
                         <div class="form-group">
@@ -148,9 +152,6 @@
                                 <div class="col-md-12">
                                     <button type="submit" class="btn btn-success">
                                         <i class="fas fa-save"></i> Save
-                                    </button>
-                                    <button type="reset" class="btn btn-danger">
-                                        <i class="fas fa-rotate-right"></i> Clear
                                     </button>
                                 </div>
                             </div>

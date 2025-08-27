@@ -24,8 +24,10 @@ class LoginAuth
             }
             if(auth()->user()->hasRole('Campus Admin')){
                 if ($request->is('users*', 'view*', 'technician*', 'properties/list/edit*', 'purchases*', 'settings/system-name')) {
-                    // But allow access only if the route is exactly 'view/accntperson' or starts with it
-                    if (! $request->is('view/accntperson*')) {
+                    if($request->is('view/office/list/1*')){
+                        
+                    }
+                    elseif (! $request->is('view/accntperson*', 'view/office/list*')) {
                         return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page');
                     }
                 }

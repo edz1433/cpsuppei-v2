@@ -76,7 +76,9 @@
                                     <th>STATUS</th>
                                     <th>REMARKS</th>
                                     <th></th>
-                                    <th>ACTION</th>
+                                    @if(auth()->user()->role !== 'Campus Admin')
+                                        <th>ACTION</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>

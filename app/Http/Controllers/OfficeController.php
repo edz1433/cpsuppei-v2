@@ -16,13 +16,18 @@ class OfficeController extends Controller
     public function officeRead($code){
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = ($code == 1)
-            ? Office::where('office_code', '!=', '0000')->get()
-            : Office::where('office_code', '0000')->get();
+            ? Office::where('office_code', '!=', '0000')
+            : Office::where('office_code', '0000');
+
+        if (auth()->user()->role == "Campus Admin" && $code == 2) {
+            $office->where('loc_camp', auth()->user()->campus_id);
+        }
+
+        $office = $office->get();
 
         $campus = Office::whereNotNull('camp_id')
         ->where('camp_id', '!=', '')
         ->get();
-
 
         return view('manage.office.list', compact('setting', 'office', 'code', 'campus'));
     }

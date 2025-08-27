@@ -17,6 +17,7 @@
 
 <ul class="nav nav-pills nav-sidebar nav-compact flex-column">
     <li class="nav-item mb-1 {{ $ppeActive  || $lvActive || $hvActive || $intActive ? 'menu-open' : '' }}">
+        @if(auth()->user()->role !== 'Campus Admin')
         <a href="#" data-toggle="collapse" aria-expanded="false" class="nav-link2 {{ ($ppeActive || $lvActive || $hvActive || $intActive) ? 'active' : '' }}" style="color: #000;" onclick="toggleSubmenu(this)">
             Property Type <i class="fas fa-angle-down right float-right"></i> 
         </a>
@@ -64,7 +65,7 @@
             Campus & Offices
         </a>
     </li>
-
+    @endif
     <li class="nav-item mb-1">
         <a href="{{ route('officeRead', 2) }}" class="nav-link2 {{ $officeLocationActive }}" style="color: #000;">
             Location
@@ -73,7 +74,7 @@
 
     <li class="nav-item mb-1">
         <a href="{{ route('accountableRead') }}" class="nav-link2 {{ $accountableActive }}" style="color: #000;">
-            Accountable Person
+            {{ auth()->user()->role != "Campus Admin" ? "Accountable Person" : "End User" }}
         </a>
     </li>
 </ul>
