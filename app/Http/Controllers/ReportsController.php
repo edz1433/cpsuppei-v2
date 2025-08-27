@@ -52,6 +52,8 @@ class ReportsController extends Controller
         $serial = $request->serial;
         $acquired = $request->acquired;
 
+        // dd($serial);
+
         $officeId = $request->office_id;
         $officeId1 = $request->office_id;
         $propertiesId = $request->properties_id;
@@ -243,7 +245,9 @@ class ReportsController extends Controller
                 $sheet->setCellValue('J' . $row, '');
                 $sheet->setCellValue('K' . $row, $pur->remarks);
                 $sheet->setCellValue('L' . $row, $pur->office_name);
-            
+                if ($serial == 1) {
+                    $sheet->setCellValue('M' . $row, $pur->serial_number ?? 'N/A');
+                }
                 $style = $sheet->getStyle('A' . $row . ':L' . $row);
                 $style->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                 $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
