@@ -35,10 +35,16 @@ class EnduserController extends Controller
         $setting = Setting::firstOrNew(['id' => 1]);
         $accnt = Accountable::all();
 
+        $ucampid = auth()->user()->campus_id;
+
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->first();
+
         $request->validate([
             'person_accnt' => 'required|string|max:255',
             'desig_offid' => 'nullable',
-            'off_id' => 'required',
+            'off_id' => 'nullable',
             'accnt_role' => 'nullable',
         ]);
 
@@ -62,8 +68,8 @@ class EnduserController extends Controller
         Accountable::create([
             'person_accnt' => $accntName,
             'desig_offid' => json_encode($desigOffices),
-            'off_id' => $request->input('off_id'),
-            'accnt_role' => $accnt_role,
+            'off_id' => ($exists) ? $exists->id : $request->input('off_id'),
+            'accnt_role' => $accnt_role ?? 0,
         ]);
 
         return redirect()->route('accountableRead')->with('success', 'Item stored successfully!');
@@ -97,13 +103,19 @@ class EnduserController extends Controller
             'id' => 'required|integer|exists:accountable,id',
             'person_accnt' => 'required|string|max:255',
             'desig_offid' => 'nullable',
-            'off_id' => 'required',
-            'accnt_role' => 'required|in:0,1,2',
+            'off_id' => 'nullable',
+            'accnt_role' => 'nullable|in:0,1,2',
         ]);
 
         $accountId = $request->input('id');
         $accntName = $request->input('person_accnt');
         $accnt_role = $request->input('accnt_role');
+
+        $ucampid = auth()->user()->campus_id;
+
+        $exists = Office::whereNotNull('camp_id')
+            ->where('camp_id', $ucampid)
+            ->first();
 
         // Normalize desig_offid to always be an array or empty array
         $desigOffices = $request->input('desig_offid');
@@ -111,14 +123,6 @@ class EnduserController extends Controller
             $desigOffices = [];
         } elseif (!is_array($desigOffices)) {
             $desigOffices = [$desigOffices];
-        }
-
-        // Determine off_id based on user role
-        $role = auth()->user()->role;
-        if ($role === "Campus Admin") {
-            $offId = Office::where('camp_id', auth()->user()->campus_id)->first()->id ?? 0;
-        } else {
-            $offId = $request->input('off_id');
         }
 
         // Check if person_accnt already exists (excluding current record)
@@ -135,8 +139,8 @@ class EnduserController extends Controller
         $accnt->update([
             'person_accnt' => $accntName,
             'desig_offid' => json_encode($desigOffices),
-            'off_id' => $offId,
-            'accnt_role' => $accnt_role,
+            'off_id' => ($exists) ? $exists->id : $request->input('off_id'),
+            'accnt_role' => $accnt_role ?? 0,
         ]);
 
         return redirect()->route('accountableEdit', ['id' => $accnt->id])
