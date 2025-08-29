@@ -130,8 +130,8 @@
                         ' <br><b>SERIAL NUMBER:</b> ' + (row.serial_number ?? '') +
                         ' <br><b>LOCATION:</b> ' + (row.location_name ?? '') +
                         ' <br><br><b>DESCRIPTION</b><br>' + (row.item_descrip ?? '') +
-                        ' <br><br><b>PERSON ACCOUNTABLE:</b> ' + (row.accountableName ?? '') +
-                        ' <br><b>END USER:</b> ' + (row.accountableNames ?? '');
+                        ' <br><br><b>PERSON ACCOUNTABLE:</b> ' + (row.person_accnt_name ?? '') +
+                        ' <br><b>END USER:</b> ' + (row.person_accnt_name1 ?? '');
                 },
                 className: 'align-middle'
             },
