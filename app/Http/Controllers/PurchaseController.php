@@ -145,7 +145,7 @@ class PurchaseController extends Controller
         $propertiesCode = $purchase->property_id;
 
         $lastItemNumber = EnduserProperty::where([
-            //'office_id' => $request->input('office_id'),
+            'office_id' => $request->input('office_id'),
             'item_id' => $purchase->item_id,
             'property_id' => $purchase->property_id,
         ])->max('item_number');
@@ -214,7 +214,9 @@ class PurchaseController extends Controller
                 $parts[4] = str_pad($new_part, strlen($part_to_increment), '0', STR_PAD_LEFT);
                 
                 $newPropertyNoGenerated = implode('-', $parts);
-
+                
+                $prop_code = $parts[1];
+                
                 $newItemNum = str_pad($new_part, strlen($part_to_increment), '0', STR_PAD_LEFT);
 
                 EnduserProperty::create([
@@ -230,6 +232,7 @@ class PurchaseController extends Controller
                     'item_cost' => $purchase->item_cost,
                     'total_cost' => $purchase->item_cost,
                     'properties_id' => $purchase->properties_id,
+                    'prop_code' => $prop_code,
                     'categories_id' => $purchase->categories_id,
                     'property_id' => $purchase->property_id,
                     'item_number' => $newItemNum,
@@ -243,6 +246,8 @@ class PurchaseController extends Controller
                 ]);
             }
         }else{
+            $parts = explode('-', $request->property_no_generated);
+            $prop_code = $parts[1];
             EnduserProperty::create([
                 'purch_id' => $request->purchase_id,
                 'office_id' => $request->office_id,
@@ -256,6 +261,7 @@ class PurchaseController extends Controller
                 'item_cost' => $purchase->item_cost,
                 'total_cost' => $total_cost,
                 'properties_id' => $purchase->properties_id,
+                'prop_code' => $prop_code,
                 'categories_id' => $purchase->categories_id,
                 'property_id' => $purchase->property_id,
                 'item_number' => $request->itemnum,
