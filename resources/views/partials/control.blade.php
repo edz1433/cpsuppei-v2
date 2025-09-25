@@ -29,7 +29,7 @@
                 <i class="fas fa-server"></i> Inventory
             </a>
 
-            <a href="@if(auth()->user()->role !== 'Technician'){{ route('reportOption', 1) }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('purchases*') ? 'active' : '' }}" class="btn btn-app {{ request()->is('reports*') ? 'active' : '' }}">
+            <a href="@if(auth()->user()->role !== 'Technician'){{ route('reportOption', 1) }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Technician', 'Campus Admin'])) disabled @endif {{ request()->is('reports*') ? 'active' : '' }}">
                 <i class="fas fa-file-pdf"></i> Reports
             </a>
 

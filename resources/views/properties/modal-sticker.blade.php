@@ -88,32 +88,32 @@
 							<img class="logo-sticker img-circle" src="{{ asset('template/img/default-logo.png') }}" alt="User profile picture">
 						@endif
 					</th>
-					<th colspan="3" class="sticker-text-label" style="font-size: 11pt">Central Philippines State University</th>
+					<th colspan="3" class="sticker-text-label text-light" style="font-size: 11pt">Central Philippines State University</th>
 				</tr>
 				<tr>
 					<th rowspan="10" class="sticker-text-label"><canvas id="qrcode{{ $loop->iteration }}" class="elevation-3"></canvas></th>
-					<th><b class="sticker-label">Property No.:</b> <span class="dataText">{{ $inventory->property_no_generated  }}</span class=""></th>
+					<th><b class="sticker-label text-light">Property No.:</b> <span class="dataText text-light">{{ $inventory->property_no_generated  }}</span class=""></th>
 				</tr>
 				<tr>
-					<th>Item: <span class="dataText">{{ $inventory->item_name  }}</span></th>
+					<th class="text-light">Item: <span class="dataText">{{ $inventory->item_name  }}</span></th>
 				</tr>
 				<tr>
-					<th>Classification: <span class="dataText">{{ $inventory->account_title_abbr  }}</span></th>
+					<th class="text-light">Classification: <span class="dataText">{{ $inventory->account_title_abbr  }}</span></th>
 				</tr>
 				<tr>
-					<th>Model/Brand: <span class="dataText">{{ $inventory->item_model  }}</span></th>
+					<th class="text-light">Model/Brand: <span class="dataText">{{ $inventory->item_model  }}</span></th>
 				</tr>
 				<tr>
-					<th>Serial No.: <span class="dataText">{{ trim($serial) }}</span></th>
+					<th class="text-light">Serial No.: <span class="dataText">{{ trim($serial) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Cost: <span class="dataText">{{ number_format($inventory->item_cost, 2) }}</span></th>
+					<th class="text-light">Acquisition Cost: <span class="dataText">{{ number_format($inventory->item_cost, 2) }}</span></th>
 				</tr>
 				<tr>
-					<th>Acquisition Date: <span class="dataText">{{ $inventory->date_acquired  }}</span></th>
+					<th class="text-light">Acquisition Date: <span class="dataText">{{ $inventory->date_acquired  }}</span></th>
 				</tr>
 				<tr>
-					<th>Person Accountable: <span class="dataText">
+					<th class="text-light">Person Accountable: <span class="dataText">
 						@php
 							$accountable = $inventory->person_accnt ?? $inventory->office_officer ?? null;
 							echo is_null($accountable) ? 'N/A' : $accountable;
@@ -121,15 +121,15 @@
 					</span></th>
 				</tr>
 				<tr>
-					<th>Assignment: <span class="dataText">{{ $inventory->office_name  }}</span></th>
+					<th class="text-light">Assignment: <span class="dataText">{{ $inventory->office_name  }}</span></th>
 				</tr>
 				<tr>
-					<th>Validation Sign: <span class="dataText"></span></th>
+					<th class="text-light">Validation Sign: <span class="dataText"></span></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td colspan="5" class="sticker-text-label">*Removing or tampering of this sticker is punishable by Law*</td>
+					<td colspan="5" class="sticker-text-label text-light">*Removing or tampering of this sticker is punishable by Law*</td>
 				</tr>
 			</tbody>
 		</table>
