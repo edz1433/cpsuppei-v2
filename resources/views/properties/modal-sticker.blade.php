@@ -89,32 +89,32 @@
 							<img class="logo-sticker img-circle" src="{{ asset('template/img/default-logo.png') }}" alt="User profile picture">
 						@endif
 					</th>
-					<th colspan="3" class="sticker-text-label {{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}" style="font-size: 11pt">Central Philippines State University</th>
+					<th colspan="3" class="sticker-text-label {{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}" style="font-size: 11pt">Central Philippines State University</th>
 				</tr>
 				<tr>
 					<th rowspan="10" class="sticker-text-label"><canvas id="qrcode{{ $loop->iteration }}" class="elevation-3"></canvas></th>
-					<th><b class="sticker-label {{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Property No.:</b> <span class="dataText {{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">{{ $inventory->property_no_generated  }}</span class=""></th>
+					<th><b class="sticker-label {{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Property No.:</b> <span class="dataText {{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">{{ $inventory->property_no_generated  }}</span class=""></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Item: <span class="dataText">{{ $inventory->item_name  }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Item: <span class="dataText">{{ $inventory->item_name  }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Classification: <span class="dataText">{{ $inventory->account_title_abbr  }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Classification: <span class="dataText">{{ $inventory->account_title_abbr  }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Model/Brand: <span class="dataText">{{ $inventory->item_model  }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Model/Brand: <span class="dataText">{{ $inventory->item_model  }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Serial No.: <span class="dataText">{{ trim($serial) }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Serial No.: <span class="dataText">{{ trim($serial) }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Acquisition Cost: <span class="dataText">{{ number_format($inventory->item_cost, 2) }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Acquisition Cost: <span class="dataText">{{ number_format($inventory->item_cost, 2) }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Acquisition Date: <span class="dataText">{{ $inventory->date_acquired  }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Acquisition Date: <span class="dataText">{{ $inventory->date_acquired  }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Person Accountable: <span class="dataText">
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Person Accountable: <span class="dataText">
 						@php
 							$accountable = $inventory->person_accnt ?? $inventory->office_officer ?? null;
 							echo is_null($accountable) ? 'N/A' : $accountable;
@@ -122,15 +122,15 @@
 					</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Assignment: <span class="dataText">{{ $inventory->office_name  }}</span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Assignment: <span class="dataText">{{ $inventory->office_name  }}</span></th>
 				</tr>
 				<tr>
-					<th class="{{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">Validation Sign: <span class="dataText"></span></th>
+					<th class="{{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">Validation Sign: <span class="dataText"></span></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td colspan="5" class="sticker-text-label {{ ($itemCost > 5001 && $itemCost < 50000) ? 'text-light' : '' }}">*Removing or tampering of this sticker is punishable by Law*</td>
+					<td colspan="5" class="sticker-text-label {{ ($itemCost > 5001 && $itemCost < 49999) ? 'text-light' : '' }}">*Removing or tampering of this sticker is punishable by Law*</td>
 				</tr>
 			</tbody>
 		</table>
