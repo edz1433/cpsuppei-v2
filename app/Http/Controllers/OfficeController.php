@@ -8,12 +8,14 @@ use App\Models\Setting;
 use App\Models\EnduserProperty;
 use App\Models\Office;
 use App\Models\InvQR;
+use App\Models\Log;
 use Carbon\Carbon;
 
 class OfficeController extends Controller
 {
     //
-    public function officeRead($code){
+    public function officeRead($code)
+    {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = ($code == 1)
             ? Office::where('office_code', '!=', '0000')
@@ -26,13 +28,14 @@ class OfficeController extends Controller
         $office = $office->get();
 
         $campus = Office::whereNotNull('camp_id')
-        ->where('camp_id', '!=', '')
-        ->get();
+            ->where('camp_id', '!=', '')
+            ->get();
 
         return view('manage.office.list', compact('setting', 'office', 'code', 'campus'));
     }
-    
-    public function officeCreate(Request $request) {
+
+    public function officeCreate(Request $request)
+    {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = Office::where('office_code', '!=', 0000)->get();
 
@@ -69,22 +72,24 @@ class OfficeController extends Controller
         }
     }
 
-    public function officeEdit($id, $code) {
+    public function officeEdit($id, $code)
+    {
         $setting = Setting::firstOrNew(['id' => 1]);
         $office = ($code == 1)
             ? Office::where('office_code', '!=', '0000')->get()
             : Office::where('office_code', '0000')->get();
 
         $campus = Office::whereNotNull('camp_id')
-        ->where('camp_id', '!=', '')
-        ->get();
+            ->where('camp_id', '!=', '')
+            ->get();
 
         $selectedOffice = Office::findOrFail($id);
 
         return view('manage.office.list', compact('setting', 'office', 'selectedOffice', 'code', 'campus'));
     }
 
-    public function officeUpdate(Request $request) {
+    public function officeUpdate(Request $request)
+    {
         // Validate request data
         $request->validate([
             'id' => 'required',
@@ -99,23 +104,31 @@ class OfficeController extends Controller
         $officeId = $request->input('id');
         $officeName = $request->input('office_name');
         $officeOfficer = $request->input('office_officer');
-    
+
         $existingOffice = Office::where('office_name', $officeName)
-                                ->where('id', '!=', $officeId)
-                                ->first();
+            ->where('id', '!=', $officeId)
+            ->first();
 
         if ($existingOffice) {
             $error = ($request->code == 1) ? 'Office already exists!' : 'Location already exists!';
             return redirect()->back()->with('error', $error);
         }
-    
+
         // $existingOfficer = Office::where('office_officer', $officeOfficer)
         //                          ->where('id', '!=', $officeId)
         //                          ->first();
         // if ($existingOfficer) {
         //     return redirect()->back()->with('error', 'Office officer already assigned to another office!');
         // }
-    
+
+        Log::create([
+            'camp_id' => auth()->user()->campus_id,
+            'user_id' => auth()->user()->id,
+            'module_id' => $officeId,
+            'module' => 'offices',
+            'action' => 'update',
+        ]);
+
         $office = Office::findOrFail($officeId);
         $office->update([
             'office_code' => $request->input('office_code'),
@@ -128,14 +141,22 @@ class OfficeController extends Controller
         return redirect()->route('officeEdit', ['id' => $office->id, 'code' => $request->code])->with('success', 'Updated Successfully');
     }
 
-
-    public function officeDelete($id){
+    public function officeDelete($id)
+    {
         $office = Office::find($id);
         $office->delete();
 
+        Log::create([
+            'camp_id' => auth()->user()->campus_id,
+            'user_id' => auth()->user()->id,
+            'module_id' => $id,
+            'module' => 'offices',
+            'action' => 'delete',
+        ]);
+
         return response()->json([
-            'status'=>200,
-            'message'=>'Deleted Successfully',
+            'status' => 200,
+            'message' => 'Deleted Successfully',
         ]);
     }
 }
