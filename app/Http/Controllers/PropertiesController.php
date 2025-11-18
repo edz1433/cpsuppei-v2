@@ -524,7 +524,11 @@ class PropertiesController extends Controller
         $property = Property::whereIn('id', $propertyIds)->get();
         
         $office = Office::all();
-        $locations = Office::where('loc_camp', auth()->user()->campus_id)->where('office_code', '0000')->get();
+        $locations = Office::leftJoin('campuses', 'campuses.id', '=', 'offices.loc_camp')
+        ->where('offices.office_code', '0000')
+        ->select('offices.*', 'campuses.campus_name')
+        ->get();
+
         $accnt = Accountable::all();
         $item = Item::all();
         $unit = Unit::all();

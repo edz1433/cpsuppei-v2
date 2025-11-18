@@ -26,6 +26,9 @@
                                     <th>Office Code</th>
                                     @endif
                                     <th>{{ $code == 1 ? 'Office Name' : 'Location Name' }}</th>
+                                    @if($code == 2)
+                                    <th>Campus Name</th>
+                                    @endif
                                     @if($code == 1)
                                     <th>Abbreviation</th>
                                     <th>Office Head</th>
@@ -42,10 +45,12 @@
                                     <td>{{ $data->office_code }}</td>
                                     @endif
                                     <td>{{ $data->office_name }}</td>
-
                                     @if($code == 1)
                                     <td>{{ $data->office_abbr }}</td>
                                     <td>{{ $data->office_officer }}</td>
+                                    @endif
+                                    @if($code == 2)
+                                    <td>{{ $data->campus_name }}</td>
                                     @endif
                                     <td class="text-center">
                                         <a href="{{ route('officeEdit', ['id' => $data->id, 'code' => $code]) }}" class="btn btn-info btn-xs btn-edit" data-id="{{ $data->id }}">

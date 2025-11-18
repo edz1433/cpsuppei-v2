@@ -58,7 +58,7 @@
                                         <option value="0">N/A</option>
                                         @foreach ($locations as $location)
                                             <option value="{{ $location->id }}" {{ $location->id == $inventory->location ? 'selected' : '' }}>
-                                                {{ $location->office_name }}
+                                                {{ $location->office_name }} - {{ $location->campus_name }}
                                             </option>
                                         @endforeach
                                     </select>
