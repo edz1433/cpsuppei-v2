@@ -125,8 +125,8 @@ class OfficeController extends Controller
             ->first();
 
         if ($existingOffice) {
-            $error = ($request->code == 1) ? 'Office already exists!' : 'Location already exists!';
-            return redirect()->back()->with('error', $error);
+            // $error = ($request->code == 1) ? 'Office already exists!' : 'Location already exists!';
+            // return redirect()->back()->with('error', $error);
         }
 
         // $existingOfficer = Office::where('office_officer', $officeOfficer)
