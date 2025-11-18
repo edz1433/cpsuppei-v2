@@ -90,9 +90,28 @@ class OfficeController extends Controller
     public function officeEdit($id, $code)
     {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = ($code == 1)
-            ? Office::where('office_code', '!=', '0000')->get()
-            : Office::where('office_code', '0000')->get();
+        // Base query
+        $office = Office::query();
+
+        // Apply join ONLY when $code == 2
+        if ($code == 2) {
+            $office->leftJoin('campuses', 'campuses.id', '=', 'offices.loc_camp')
+                ->select('offices.*', 'campuses.campus_name');
+        }
+
+        // Apply office_code filter
+        if ($code == 1) {
+            $office->where('office_code', '!=', '0000');
+        } else {
+            $office->where('office_code', '0000');
+        }
+
+        // Campus Admin filter
+        if (auth()->user()->role == "Campus Admin" && $code == 2) {
+            $office->where('offices.loc_camp', auth()->user()->campus_id);
+        }
+        
+        $office = $office->get();
 
         $campus = Office::whereNotNull('camp_id')
             ->where('camp_id', '!=', '')
