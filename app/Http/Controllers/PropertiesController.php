@@ -524,6 +524,7 @@ class PropertiesController extends Controller
         $property = Property::whereIn('id', $propertyIds)->get();
         
         $office = Office::all();
+        $locations = Office::where('loc_camp', auth()->user()->campus_id)->where('office_code', '0000')->get();
         $accnt = Accountable::all();
         $item = Item::all();
         $unit = Unit::all();
@@ -549,7 +550,7 @@ class PropertiesController extends Controller
         $selectedPerson1 = explode(';', $inventory->person_accnt1);
         $serialOwned = explode(';', $inventory->serial_owned);
 
-        return view('properties.edit', compact('setting', 'property', 'property1', 'inventory', 'office', 'accnt', 'item', 'unit', 'category', 'selectedOfficeId', 'selectedPerson', 'selectedPerson1', 'serialOwned', 'selectedItemId', 'selectedUnitId', 'currentPrice', 'selectedCatId', 'selectedAccId', 'selectedPropId'));
+        return view('properties.edit', compact('setting', 'property', 'property1', 'inventory', 'office', 'locations', 'accnt', 'item', 'unit', 'category', 'selectedOfficeId', 'selectedPerson', 'selectedPerson1', 'serialOwned', 'selectedItemId', 'selectedUnitId', 'currentPrice', 'selectedCatId', 'selectedAccId', 'selectedPropId'));
     }
 
     public function propertiesUpdate(Request $request) {
@@ -596,6 +597,7 @@ class PropertiesController extends Controller
             'properties_id' => 'required',
             'person_accnt1' => 'nullable',
             'serial_owned' => 'nullable',
+            'location' => 'nullable',
         ]);
         
         $inventory = EnduserProperty::findOrFail($request->input('id'));
@@ -618,6 +620,7 @@ class PropertiesController extends Controller
             'price_stat' => $request->input('price_stat'),
             'person_accnt' => $request->input('person_accnt'),
             'person_accnt1' => $request->input('person_accnt1'),
+            'location' => $request->input('location'),
             'serial_owned' => null,
         ]);
 

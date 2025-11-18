@@ -32,7 +32,7 @@
                         <input type="hidden" name="id" value="{{ $inventory->id }}">
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="exampleInputName">Office:</label>
                                     <select class="form-control select2bs4" name="office_id" data-placeholder=" ---Select Office--- " style="width: 100%;">
                                         <option value=""> --- Select Office Here --- </option>
@@ -42,12 +42,24 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="exampleInputName">Item:</label>
                                     <select class="form-control select2bs4" name="item_id" data-placeholder=" ---Select Item--- " style="width: 100%;">
                                         <option value=""> </option>
                                         @foreach ($item as $data)
                                             <option value="{{ $data->id }}" {{ $data->id == $selectedItemId ? 'selected' : '' }}>{{ $data->item_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="exampleInputName">Location:</label>
+                                    <select class="form-control select2" name="location" data-placeholder="--- Select Location ---" style="width: 100%;">
+                                        <option value="0">N/A</option>
+                                        @foreach ($locations as $location)
+                                            <option value="{{ $location->id }}" {{ $location->id == $inventory->location ? 'selected' : '' }}>
+                                                {{ $location->office_name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
