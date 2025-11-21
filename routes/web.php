@@ -221,5 +221,5 @@ Route::group(['middleware' => ['login_auth']], function () {
     });
 
     //Logout
-    Route::get('/logout', [MasterController::class, 'logout'])->name('logout');
+    Route::post('/logout', [MasterController::class, 'logout'])->name('logout');
 });
