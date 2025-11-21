@@ -50,12 +50,16 @@
         </div>
     </div>
     
-    <div class="col-sm-2" style="text-align: right;" >
+    <div class="col-sm-2" style="text-align: right;">
         <div>
-            <a href="{{ route('logout') }}" class="btn btn-app pull-right">
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: inline;">
+                @csrf
+                <button type="submit" class="btn btn-app pull-right">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </form>
         </div>
     </div>
+
 </div>
 @endif
