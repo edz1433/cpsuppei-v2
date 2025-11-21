@@ -181,7 +181,7 @@
 <!-- ./wrapper -->
 
 <!-- REQUIRED SCRIPTS -->
-@if(!request()->is('technician/form/*'))
+@if(!request()->is('technician/form/*') && request()->is('technician/qr-scan*'))
 <!-- jQuery -->
 <script src="{{ asset('template/plugins/jquery/jquery.min.js') }}"></script>
 <!-- Bootstrap 4 -->
