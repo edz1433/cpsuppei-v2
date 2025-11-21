@@ -28,6 +28,7 @@ body {
   width: 90%; max-width: 400px; aspect-ratio: 1/1; border-radius: 20px; overflow: hidden;
   box-shadow: var(--shadow-heavy); background-color: #000; margin-bottom: 20px;
   border: 2px solid var(--white);
+  margin-left: 8px;
 }
 .tap-focus { margin-bottom: 15px; font-size: 14px; font-weight: 400; color: var(--text-secondary); text-align: center; }
 .footer {
