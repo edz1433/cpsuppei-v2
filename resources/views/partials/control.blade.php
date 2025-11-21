@@ -50,7 +50,7 @@
         </div>
     </div>
     
-    <div class="col-sm-2" style="text-align: right;">
+    <div class="col-sm-2" style="text-align: right; padding-right: 15px;">
         <div>
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: inline;">
                 @csrf
