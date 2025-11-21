@@ -13,7 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\PropertyTypeController;
 use App\Http\Controllers\PropertyTypeLowController;
-use App\Http\Controllers\PropertyTypeHighController; 
+use App\Http\Controllers\PropertyTypeHighController;
 use App\Http\Controllers\PropertyTypeIntController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ItemController;
@@ -32,27 +32,18 @@ use App\Http\Controllers\TechController;
 |
 */
 
-    Route::get('/', function () {
-        return view('login');
-    });
+Route::get('/', function () {
+    return view('login');
+});
 
-    //Login
-    Route::get('/login',[LoginController::class,'getLogin'])->name('getLogin');
-    Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');
-    
-    Route::prefix('/technician')->group(function () {
-        Route::get('/repair', [TechController::class, 'repairRead'])->name('repairRead');
-        Route::get('/repair-create', [TechController::class, 'repairCreate'])->name('repairCreate');
-        Route::get('/editEssue/{id}', [TechController::class, 'editEssue'])->name('editEssue.edit');
-        Route::get('/issueInsert/{id}', [TechController::class, 'issueInsert'])->name('issueInsert.insert');
-        Route::post('/issueUpdate/{id}', [TechController::class, 'issueUpdate'])->name('issueUpdate');
-        Route::post('/issueInsertion', [TechController::class, 'issueInsertion'])->name('issueInsertion');
-    });
+//Login
+Route::get('/login', [LoginController::class, 'getLogin'])->name('getLogin');
+Route::post('/login', [LoginController::class, 'postLogin'])->name('postLogin');
 
-    //Middleware
-    Route::group(['middleware'=>['login_auth']], function() {
-    Route::get('/dashboard',[MasterController::class,'dashboard'])->name('dashboard');
-        
+//Middleware
+Route::group(['middleware' => ['login_auth']], function () {
+    Route::get('/dashboard', [MasterController::class, 'dashboard'])->name('dashboard');
+
     //View
     Route::prefix('/view')->group(function () {
         // Route::get('/', [ViewController::class, 'index'])->name('manage-index');
@@ -81,7 +72,7 @@ use App\Http\Controllers\TechController;
             Route::post('listINT/update', [PropertyTypeIntController::class, 'intUpdate'])->name('intUpdate');
             Route::get('listINT/delete/{id}', [PropertyTypeIntController::class, 'intDelete'])->name('intDelete');
         });
-        
+
 
         Route::prefix('/unit')->group(function () {
             Route::get('/list', [UnitController::class, 'unitRead'])->name('unitRead');
@@ -96,7 +87,7 @@ use App\Http\Controllers\TechController;
             Route::post('/list', [ItemController::class, 'itemCreate'])->name('itemCreate');
             Route::get('list/edit/{id}', [ItemController::class, 'itemEdit'])->name('itemEdit');
             Route::post('list/update', [ItemController::class, 'itemUpdate'])->name('itemUpdate');
-            Route::get('list/delete/{id}', [ItemController::class, 'itemDelete'])->name('itemDelete'); 
+            Route::get('list/delete/{id}', [ItemController::class, 'itemDelete'])->name('itemDelete');
         });
 
         Route::prefix('/office')->group(function () {
@@ -115,20 +106,20 @@ use App\Http\Controllers\TechController;
             Route::get('list/delete/{id}', [EnduserController::class, 'accountableDelete'])->name('accountableDelete');
         });
     });
-    
+
     //purchases
-    Route::prefix('/purchases')->group(function() {
+    Route::prefix('/purchases')->group(function () {
         Route::get('/list/all', [PurchaseController::class, 'purchaseREAD'])->name('purchaseREAD');
         Route::post('/list/add', [PurchaseController::class, 'purchaseCreate'])->name('purchaseCreate');
         Route::get('/list/delete/{id}', [PurchaseController::class, 'purchaseRelDel'])->name('purchaseRelDel');
-        
+
         Route::get('/list/purchase-get/{id}', [PurchaseController::class, 'purchaseReleaseGet'])->name('purchaseReleaseGet');
         Route::post('/list/purchase-post', [PurchaseController::class, 'purchaseReleasePost'])->name('purchaseReleasePost');
         Route::get('/list/ajax', [PurchaseController::class, 'getPurchase'])->name('getPurchase');
 
         Route::get('/check-next-number/{propertyno}/{officeCode}', [PurchaseController::class, 'checkNextNumber'])->name('checkNextNumber');
     });
-    
+
     //properties
     Route::prefix('/properties')->group(function () {
         Route::get('/list/{category}', [PropertiesController::class, 'propertiesRead'])->name('propertiesRead');
@@ -137,7 +128,7 @@ use App\Http\Controllers\TechController;
         Route::get('/list/high', [PropertiesController::class, 'propertieshighRead'])->name('propertieshighRead');
         Route::get('/list/low', [PropertiesController::class, 'propertieslowRead'])->name('propertieslowRead');
         Route::get('/list/intangible', [PropertiesController::class, 'propertiesintangibleRead'])->name('propertiesintangibleRead');
-        
+
         Route::get('/return-slip/{id}', [PropertiesController::class, 'returnSlip'])->name('returnSlip');
 
         Route::post('/list/add', [PropertiesController::class, 'propertiesCreate'])->name('propertiesCreate');
@@ -145,8 +136,8 @@ use App\Http\Controllers\TechController;
         Route::post('/list/update', [PropertiesController::class, 'propertiesUpdate'])->name('propertiesUpdate');
         Route::get('/list/cat/{id}/{mode}', [PropertiesController::class, 'propertiesCat'])->name('propertiesCat');
         Route::get('/list/prnt/{id}', [PropertiesController::class, 'propertiesPrntSticker'])->name('propertiesPrntSticker');
-        Route::get('/list/delete/{id}', [PropertiesController::class, 'propertiesDelete'])->name('propertiesDelete'); 
-        
+        Route::get('/list/delete/{id}', [PropertiesController::class, 'propertiesDelete'])->name('propertiesDelete');
+
         Route::post('/end-user/update', [PropertiesController::class, 'enduserUpdate'])->name('enduserUpdate');
 
         Route::get('/sticker', [PropertiesController::class, 'stickerRead'])->name('stickerRead');
@@ -159,7 +150,7 @@ use App\Http\Controllers\TechController;
 
         Route::get('/sticker/generate/', [PropertiesController::class, 'generateQRCodesAndDownloadPdf'])->name('stickers.pdf');
     });
-    
+
     //inventory
     Route::prefix('/inventory')->group(function () {
         Route::get('/list', [InventoryController::class, 'inventoryRead'])->name('inventoryRead');
@@ -168,7 +159,7 @@ use App\Http\Controllers\TechController;
         Route::post('/start', [InventoryController::class, 'startInventory'])->name('startInventory');
         Route::post('/save', [InventoryController::class, 'invSave'])->name('invSave');
     });
-     
+
     //Reports
     Route::prefix('/reports')->group(function () {
         Route::get('/{id}', [ReportsController::class, 'reportOption'])->name('reportOption');
@@ -185,11 +176,11 @@ use App\Http\Controllers\TechController;
 
         Route::get('/unserviceable-form', [ReportsController::class, 'unserviceForm'])->name('unserviceForm');
         Route::post('/unserviceable-report', [ReportsController::class, 'unserviceReport'])->name('unserviceReport');
-        
+
         Route::get('/par/option', [ReportsController::class, 'parOption'])->name('parOption');
         Route::post('/par/reports/par', [ReportsController::class, 'parOptionReportGen'])->name('parOptionReportGen');
         Route::post('/par/icsitemList', [ReportsController::class, 'pargenOption'])->name('pargenOption');
-        
+
         Route::post('/par/itemList/unserv', [ReportsController::class, 'genOptionUnserv'])->name('genOptionUnserv');
 
         Route::get('/list/cat/{id}/{mode}', [PropertiesController::class, 'invCatIcsPar'])->name('invCatIcsPar');
@@ -200,7 +191,7 @@ use App\Http\Controllers\TechController;
 
     //Users
     Route::prefix('/users')->group(function () {
-        Route::get('/list',[UserController::class,'userRead'])->name('userRead');
+        Route::get('/list', [UserController::class, 'userRead'])->name('userRead');
         Route::post('/list', [UserController::class, 'userCreate'])->name('userCreate');
         Route::get('list/edit/{id}', [UserController::class, 'userEdit'])->name('userEdit');
         Route::post('list/update', [UserController::class, 'userUpdate'])->name('userUpdate');
@@ -209,13 +200,26 @@ use App\Http\Controllers\TechController;
 
     //Settings
     Route::prefix('/settings')->group(function () {
-        Route::get('/account-settings',[SettingsController::class,'user_settings'])->name('user_settings');
-        Route::post('/account-settings/update',[SettingsController::class,'profileUpdate'])->name('profileUpdate');
-        Route::post('/acccount-settings/updatePass',[SettingsController::class,'profilePassUpdate'])->name('profilePassUpdate');
-        Route::get('/system-name',[SettingsController::class,'setting_list'])->name('setting_list');
-        Route::post('/system-name',[SettingsController::class,'upload'])->name('upload');
+        Route::get('/account-settings', [SettingsController::class, 'user_settings'])->name('user_settings');
+        Route::post('/account-settings/update', [SettingsController::class, 'profileUpdate'])->name('profileUpdate');
+        Route::post('/acccount-settings/updatePass', [SettingsController::class, 'profilePassUpdate'])->name('profilePassUpdate');
+        Route::get('/system-name', [SettingsController::class, 'setting_list'])->name('setting_list');
+        Route::post('/system-name', [SettingsController::class, 'upload'])->name('upload');
     });
-    
+
+    Route::prefix('/technician')->group(function () {
+        Route::get('/repair', [TechController::class, 'repairRead'])->name('repairRead');
+        Route::post('/repair-create', [TechController::class, 'repairCreate'])->name('repairCreate');
+        Route::post('/repair-update', [TechController::class, 'repairUpdate'])->name('repairUpdate');
+
+        Route::get('/qr-scan', [TechController::class, 'qrScan'])->name('qr-scan');
+        Route::get('/qr-scan-check/{propno}', [TechController::class, 'qrScanCheck'])->name('qr-scan-check');
+
+        Route::get('/form/{propno}', [TechController::class, 'repairForm'])->name('repairForm');
+        Route::get('/form/diagnose/{propno}', [TechController::class, 'repairDiagnose'])->name('repairDiagnose');
+        Route::post('/form/release/{propno}', [TechController::class, 'repairRelease'])->name('repairRelease');
+    });
+
     //Logout
-    Route::get('/logout',[MasterController::class,'logout'])->name('logout');
+    Route::get('/logout', [MasterController::class, 'logout'])->name('logout');
 });

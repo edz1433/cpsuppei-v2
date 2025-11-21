@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Route::get('/end-user-property', [AppController::class, 'endUserProperty']);
+
 Route::prefix('app')->group(function () {
     Route::post('/login', [AppController::class, 'login']);
     Route::post('/scan-qr', [AppController::class, 'scanQr']);

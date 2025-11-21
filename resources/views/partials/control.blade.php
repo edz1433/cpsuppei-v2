@@ -1,3 +1,4 @@
+@if(!request()->is('technician/form/propno*'))
 @php
     $current_route=request()->route()->getName();
 @endphp
@@ -33,7 +34,7 @@
                 <i class="fas fa-file-pdf"></i> Reports
             </a>
 
-            <a href="@if(auth()->user()->role !== 'Technician'){{ route('repairRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Campus Admin'])) disabled @endif {{ request()->is('technician*') ? 'active' : '' }}">
+            <a href="@if(auth()->user()->role == 'Technician' || auth()->user()->role == 'Administrator'){{ route('repairRead') }}@endif" class="btn btn-app @if(in_array(auth()->user()->role, ['Campus Admin'])) disabled @endif {{ request()->is('technician*') ? 'active' : '' }}">
                 <i class="fas fa-user"></i> Technician
             </a>
             
@@ -57,3 +58,4 @@
         </div>
     </div>
 </div>
+@endif

@@ -114,6 +114,7 @@
 
 <body class="hold-transition layout-top-nav layout-navbar-fixed text-sm">
     <div class="wrapper">
+        @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
         <nav class="main-header navbar navbar-expand-md navbar-light bg-greenn">
             <div class="container-fluid">
                 <a href="" class="mt-2">
@@ -145,14 +146,16 @@
             </div>
         </nav>
         <!-- /.navbar -->
+        @endif
 
-            <div class="content-wrapper">
+            <div class="content-wrapper"> 
+                @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
                 <div class="content-header">
                     <div class="container-fluid" style="margin-top: -5px">
                         @include('partials.control')
                     </div> 
                 </div>
-
+                @endif
                 <!-- Main content -->
                 <div class="content">
                     @yield('body')
@@ -165,7 +168,7 @@
             
         </aside>
         
-
+    @if(!request()->is('technician/form/*'))
     <!-- Main Footer -->
     <footer class="main-footer">
         <div class="float-right d-none d-sm-inline ">
@@ -173,11 +176,12 @@
         </div>
         Developed and Maintain by <i>Management Information System Office</i>.
     </footer>
+    @endif
 </div>
 <!-- ./wrapper -->
 
 <!-- REQUIRED SCRIPTS -->
-
+@if(!request()->is('technician/form/*'))
 <!-- jQuery -->
 <script src="{{ asset('template/plugins/jquery/jquery.min.js') }}"></script>
 <!-- Bootstrap 4 -->
@@ -379,5 +383,7 @@
 
 @include('../script.inventoryAll_script')
 @include('../script.purchaseAll_script')
+
+@endif
 </body>
 </html>

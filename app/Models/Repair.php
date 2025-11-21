@@ -9,11 +9,22 @@ class Repair extends Model
 {
     use HasFactory;
     protected $table = 'repairs';
-    protected $fillable = ['inv_id','issue','remarks','status','urgency'];
+    protected $fillable = [
+        'uid',
+        'prop_id',
+        'findings',
+        'urgency',
+        'diagnosis', 
+        'repair_status',
+        'date_diagnose',
+        'release_by',
+        'release_date',
+    ];
 
-    public function inventory()
-    {
-        return $this->belongsTo(Inventory::class);
-    }
+    protected $casts = [
+        'date_diagnose' => 'datetime',
+        'release_date'  => 'datetime',
+    ];
+
 }
 
