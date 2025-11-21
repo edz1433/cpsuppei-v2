@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Jenssegers\Agent\Facades\Agent; // Add this import
+use Jenssegers\Agent\Agent; // Keep import, but use directly below
 
 class LoginController extends Controller
 {
@@ -29,7 +29,8 @@ class LoginController extends Controller
             $successMessage = 'Login Successful';
 
             if ($user->role === 'Technician') {
-                if (Agent::isMobile()) { // Replace isMobileDevice() with this
+                $agent = new Agent(); // Direct use—no facade
+                if ($agent->isMobile()) {
                     return redirect()->route('qr-scan')->with('success', $successMessage);
                 }
                 return redirect()->route('dashboard')->with('success', $successMessage);
