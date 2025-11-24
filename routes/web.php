@@ -218,6 +218,8 @@ Route::group(['middleware' => ['login_auth']], function () {
         Route::get('/form/{propno}', [TechController::class, 'repairForm'])->name('repairForm');
         Route::get('/form/diagnose/{propno}', [TechController::class, 'repairDiagnose'])->name('repairDiagnose');
         Route::post('/form/release/{propno}', [TechController::class, 'repairRelease'])->name('repairRelease');
+
+        Route::get('/repair-report/{id}', [TechController::class, 'repairPDF'])->name('repairPDF');
     });
 
     //Logout

@@ -1,7 +1,7 @@
 @extends('layouts.master')
 @section('body')
 <script src="https://unpkg.com/html5-qrcode"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{{-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"> --}}
 <style>
 :root {
   --white: #ffffff;
@@ -109,12 +109,20 @@ body {
 
 <script>
 let pendingPropno = null;
+let lastScanTime = 0;
 function onScanSuccess(decodedText) {
+  const now = Date.now();
+  if (now - lastScanTime < 1500) return;
+  lastScanTime = now;
   const url = "{{ route('qr-scan-check', ['propno' => '__PROPNO__']) }}".replace('__PROPNO__', encodeURIComponent(decodedText));
   fetch(url).then(r => r.json()).then(data => {
     if (data.status === 'error') return toastr.error(data.message || 'An error occurred while checking the item status.');
-    if (['create', 'diagnose'].includes(data.status)) return window.location.href = data.url;
-    if (data.status === 'release') return pendingPropno = decodedText, $('#releaseModal').modal('show');
+    if (['create', 'diagnose'].includes(data.status)) {
+      return scanner.stop().then(() => { window.location.href = data.url; }).catch(() => { window.location.href = data.url; });
+    }
+    if (data.status === 'release') {
+      return scanner.stop().then(() => { pendingPropno = decodedText; $('#releaseModal').modal('show'); }).catch(() => { pendingPropno = decodedText; $('#releaseModal').modal('show'); });
+    }
     if (data.status === 'released') return toastr.warning(data.message || 'This item has already been released.');
     toastr.warning('Unknown status for this item. Please try again.');
   }).catch(err => { console.error('QR check failed:', err); toastr.error('Unable to check item status. Please try again.'); });
@@ -139,8 +147,20 @@ function performRelease() {
   const csrf = document.createElement('input'); csrf.type = 'hidden'; csrf.name = '_token'; csrf.value = '{{ csrf_token() }}';
   form.appendChild(csrf); document.body.appendChild(form); form.submit();
 }
+function restartScanner() {
+  scanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure).catch(err => {
+    console.error("Failed to restart scanner:", err);
+    document.querySelector('.tap-focus').textContent = "Unable to restart camera. Please refresh the page.";
+  });
+}
 $(document).ready(function() {
-  $('#logoutModal, #releaseModal').on('hidden.bs.modal', function() { pendingPropno = null; });
+  $('#logoutModal').on('hidden.bs.modal', function() {
+    pendingPropno = null;
+  });
+  $('#releaseModal').on('hidden.bs.modal', function() {
+    restartScanner();
+    pendingPropno = null;
+  });
 });
 </script>
 @endsection

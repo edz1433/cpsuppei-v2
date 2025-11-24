@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
-
+ 
     <!-- Logo  -->
     <link rel="shortcut icon" type="" href="{{ asset('template/img/CPSU_L.png') }}">
 
@@ -148,21 +148,20 @@
         <!-- /.navbar -->
         @endif
 
-            <div class="content-wrapper"> 
-                @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
-                <div class="content-header">
-                    <div class="container-fluid" style="margin-top: -5px">
-                        @include('partials.control')
-                    </div> 
-                </div>
-                @endif
-                <!-- Main content -->
-                <div class="content">
-                    @yield('body')
-                </div>
-                <!-- /.content -->
+        <div class="content-wrapper"> 
+            @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
+            <div class="content-header">
+                <div class="container-fluid" style="margin-top: -5px">
+                    @include('partials.control')
+                </div> 
             </div>
-
+            @endif
+            <!-- Main content -->
+            <div class="content">
+                @yield('body')
+            </div>
+            <!-- /.content -->
+        </div>
         
         <aside class="control-sidebar control-sidebar-dark">
             
@@ -181,7 +180,7 @@
 <!-- ./wrapper -->
 
 <!-- REQUIRED SCRIPTS -->
-@if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
+
 <!-- jQuery -->
 <script src="{{ asset('template/plugins/jquery/jquery.min.js') }}"></script>
 <!-- Bootstrap 4 -->
@@ -193,7 +192,7 @@
 <script src="{{ asset('template/plugins/toastr/toastr.min.js') }}"></script>
 <!-- SweetAlert2 -->
 <script src="{{ asset('template/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
-
+@if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
 <!-- Select2 -->
 <script src="{{ asset('template/plugins/select2/js/select2.full.min.js') }}"></script>
 <!-- Bootstrap4 Duallistbox -->

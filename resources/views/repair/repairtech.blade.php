@@ -114,7 +114,7 @@ $cr = request()->route()->getName();
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="#" class="btn btn-danger btn-xs" data-id="{{ $repair->rpid }}">
+                                    <a href="{{ route('repairPDF', ['id' => $repair->rpid]) }}" target="_blank" class="btn btn-danger btn-xs" data-id="{{ $repair->rpid }}">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
                                 </td>

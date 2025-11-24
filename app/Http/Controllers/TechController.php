@@ -9,6 +9,7 @@ use App\Models\EnduserProperty;
 use App\Models\Setting;
 use App\Models\Repair;
 use App\Models\Log;
+use PDF;
 
 class TechController extends Controller
 {
@@ -143,7 +144,7 @@ class TechController extends Controller
         }
 
         $repair = Repair::where('prop_id', $property->id)
-            ->where('release_by', null)
+            ->where('release_date', null)
             ->orderBy('id', 'DESC')
             ->first();
 
@@ -177,7 +178,7 @@ class TechController extends Controller
     }
 
     public function repairForm($propno)
-    {
+    { 
         $setting = Setting::firstOrNew(['id' => 1]);
         $enduserprop = EnduserProperty::select('id', 'property_no_generated', 'item_model', 'item_descrip')
                         ->where('property_no_generated', $propno)
@@ -194,5 +195,13 @@ class TechController extends Controller
                         ->firstOrFail();
 
         return view('repair.repair-form-update', compact('setting', 'enduserprop'));
+    }
+
+    public function repairPDF($id)
+    {
+        $repair = Repair::findOrFail($id);
+
+        $pdf = PDF::loadView('repair.repair-pdf', compact('repair'))->setPaper('A4', 'portrait');
+        return $pdf->stream('repair_' . $id . '.pdf');
     }
 }
