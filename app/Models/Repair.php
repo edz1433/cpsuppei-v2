@@ -15,6 +15,7 @@ class Repair extends Model
         'findings',
         'urgency',
         'diagnosis', 
+        'diagnose_by',
         'repair_status',
         'date_diagnose',
         'release_by',

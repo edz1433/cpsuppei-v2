@@ -21,9 +21,9 @@ $cr = request()->route()->getName();
                                 <th>Property number</th>
                                 <th>Findings</th>
                                 <th>Urgency</th>
-                                <th>Date Requested</th>
+                                <th>Date Received</th>
                                 <th>Date Diagnosed</th>
-                                <th>Release Date</th>
+                                <th>Date Released</th>
                                 <th>Total Days</th>
                                 <th>Diagnosis</th>
                                 <th>Repair Status</th>
@@ -60,7 +60,8 @@ $cr = request()->route()->getName();
                                     @php 
                                         $formattedDate = strtoupper($repair->created_at->format('M')) . '. ' . $repair->created_at->format('d, Y g:i A');
                                     @endphp
-                                    {{ $formattedDate }}
+                                    {{ $formattedDate }}<br>
+                                    <b>by:</b>
                                 </td>
                                 <td>
                                     @if($repair->date_diagnose)
@@ -70,7 +71,8 @@ $cr = request()->route()->getName();
                                         {{ $formattedDiagnoseDate }}
                                     @else
                                         N/A
-                                    @endif
+                                    @endif <br>
+                                    <b>by:</b>
                                 </td>
                                 <td>
                                     @if($repair->release_date)
@@ -80,7 +82,8 @@ $cr = request()->route()->getName();
                                         {{ $formattedReleaseDate }}
                                     @else
                                         N/A
-                                    @endif
+                                    @endif<br>
+                                    <b>by:</b>
                                 </td>
                                 <td>
                                     @if($repair->date_diagnose)

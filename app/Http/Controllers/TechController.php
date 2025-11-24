@@ -81,6 +81,7 @@ class TechController extends Controller
             'diagnosis'     => $request->diagnosis,
             'repair_status' => $request->repair_status,
             'date_diagnose' => now()->toDateTimeString(),
+            'diagnose_by' => auth()->user()->id
         ]);
 
         Log::create([

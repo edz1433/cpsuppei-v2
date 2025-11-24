@@ -167,7 +167,7 @@
             
         </aside>
         
-    @if(!request()->is('technician/form/*'))
+    @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
     <!-- Main Footer -->
     <footer class="main-footer">
         <div class="float-right d-none d-sm-inline ">
