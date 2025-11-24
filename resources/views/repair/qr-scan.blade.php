@@ -20,30 +20,73 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: 'Inter', sans-serif;
+  display: flex; flex-direction: column; min-height: 100vh; background: var(--offwhite); color: var(--text-primary);
+  overflow: hidden;
+}
+.main-content {
   display: flex; flex-direction: column; justify-content: center; align-items: center;
-  min-height: 100vh; background: var(--offwhite); color: var(--text-primary);
-  overflow: hidden; padding: 20px 10px 120px 10px;
+  flex: 1; width: 100%; padding: 20px 10px;
 }
 #qr-reader {
   width: 90%; max-width: 400px; aspect-ratio: 1/1; border-radius: 20px; overflow: hidden;
   box-shadow: var(--shadow-heavy); background-color: #000; margin-bottom: 20px;
   border: 2px solid var(--white);
-  margin-left: 8px;
 }
 .tap-focus { margin-bottom: 15px; font-size: 14px; font-weight: 400; color: var(--text-secondary); text-align: center; }
 .footer {
-  text-align: center; margin-bottom: 15px; font-size: 11px; font-weight: 300; color: var(--text-secondary);
-  flex-shrink: 0; position: fixed; bottom: 0; left: 0; right: 0;
-  margin: 0 auto 15px auto; max-width: 400px; z-index: 1000;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center; padding: 15px 10px 20px; font-size: 11px; font-weight: 300; color: var(--text-secondary);
+  background: var(--offwhite); box-sizing: border-box; z-index: 1000;
+  box-shadow: var(--shadow-light);
 }
-.footer img { width: 50px; margin-top: 8px; filter: drop-shadow(var(--shadow-light)); cursor: pointer; transition: opacity 0.2s ease; }
+.footer img { width: 60px; margin-top: 8px; filter: drop-shadow(var(--shadow-light)); cursor: pointer; transition: opacity 0.2s ease; }
 .footer img:hover { opacity: 0.8; }
+
+/* Small mobile screens (up to 480px) */
 @media (max-width: 480px) {
-  body { padding: 15px 5px 100px 5px; }
-  #qr-reader { width: 95%; margin-bottom: 15px; }
+  .main-content { padding: 15px 5px 80px 5px; }
+  #qr-reader { width: 95%; margin-bottom: 15px; max-width: 350px; }
   .tap-focus { font-size: 12px; margin-bottom: 10px; }
-  .footer { font-size: 10px; margin-bottom: 10px; }
+  .footer { font-size: 10px; padding: 10px 5px 15px; }
   .footer img { width: 60px; }
+}
+
+/* Tablets and medium screens (481px to 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .main-content { padding: 25px 15px 90px 15px; }
+  #qr-reader { width: 80%; max-width: 450px; margin-bottom: 25px; }
+  .tap-focus { font-size: 15px; margin-bottom: 20px; }
+  .footer { font-size: 12px; padding: 20px 15px 25px; }
+  .footer img { width: 60px; }
+}
+
+/* Large tablets and small desktops (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-content { padding: 30px 20px 100px 20px; }
+  #qr-reader { width: 70%; max-width: 500px; margin-bottom: 30px; }
+  .tap-focus { font-size: 16px; margin-bottom: 25px; }
+  .footer { font-size: 13px; padding: 25px 20px 30px; }
+  .footer img { width: 60px; }
+}
+
+/* Large desktops (1025px and up) */
+@media (min-width: 1025px) {
+  .main-content { padding: 40px 30px 110px 30px; }
+  #qr-reader { width: 60%; max-width: 600px; margin-bottom: 40px; }
+  .tap-focus { font-size: 18px; margin-bottom: 30px; }
+  .footer { font-size: 14px; padding: 30px 30px 40px; }
+  .footer img { width: 60px; }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .main-content { justify-content: flex-start; padding-top: 10px; padding-bottom: 60px; }
+  #qr-reader { margin-bottom: 10px; }
+  .tap-focus { margin-bottom: 5px; font-size: 12px; }
+  .footer { padding: 10px 5px; font-size: 10px; }
 }
 </style>
 
@@ -54,11 +97,13 @@ body {
 <script>toastr.error('{{ session('error') }}');</script>
 @endif
 
-<div id="qr-reader"></div>
-<div class="tap-focus">Tap to focus the camera</div>
+<div class="main-content">
+  <div id="qr-reader"></div>
+  <div class="tap-focus">Tap to focus the camera</div>
+</div>
 <div class="footer">
   Maintained and Managed by the Management Information System (MIS)<br>
-  <img src="{{ asset('uploads/mislogo.png') }}" alt="MIS Logo" onclick="showLogoutModal()" style="cursor: pointer;">
+  <img src="{{ asset('uploads/mislogo.png') }}" alt="MIS Logo" onclick="showLogoutModal()">
 </div>
 
 <!-- Logout Modal -->

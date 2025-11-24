@@ -149,7 +149,7 @@
         @endif
 
         <div class="content-wrapper"> 
-            @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
+            @if(!request()->is('technician/form*') && !request()->is('technician/qr-scan*'))
             <div class="content-header">
                 <div class="container-fluid" style="margin-top: -5px">
                     @include('partials.control')
@@ -167,7 +167,7 @@
             
         </aside>
         
-    @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
+    @if(!request()->is('technician/form*') && !request()->is('technician/qr-scan*'))
     <!-- Main Footer -->
     <footer class="main-footer">
         <div class="float-right d-none d-sm-inline ">
@@ -176,7 +176,7 @@
         Developed and Maintain by <i>Management Information System Office</i>.
     </footer>
     @endif
-</div>
+</div> 
 <!-- ./wrapper -->
 
 <!-- REQUIRED SCRIPTS -->
@@ -230,7 +230,7 @@
 <script src="{{ asset('js/validation/icsValidation.js') }}"></script>
 <script src="{{ asset('js/validation/parValidation.js') }}"></script>
 
-
+@endif
 <script>
     @if(Session::has('error'))
         toastr.options = {
@@ -261,8 +261,17 @@
         }
         toastr.success("{{ session('success') }}")
     @endif
+    @if(Session::has('success1'))
+        toastr.options = {
+            "closeButton":false,
+            "progressBar":false,
+            'positionClass': 'toast-bottom-center'
+        }
+        toastr.success("{{ session('success1') }}")
+    @endif
 </script>
 
+@if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
 @if(Session::has('successcopy'))
     <script>
         document.addEventListener('DOMContentLoaded', function() {

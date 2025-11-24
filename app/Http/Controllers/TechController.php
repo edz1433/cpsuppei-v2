@@ -61,7 +61,7 @@ class TechController extends Controller
             'action' => 'create',
         ]);
 
-        return redirect()->route('qr-scan')->with('success', 'Save Successfully');
+        return redirect()->route('qr-scan')->with('success1', 'Save Successfully');
     }
 
     public function repairUpdate(Request $request)
@@ -92,7 +92,7 @@ class TechController extends Controller
             'action'    => 'update_diagnosis',
         ]);
 
-        return redirect()->route('qr-scan')->with('success', 'Save Successfully');
+        return redirect()->route('qr-scan')->with('success1', 'Save Successfully');
     }
     
     public function repairRelease($propno)
@@ -125,7 +125,7 @@ class TechController extends Controller
             'action'    => 'release',
         ]);
 
-        return redirect()->route('qr-scan')->with('success', 'Released Successfully.');
+        return redirect()->route('qr-scan')->with('success1', 'Released Successfully.');
     }
     
     public function qrScan()
