@@ -18,16 +18,17 @@ $cr = request()->route()->getName();
                     <table id="example1" class="table table-bordered table-hover">
                         <thead>
                             <tr>
-                                <th>Property number</th>
-                                <th>Findings</th>
-                                <th>Urgency</th>
-                                <th>Date Received</th>
-                                <th>Date Diagnosed</th>
-                                <th>Date Released</th>
-                                <th>Total Days</th>
-                                <th>Diagnosis</th>
-                                <th>Repair Status</th>
-                                <th>Action</th>
+                                <th class="align-middle">Property number</th>
+                                <th class="align-middle">Findings</th>
+                                <th class="align-middle">Urgency</th>
+                                <th class="align-middle">Date Received</th>
+                                <th class="align-middle">Date Diagnosed</th>
+                                <th class="align-middle">Date Released</th>
+                                <th class="align-middle">DB Diagnose</th>
+                                <th class="align-middle">DB Release</th>
+                                <th class="align-middle">Diagnosis</th>
+                                <th class="align-middle">Repair Status</th>
+                                <th class="align-middle">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,11 +88,20 @@ $cr = request()->route()->getName();
                                 </td>
                                 <td class="align-middle">
                                     @if($repair->date_diagnose)
-                                        @php $totalDays = $repair->created_at->diffInDays($repair->date_diagnose); @endphp
-                                        {{ $totalDays }} {{ $totalDays == 1 ? 'day' : 'days' }}
+                                        @php $totalDaysDiagnose = $repair->created_at->diffInDays($repair->date_diagnose); @endphp
+                                        {{ $totalDaysDiagnose }} {{ $totalDaysDiagnose == 1 ? 'day' : 'days' }}
                                     @else
-                                        @php $totalDays = $repair->created_at->diffInDays(now()); @endphp
-                                        {{ $totalDays }} {{ $totalDays == 1 ? 'day' : 'days' }}
+                                        @php $totalDaysDiagnose = $repair->created_at->diffInDays(now()); @endphp
+                                        {{ $totalDaysDiagnose }} {{ $totalDaysDiagnose == 1 ? 'day' : 'days' }}
+                                    @endif
+                                </td>
+                                <td class="align-middle">
+                                    @if($repair->release_date)
+                                        @php $totalDaysRelease = $repair->created_at->diffInDays($repair->release_date); @endphp
+                                        {{ $totalDaysRelease }} {{ $totalDaysRelease == 1 ? 'day' : 'days' }}
+                                    @else
+                                        @php $totalDaysRelease = $repair->created_at->diffInDays(now()); @endphp
+                                        {{ $totalDaysRelease }} {{ $totalDaysRelease == 1 ? 'day' : 'days' }}
                                     @endif
                                 </td>
 
