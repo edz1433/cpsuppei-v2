@@ -62,7 +62,7 @@ $cr = request()->route()->getName();
                                         $formattedDate = strtoupper($repair->created_at->format('M')) . '. ' . $repair->created_at->format('d, Y g:i A');
                                     @endphp
                                     {{ $formattedDate }}<br>
-                                    <b>by: {{ $repair->received_by_name }}</b>
+                                    <b class="text-info">{{ $repair->received_by_name }}</b>
                                 </td>
                                 <td class="align-middle">
                                     @if($repair->date_diagnose)
@@ -73,7 +73,7 @@ $cr = request()->route()->getName();
                                     @else
                                         N/A
                                     @endif <br>
-                                    <b>by: {{ $repair->diagnose_by_name }}</b>
+                                    <b class="text-info">{{ $repair->diagnose_by_name }}</b>
                                 </td>
                                 <td class="align-middle">
                                     @if($repair->release_date)
@@ -84,7 +84,7 @@ $cr = request()->route()->getName();
                                     @else
                                         N/A
                                     @endif<br>
-                                    <b>by: {{ $repair->release_by_name }}</b>
+                                    <b class="text-info">{{ $repair->release_by_name }}</b>
                                 </td>
                                 <td class="align-middle">
                                     @if($repair->date_diagnose)
