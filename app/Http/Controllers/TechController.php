@@ -222,7 +222,6 @@ class TechController extends Controller
             ->where('repairs.id', $id)
             ->select(
             'repairs.*',
-            'repairs.repair_status',
             'enduser_property.property_no_generated',
             'repairs.id as rpid',
             'repairs.prop_id',

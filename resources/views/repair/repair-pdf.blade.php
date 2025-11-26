@@ -120,16 +120,19 @@
             <div class="f1">Action to be taken</div>
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px; padding-left:6px;">
             <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" style="width:14px; height:16.5px;" /> <span class="f1">For Further Evaluation</span>
+                <input type="checkbox" style="width:14px; height:16.5px;" {{ $repair->repair_status == 2 ? 'checked' : '' }}/> <span class="f1">For Further Evaluation</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" style="width:14px; height:16.5px;" /> <span class="f1">For Replacement</span>
+                <input type="checkbox" style="width:14px; height:16.5px;" {{ $repair->repair_status == 3 ? 'checked' : '' }}/> <span class="f1">For Replacement</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" style="width:14px; height:16.5px;" /> <span class="f1">For Repair</span>
+                <input type="checkbox" style="width:14px; height:16.5px;" {{ $repair->repair_status == 4 ? 'checked' : '' }}/> <span class="f1">For Repair</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" style="width:14px; height:16.5px;" /> <span class="f1">For Job Out</span>
+                <input type="checkbox" style="width:14px; height:16.5px;" {{ $repair->repair_status == 5 ? 'checked' : '' }}/> <span class="f1">For Job Out</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" style="width:14px; height:16.5px;" {{ $repair->repair_status == 6 ? 'checked' : '' }}/> <span class="f1">Unserviceable</span>
             </label>
             </div>
         </div>
@@ -166,8 +169,10 @@
             </table>
         </div>
     </div>
-    <div style="display:inline-block; vertical-align:bottom; text-align:center; width:100%; padding:0; margin-top:182px;">
+    <div style="display:inline-block; vertical-align:bottom; text-align:center; width:100%; padding:0; margin-top:166px;">
         Doc Control Code: CPSU-F-MIS-06-REV01 Effective Date:04/03/2025 Page.: 1 of 1
     </div>
+
+
 </body>
 </html>
