@@ -26,7 +26,7 @@ $cr = request()->route()->getName();
                                 <th class="align-middle">Date Released</th>
                                 <th class="align-middle">DB Diagnose</th>
                                 <th class="align-middle">DB Release</th>
-                                <th class="align-middle">Diagnosis</th>
+                                <th class="align-middle">DB Diagnosis</th>
                                 <th class="align-middle">Repair Status</th>
                                 <th class="align-middle">Action</th>
                             </tr>
