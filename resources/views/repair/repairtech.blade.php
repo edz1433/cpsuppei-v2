@@ -33,11 +33,11 @@ $cr = request()->route()->getName();
                         <tbody>
                             @foreach ($repairs as $repair)
                             <tr id="tr-{{ $repair->rpid }}">
-                                <td>{{ $repair->property_no_generated }}</td>
-                                <td>{{ $repair->findings }}</td>
+                                <td class="align-middle">{{ $repair->property_no_generated }}</td>
+                                <td class="align-middle">{{ $repair->findings }}</td>
 
                                 <!-- Urgency Badge -->
-                                <td>
+                                <td class="align-middle">
                                     @switch($repair->urgency)
                                         @case('Low')
                                             <span class="badge bg-success">Low Priority</span>
@@ -56,14 +56,14 @@ $cr = request()->route()->getName();
                                     @endswitch
                                 </td>
 
-                                <td>
+                                <td class="align-middle">
                                     @php 
                                         $formattedDate = strtoupper($repair->created_at->format('M')) . '. ' . $repair->created_at->format('d, Y g:i A');
                                     @endphp
                                     {{ $formattedDate }}<br>
                                     <b>by: {{ $repair->received_by_name }}</b>
                                 </td>
-                                <td>
+                                <td class="align-middle">
                                     @if($repair->date_diagnose)
                                         @php 
                                             $formattedDiagnoseDate = strtoupper($repair->date_diagnose->format('M')) . '. ' . $repair->date_diagnose->format('d, Y g:i A');
@@ -74,7 +74,7 @@ $cr = request()->route()->getName();
                                     @endif <br>
                                     <b>by: {{ $repair->diagnose_by_name }}</b>
                                 </td>
-                                <td>
+                                <td class="align-middle">
                                     @if($repair->release_date)
                                         @php 
                                             $formattedReleaseDate = strtoupper($repair->release_date->format('M')) . '. ' . $repair->release_date->format('d, Y g:i A');
@@ -85,7 +85,7 @@ $cr = request()->route()->getName();
                                     @endif<br>
                                     <b>by: {{ $repair->release_by_name }}</b>
                                 </td>
-                                <td>
+                                <td class="align-middle">
                                     @if($repair->date_diagnose)
                                         @php $totalDays = $repair->created_at->diffInDays($repair->date_diagnose); @endphp
                                         {{ $totalDays }} {{ $totalDays == 1 ? 'day' : 'days' }}
@@ -95,10 +95,10 @@ $cr = request()->route()->getName();
                                     @endif
                                 </td>
 
-                                <td>{{ $repair->diagnosis }}</td>
+                                <td class="align-middle">{{ $repair->diagnosis }}</td>
 
                                 <!-- Repair Status Badge -->
-                                <td>
+                                <td class="align-middle">
                                     @if($repair->repair_status == 1)
                                         <span class="badge bg-warning">Pending</span>
 
@@ -117,7 +117,7 @@ $cr = request()->route()->getName();
                                         <span class="badge bg-danger">Unserviceable</span>
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center align-middle">
                                     <a href="{{ route('repairPDF', ['id' => $repair->rpid]) }}" target="_blank" class="btn btn-danger btn-xs" data-id="{{ $repair->rpid }}">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
