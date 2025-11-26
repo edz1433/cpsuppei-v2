@@ -226,10 +226,11 @@ $cr = request()->route()->getName();
                         </label>
                         <select name="repair_status" id="repair_status" class="select1 form-control form-control-sm">
                             <option value="1">Pending</option>
-                            <option value="2">Completed</option>
-                            <option value="3">Referred to Supply Office</option>
-                            <option value="4">Referred for Outside Repair</option>
-                            <option value="5">Unserviceable</option>
+                            <option value="2">For Further Evaluation</option>
+                            <option value="3">For Replacement</option>
+                            <option value="4">For Repair</option>
+                            <option value="5">For Job Out</option>
+                            <option value="6">Unserviceable</option>
                         </select>
                     </div>
 
