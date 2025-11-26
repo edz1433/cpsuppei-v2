@@ -61,6 +61,9 @@
         padding: 4px;
         height: 22px;
     }
+    .text-center{
+        text-align: center;
+    }
 </style>
 <body>
 	<header>
@@ -72,7 +75,7 @@
         <p class="f1">Finding/s</p>
         
         <div style="display:flex; flex-direction:column; gap:20px; margin-top:10px;">
-            <span style="display:block; width:100%; border-bottom:1px solid #000; padding-bottom:1px;"><span style="color: white;">. {{ $repair->findings }}</span></span>
+            <span style="display:block; width:100%; border-bottom:1px solid #000; padding-bottom:1px;"><span style="color: white;">.</span>{{ $repair->findings }}</span>
             <span style="display:block; width:100%; border-bottom:1px solid #000; padding-bottom:1px;"><span style="color: white;">.</span></span>
             <span style="display:block; width:100%; border-bottom:1px solid #000; padding-bottom:1px;"><span style="color: white;">.</span></span>
         </div>
@@ -87,10 +90,10 @@
             </thead>
             <tbody>
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="text-center">{{ $repair->item_model }}</td>
+                    <td class="text-center">{{ $repair->item_descrip }}</td>
+                    <td class="text-center">1</td>
+                    <td class="text-center">1</td>
                 </tr>
                 <tr>
                     <td></td>
@@ -134,6 +137,37 @@
         <div style="margin-top:10px;">
             <p class="f1">Inspected and Submitted:</p>
         </div>
+
+        <div style="margin-top:10px;">
+            <table width="100%" style="border:none !important;">
+                <tbody>
+                    <tr>
+                        <td style="height:90px; vertical-align:bottom; text-align:center; border:none !important;">
+                            <span style="display:inline-block; width:180px; border-bottom:1px solid #000; padding-bottom:4px;">
+                            <b>{{ $repair->diagnose_by_name }}</b>
+                            </span><br>
+                            Technical Support
+                        </td>
+                        <td style="height:90px; vertical-align:bottom; text-align:center; border:none !important;">
+                            <span style="display:inline-block; width:180px; border-bottom:1px solid #000; padding-bottom:4px;">
+                            <b>JEVY F. YEE</b>
+                            </span><br>
+                            Information Technology Officer
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="height:130px; vertical-align:bottom; text-align:center; border:none !important;">
+                            <span style="display:inline-block; width:200px; border-bottom:1px solid #000; padding-bottom:4px;">
+                            <b>MA. SOCORRO T. LLAMAS</b>
+                            </span><br>
+                            Supply Officer
+                        </td>
+                    </tr>
+            </table>
+        </div>
+    </div>
+    <div style="display:inline-block; vertical-align:bottom; text-align:center; width:100%; padding:0; margin-top:182px;">
+        Doc Control Code: CPSU-F-MIS-06-REV01 Effective Date:04/03/2025 Page.: 1 of 1
     </div>
 </body>
 </html>

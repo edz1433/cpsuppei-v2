@@ -19,7 +19,22 @@ class TechController extends Controller
         $enduserall = EnduserProperty::select('enduser_property.id', 'enduser_property.property_no_generated', 'enduser_property.item_descrip')->get();
 
         $repairs = Repair::join('enduser_property', 'repairs.prop_id', '=', 'enduser_property.id')
-            ->select('repairs.*', 'repairs.repair_status', 'enduser_property.property_no_generated', 'repairs.id as rpid', 'repairs.prop_id', 'enduser_property.qty', 'enduser_property.id', 'enduser_property.item_id', 'enduser_property.item_descrip')
+            ->leftJoin('users as rcv', 'repairs.uid', '=', 'rcv.id')
+            ->leftJoin('users as diag', 'repairs.diagnose_by', '=', 'diag.id')
+            ->leftJoin('users as rel', 'repairs.release_by', '=', 'rel.id')
+            ->select(
+                'repairs.*',
+                'repairs.repair_status',
+                'enduser_property.property_no_generated',
+                'repairs.id as rpid',
+                'repairs.prop_id',
+                'enduser_property.qty',
+                'enduser_property.item_id',
+                'enduser_property.item_descrip',
+                DB::raw("CONCAT(COALESCE(rcv.fname,''), ' ', COALESCE(rcv.lname,'')) as received_by_name"),
+                DB::raw("CONCAT(COALESCE(diag.fname,''), ' ', COALESCE(diag.lname,'')) as diagnose_by_name"),
+                DB::raw("CONCAT(COALESCE(rel.fname,''), ' ', COALESCE(rel.lname,'')) as release_by_name")
+            )
             ->get();
 
         return view('repair.repairtech', compact('setting', 'repairs', 'enduserall'));
@@ -200,7 +215,25 @@ class TechController extends Controller
 
     public function repairPDF($id)
     {
-        $repair = Repair::findOrFail($id);
+        $repair = Repair::join('enduser_property', 'repairs.prop_id', '=', 'enduser_property.id')
+            ->leftJoin('users as rcv', 'repairs.uid', '=', 'rcv.id')
+            ->leftJoin('users as diag', 'repairs.diagnose_by', '=', 'diag.id')
+            ->leftJoin('users as rel', 'repairs.release_by', '=', 'rel.id')
+            ->where('repairs.id', $id)
+            ->select(
+            'repairs.*',
+            'repairs.repair_status',
+            'enduser_property.property_no_generated',
+            'repairs.id as rpid',
+            'repairs.prop_id',
+            'enduser_property.qty',
+            'enduser_property.item_id',
+            'enduser_property.item_model',
+            'enduser_property.item_descrip',
+            DB::raw("CONCAT(COALESCE(rcv.fname,''), ' ', COALESCE(rcv.lname,'')) as received_by_name"),
+            DB::raw("CONCAT(COALESCE(diag.fname,''), ' ', COALESCE(diag.lname,'')) as diagnose_by_name"),
+            DB::raw("CONCAT(COALESCE(rel.fname,''), ' ', COALESCE(rel.lname,'')) as release_by_name"))
+            ->firstOrFail();
 
         $pdf = PDF::loadView('repair.repair-pdf', compact('repair'))->setPaper('A4', 'portrait');
         return $pdf->stream('repair_' . $id . '.pdf');
