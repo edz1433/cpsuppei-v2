@@ -112,9 +112,9 @@ $cr = request()->route()->getName();
                                         <span class="badge bg-primary">For Repair</span>
 
                                     @elseif($repair->repair_status == 5)
-                                        <span class="badge bg-danger">For Job Out</span>
+                                        <span class="badge bg-secondary">For Job Out</span>
                                     @elseif($repair->repair_status == 6)
-                                        <span class="badge bg-secondary">Unserviceable</span>
+                                        <span class="badge bg-danger">Unserviceable</span>
                                     @endif
                                 </td>
                                 <td class="text-center">
