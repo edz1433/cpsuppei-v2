@@ -103,19 +103,20 @@ $cr = request()->route()->getName();
                                         <span class="badge bg-warning">Pending</span>
 
                                     @elseif($repair->repair_status == 2)
-                                        <span class="badge bg-success">Completed</span>
+                                        <span class="badge bg-success">For Further Evaluation</span>
 
                                     @elseif($repair->repair_status == 3)
-                                        <span class="badge bg-info text-dark">Referred to Supply Office</span>
+                                        <span class="badge bg-info text-dark">For Replacement</span>
 
                                     @elseif($repair->repair_status == 4)
-                                        <span class="badge bg-primary">Referred for Outside Repair</span>
+                                        <span class="badge bg-primary">For Repair</span>
 
                                     @elseif($repair->repair_status == 5)
-                                        <span class="badge bg-danger">Unserviceable</span>
+                                        <span class="badge bg-danger">For Job Out</span>
+                                    @elseif($repair->repair_status == 6)
+                                        <span class="badge bg-secondary">Unserviceable</span>
                                     @endif
                                 </td>
-
                                 <td class="text-center">
                                     <a href="{{ route('repairPDF', ['id' => $repair->rpid]) }}" target="_blank" class="btn btn-danger btn-xs" data-id="{{ $repair->rpid }}">
                                         <i class="fas fa-file-pdf"></i>
