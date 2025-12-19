@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\EnduserProperty;
 use App\Models\Accountable;
 use App\Models\InventoryHistory;
+use App\Models\Office;
 use App\Models\YearlyInventory;
 use App\Models\Log;
 
@@ -48,6 +49,7 @@ class AppController extends Controller
                 'enduser_property.office_id',
                 'enduser_property.property_no_generated as property_number',
                 'items.item_name as property_name',
+                'enduser_property.location as property_loc',
                 'enduser_property.person_accnt as accountable_person_id',
                 'person_accountable.person_accnt as accountable_person_name',
                 'enduser_property.person_accnt1 as enduser_id',
@@ -75,11 +77,25 @@ class AppController extends Controller
             ->orderByRaw('TRIM(LOWER(accountable.person_accnt))')
             ->get();
 
+        $locations = Office::leftJoin('campuses', 'offices.loc_camp', '=', 'campuses.id')
+    ->where('offices.office_code', '0000')
+    ->select(
+        'offices.id',
+        'offices.office_name',
+        'offices.office_abbr',
+        'offices.loc_camp',
+        DB::raw("COALESCE(campuses.campus_abbr, '') AS campus_abbr")
+    )
+    ->orderBy('offices.office_name')
+    ->get();
+
+
         return response()->json([
             'status' => 'match',
             'data' => [
                 'invmatch' => $inventoryRows->first(),
                 'accnt'    => $accnt,
+                'locations' => $locations
             ],
         ]);
     }
@@ -91,15 +107,16 @@ class AppController extends Controller
             'status' => $ongoingInventory ? 'ongoing' : 'none'
         ], 200);
     }   
-     
+
     public function saveQr(Request $request)
     {
         $uid           = trim((string) $request->input('uid', ''));
         $qr            = trim((string) $request->input('qrcode', ''));
         $item_status   = trim((string) $request->input('item_status', ''));
-        $remarks       = $request->input('remarks', '');
+        $remarks       = trim((string) $request->input('remarks', ''));
         $person_accnt  = trim((string) $request->input('person_accnt', ''));   // REQUIRED
         $person_accnt1 = trim((string) $request->input('person_accnt1', ''));  // OPTIONAL ("" => NULL)
+        $office_id     = trim((string) $request->input('office_id', ''));      // OPTIONAL ("" => NULL)
         $isInv         = (int) $request->input('isInv', 0);
 
         $ongoingInventory = YearlyInventory::where('inv_status', 'Ongoing')->first();
@@ -117,11 +134,19 @@ class AppController extends Controller
             if (!$endUser) return response()->json(['success' => false, 'error' => 'End user not found'], 404);
         }
 
+        $office = null;
+        if ($office_id !== '') {
+            $office = Office::find($office_id);
+            if (!$office) return response()->json(['success' => false, 'error' => 'Location not found'], 404);
+        }
+
         // Keep legacy meaning: EnduserProperty.remarks stores STATUS; free-text remarks go to InventoryHistory
         $updateData = [
+            'office_id'         => $accountable->off_id, // VARCHAR
+            'location'          => $office ? (int) $office->id : null,  // INT
             'person_accnt'      => (int) $accountable->id,
             'person_accnt_name' => $accountable->person_accnt,
-            'person_accnt1'     => $endUser ? (int) $endUser->id : null, // nullable
+            'person_accnt1'     => $endUser ? (int) $endUser->id : null,
             'remarks'           => $item_status,
         ];
 
@@ -132,7 +157,7 @@ class AppController extends Controller
             if (!$updated) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'error' => 'Failed to update property record'], 500);
-            }else{
+            } else {
                 Log::create([
                     'user_id' => $uid,
                     'module_id' => $prop->id,
@@ -142,6 +167,11 @@ class AppController extends Controller
             }
 
             if ($isInv === 1) {
+                if ($ongoingInventory === null) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'error' => 'No ongoing inventory found. Please try again.'], 400);
+                }
+
                 InventoryHistory::where('prop_id', $prop->id)->where('inv_id', $ongoingInventory->id)->update([
                     'uid'          => $uid,
                     'person_accnt' => $accountable->person_accnt, // name, same as before
@@ -150,9 +180,13 @@ class AppController extends Controller
                     'inv_status'   => '2',
                 ]);
 
-                $remaining = InventoryHistory::where('inv_status', '2')->count();
+                // Fixed: Scope to current inv_id, count pending (!= '2'), and update specific inventory
+                $remaining = InventoryHistory::where('inv_id', $ongoingInventory->id)
+                    ->where('inv_status', '!=', '2')
+                    ->count();
                 if ($remaining === 0) {
-                    YearlyInventory::where('inv_status', '2')->update(['inv_status' => 'Done']);
+                    YearlyInventory::where('id', $ongoingInventory->id)
+                        ->update(['inv_status' => 'Done']);
                 }
             }
 
@@ -165,7 +199,7 @@ class AppController extends Controller
             return response()->json(['success' => false, 'error' => 'Server error. Please try again.'], 500);
         }
     }
-
+    
     public function endUserProperty(){
         $enduserproperty = EnduserProperty::all();
 
