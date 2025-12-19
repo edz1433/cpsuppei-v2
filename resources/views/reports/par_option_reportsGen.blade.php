@@ -87,6 +87,9 @@
 		.text-receivedby {
 			font-size: 8pt;
 		}
+		.text-center{
+			text-align: center;
+		}
 	</style>
 </head>
 <body>
@@ -121,6 +124,9 @@
 					<th width="8%">Unit</th>
 					<th width="30%">Description</th>
 					<th>Property Number</th>
+					@if($locationcolumn == 1)
+					<th class="">Location</th>
+					@endif
 					<th width="13%">Date Acquired</th>
 					<th width="13%">Amount</th>
 				</tr>
@@ -146,6 +152,9 @@
 							<b>SN : </b> <span style="font-size: 12px;">{!!  str_replace(';', '<br>', $paritem->serial_number) !!}</span>
 						</td>
 			            <td>{{ $paritem->property_no_generated }}</td>
+						@if($locationcolumn == 1)
+							<td>{{ $paritem->itemlocated }}</td>
+						@endif
 			            <td>{{ $paritem->date_acquired }}</td>
 			            <td align="right"><b>{{ $paritem->item_cost }}</b></td>
 
@@ -168,6 +177,9 @@
 						<td></td>
 						<td></td>
 						<td></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						<td></td>
 						<td></td>
 						<td></td>
@@ -177,6 +189,9 @@
 						<td></td>
 						<td></td>
 						<td></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						<td></td>
 						<td></td>
 						<td></td>
@@ -186,12 +201,15 @@
 			            <td></td>
 			            <td></td>
 			            <td></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						<td></td>
 			            <td style="text-align: right">Grand Total:</td>
 			            <td style="text-align: right"><strong>{{ number_format($grandTotal, 2) }}</strong></td>
 			        </tr>
 				<tr>
-			    	<td colspan="3" style="text-align: right"><b class="text-total">Supplier:</b></td>
+			    	<td colspan="{{ $locationcolumn == 1 ? 4 : 3 }}" style="text-align: right"><b class="text-total">Supplier:</b></td>
 			    	<td colspan="4" style="text-align: left"><b class="text-total"></b></td>
 			    </tr>
 			</tbody>
@@ -221,7 +239,7 @@
 							<span class="footer-cell-text">Date</span>
 						</span>
 					</td>
-					<td colspan="3" class="sign" style="text-align: center;">
+					<td colspan="{{ $locationcolumn == 1 ? 4 : 3 }}" class="sign" style="text-align: center;">
 						<span class="text-receivedby" style="float: left">Issued by:</span><br>
 						 <span class="footer-cell">
 

@@ -44,7 +44,7 @@
                                         <option value="All" selected>All</option>
                                         @foreach ($office as $data)
                                             @if ($data->office_code == '0000')
-                                                <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                                 <option value="{{ $data->id }}">{{ $data->office_name }} ({{ strtoupper($data->campus_abbr) }})</option>
                                             @endif
                                         @endforeach
                                     </select>
@@ -111,7 +111,7 @@
                         
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-6">
+                                {{-- <div class="col-md-6">
                                     <label>Location:</label>
                                     <select class="form-control select2bs4" id="location" name="location" style="width: 100%;">
                                         <option disabled selected value=""> ---Select Campus or Office Type--- </option>
@@ -124,7 +124,7 @@
                                         @endforeach
                                     </select>
                                     <input type="hidden" name="file_type" value="PDF">
-                                </div>
+                                </div> --}}
                                 
                                 @if(auth()->user()->role !== 'Campus Admin')
                                     <div class="col-md-6">
@@ -134,12 +134,16 @@
                                             <option value="EXCEL">EXCEL</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-1 text-center">
+                                        <label>Location Column:</label>
+                                        <input type="checkbox" name="locationcolumn" class="form-control" value="1">
+                                    </div>
+                                    <div class="col-md-1 text-center">
                                         <label>Serial Column:</label>
                                         <input type="checkbox" name="serial" class="form-control" value="1">
                                     </div>
-                                    <div class="col-md-1">
-                                        <label>Date Acquired:</label>
+                                    <div class="col-md-2 text-center">
+                                        <label>Date Acquired Column:</label>
                                         <input type="checkbox" name="acquired" class="form-control" value="1">
                                     </div>
                                 @endif
@@ -204,7 +208,4 @@ function categor(val) {
     }
 }
 </script>
-
-
-
 @endsection

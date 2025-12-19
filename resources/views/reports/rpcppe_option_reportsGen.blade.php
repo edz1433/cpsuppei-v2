@@ -123,7 +123,11 @@
 					<th rowspan="2" width="50">QUANTITY <br>PER<br> PHYSICAL COUNT</th>
 					<th colspan="2">SHORTAGE<br>OVERAGE</th>
 					<th rowspan="2">REMARKS</th>
-					<th colspan="1" width="@if($serial == 1 && $acquired == 1) 12 @elseif($serial == 1 || $acquired == 1) 11 @else 10 @endif">LOCATION</th>
+					<th rowspan="2" width="100">Whereabout</th>
+					{{-- <th colspan="1" width="@if($serial == 1 && $acquired == 1) 12 @elseif($serial == 1 || $acquired == 1) 11 @else 10 @endif">LOCATION</th> --}}
+					@if($locationcolumn == 1)
+					<th class="" rowspan="2	">LOCATION</th>
+					@endif
 					@if($serial == 1)
 					<th class="" rowspan="2	">SERIAL</th>
 					@endif
@@ -140,6 +144,9 @@
 			<tr>
 				<th colspan="6" style="text-align: right">Balance Brought Forwarded - {{ number_format($countBforward, 2) }}</th>
 				<th colspan="6" style="text-align: left"> {{ number_format($bforward, 2) }}</th>
+				@if($locationcolumn == 1)
+					<td></td>
+				@endif
 				@if($serial == 1)
 					<td></td>
 				@endif
@@ -151,6 +158,9 @@
 				@if ($purchase->isEmpty())
 				<tr>
 				    <td colspan="12" style="text-align:center;">No purchase data available.</td>
+					@if($locationcolumn == 1)
+						<td></td>
+					@endif
 					@if($serial == 1)
 						<td></td>
 					@endif
@@ -174,6 +184,9 @@
 				            <td></td>
 				            <td class="text-center">{{ $purchaseData->remarks }}</td>
 				            <td class="text-center">{{ $purchaseData->office_name }}</td>
+							@if($locationcolumn == 1)
+								<td>{{ $purchaseData->itemlocated }}</td>
+							@endif
 							@if($serial == 1)
 								<td>{{ $purchaseData->serial_number }}</td>
 							@endif
@@ -188,6 +201,9 @@
 				    <tr>
 			        	<td colspan="6" style="text-align: right"><strong>Total</strong></td>
 			        	<td colspan="6"><strong>{{ number_format($overallTotal, 2) }}</strong></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						@if($serial == 1)
 							<td></td>
 						@endif
@@ -198,6 +214,9 @@
 			        <tr>
 			        	<td colspan="6" style="text-align: right"><strong>Grand Total</strong></td>
 			        	<td colspan="6"><strong>{{ number_format($overallTotal + $bforward, 2) }}</strong></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						@if($serial == 1)
 							<td></td>
 						@endif
@@ -228,6 +247,9 @@
 							<div class="footer-cell-text">State Auditor IV</div>
 						</div>
 					</td>
+					@if($locationcolumn == 1)
+						<td></td>
+					@endif
 					@if($serial == 1)
 						<td></td>
 					@endif

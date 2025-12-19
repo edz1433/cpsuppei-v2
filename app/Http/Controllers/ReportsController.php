@@ -27,7 +27,11 @@ class ReportsController extends Controller
 {
     public function reportOption($repcat) {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
+        
+        $office = Office::leftJoin('campuses', 'offices.loc_camp', '=', 'campuses.id')
+        ->select('offices.*', 'campuses.campus_abbr') 
+        ->get();
+        
         $uid = auth()->user()->campus_id;
         $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::all();
@@ -51,7 +55,7 @@ class ReportsController extends Controller
 
         $serial = $request->serial;
         $acquired = $request->acquired;
-
+        $locationcolumn = $request->locationcolumn;
         // dd($serial);
 
         $officeId = $request->office_id;
@@ -76,9 +80,11 @@ class ReportsController extends Controller
         $location = $request->input('location');
 
         $purchase = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->select('enduser_property.*', 'offices.*', 'properties.*', 'units.*', 'items.*', 'locations.office_abbr as itemlocated')
             ->where(function ($query) use ($officeId, $allOffice, $cond) {
                 if ($officeId == 1) {
                     $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
@@ -185,6 +191,7 @@ class ReportsController extends Controller
             'bforward1' => $bforward1, 
             'countBforward' => $countBforward,
             'countBforward1' => $countBforward1,
+            'locationcolumn' => $locationcolumn,
             'serial' => $serial,
             'acquired' => $acquired,
         ];
@@ -350,7 +357,11 @@ class ReportsController extends Controller
 
     public function rpcppeOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
+        
+        $office = Office::leftJoin('campuses', 'offices.loc_camp', '=', 'campuses.id')
+        ->select('offices.*', 'campuses.campus_abbr') 
+        ->get();
+
         $uid = auth()->user()->campus_id;
         $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::whereIn('id', [3])->get();
@@ -373,6 +384,7 @@ class ReportsController extends Controller
 
         $serial = $request->serial;
         $acquired = $request->acquired;
+        $locationcolumn = $request->locationcolumn;
         
         $officeId = $request->query('office_id');
         $officeId1 = $request->query('office_id');
@@ -396,9 +408,11 @@ class ReportsController extends Controller
         $location = $request->input('location');
 
         $purchase = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->select('enduser_property.*', 'offices.*', 'properties.*', 'units.*', 'items.*', 'locations.office_abbr as itemlocated')
             ->where(function ($query) use ($officeId, $allOffice, $cond) {
                 if ($officeId == 1) {
                     $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
@@ -524,6 +538,7 @@ class ReportsController extends Controller
             'bforward' => $bforward, 
             'bforward1' => $bforward1, 
             'countBforward' => $countBforward,
+            'locationcolumn' => $locationcolumn,
             'serial' => $serial,
             'acquired' => $acquired,
         ];
@@ -679,7 +694,11 @@ class ReportsController extends Controller
 
     public function rpcsepOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
+
+        $office = Office::leftJoin('campuses', 'offices.loc_camp', '=', 'campuses.id')
+        ->select('offices.*', 'campuses.campus_abbr') 
+        ->get();
+
         $uid = auth()->user()->campus_id;
         $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::whereIn('id', [1, 2])->get();
@@ -1089,7 +1108,11 @@ class ReportsController extends Controller
 
     public function icsOption() {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
+
+        $office = Office::leftJoin('campuses', 'offices.loc_camp', '=', 'campuses.id')
+            ->select('offices.*', 'campuses.campus_abbr') 
+            ->get();
+
         $uid = auth()->user()->campus_id;
         $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::all();
@@ -1139,9 +1162,12 @@ class ReportsController extends Controller
 
         $selectedItem = Item::whereIn('id', $itemId)->get();
 
+        $locationcolumn = $request->locationcolumn;
+
         $icsitemquery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
+            ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
             ->select(
                 'enduser_property.*',
                 'items.*',
@@ -1151,7 +1177,8 @@ class ReportsController extends Controller
                 'items.id as itemid',
                 'units.*',
                 'offices.office_abbr',
-                'offices.office_officer'
+                'offices.office_officer',
+                'locations.office_abbr as itemlocated'
             );
         
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
@@ -1192,7 +1219,7 @@ class ReportsController extends Controller
         $pAccountable2 = $request->person_accnt1;
 
         if($icsitems->isNotEmpty()){
-            $pdf = PDF::loadView('reports.ics_option_reportsGen', compact('selectedItem', 'icsitems', 'itemId', 'pAccountable', 'pAccountable2', 'datereport'))->setPaper('Legal', 'portrait');
+            $pdf = PDF::loadView('reports.ics_option_reportsGen', compact('selectedItem', 'icsitems', 'itemId', 'pAccountable', 'pAccountable2', 'datereport', 'locationcolumn'))->setPaper('Legal', 'portrait');
             return $pdf->stream();
         }else{
             return redirect()->back()->with('error', 'No Item Found Belong to this End User!');
@@ -1246,11 +1273,14 @@ class ReportsController extends Controller
     
         $selectedItem = Item::whereIn('id', $itemId)->get();
         $condAccnt = ($pAccountable == 'accountable') ? 'enduser_property.person_accnt' : 'enduser_property.office_id';
+
+        $locationcolumn = $request->locationcolumn;
     
         $paritemquery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
-            ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer');
+            ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
+            ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer', 'locations.office_abbr as itemlocated');
     
         if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
             $paritemquery->whereIn('enduser_property.id', $itemId);
@@ -1285,7 +1315,7 @@ class ReportsController extends Controller
         $pAccountable2 = $request->person_accnt1;
 
         if($paritems->isNotEmpty()){
-            $pdf = PDF::loadView('reports.par_option_reportsGen', compact('selectedItem', 'paritems', 'itemId', 'pAccountable', 'pAccountable2', 'datereport'))->setPaper('Legal', 'portrait');
+            $pdf = PDF::loadView('reports.par_option_reportsGen', compact('selectedItem', 'paritems', 'itemId', 'pAccountable', 'pAccountable2', 'datereport', 'locationcolumn'))->setPaper('Legal', 'portrait');
             return $pdf->stream();
         }else{
             return redirect()->back()->with('error', 'No Item Found Belong to this End User!');

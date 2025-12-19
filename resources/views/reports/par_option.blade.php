@@ -105,11 +105,15 @@
 
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-12">
+                                <div class="col-md-10">
                                     <label>Item:</label>
                                     <select class="select2bs4" multiple="multiple" data-placeholder="Select Items" id="item_id" name="item_id[]" style="width: 100%;" required>
                                        
                                     </select>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <label>Location Column:</label>
+                                    <input type="checkbox" name="locationcolumn" class="form-control" value="1">
                                 </div>
                             </div>
                         </div>

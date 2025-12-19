@@ -80,6 +80,9 @@
 		.sign {
 			height: 80px;
 		}
+		.text-center{
+			text-align: center;
+		}
 	</style>
 </head>
 <body>
@@ -118,21 +121,32 @@
 					<th rowspan="2" width="30">QUANTITY <br>PER<br> PHYSICAL COUNT</th>
 					<th colspan="2">SHORTAGE<br>OVERAGE</th>
 					<th rowspan="2">REMARKS</th>
-					<th colspan="1">LOCATION</th>
+					<th rowspan="2" width="100">Whereabout</th>
+					@if($locationcolumn == 1)
+					<th class="" rowspan="2	">LOCATION</th>
+					@endif
 					@if($serial == 1)
 					<th class="" rowspan="2	">SERIAL</th>
+					@endif
+					@if($acquired == 1)
+					<th class="" rowspan="2	">DATE ACQUIRED</th>
 					@endif
 				</tr>
 				<tr>
 					<th>Quantity</th>	
 					<th>Value</th>
-					<th>Whereabout</th>
 				</tr>
 			</thead>
 			<tr>
 				<th colspan="6" style="text-align: right">Balance Brought Forwarded</th>
 				<th colspan="6" style="text-align: left">{{ number_format($bforward, 2) }}</th>
+				@if($locationcolumn == 1)
+					<td></td>
+				@endif
 				@if($serial == 1)
+					<td></td>
+				@endif
+				@if($acquired == 1)
 					<td></td>
 				@endif
 			</tr>
@@ -140,7 +154,13 @@
 				@if ($purchase->isEmpty())
 				<tr>
 				    <td colspan="11" align="center">No purchase data available.</td>
+					@if($locationcolumn == 1)
+						<td></td>
+					@endif
 					@if($serial == 1)
+						<td></td>
+					@endif
+					@if($acquired == 1)
 						<td></td>
 					@endif
 				</tr>
@@ -152,16 +172,22 @@
 				            <td>{{ $purchaseData->item_descrip }}</td>
 				            <td>{{ $purchaseData->property_no_generated }}</td>
 				            <td>{{ $purchaseData->unit_name }}</td>
-				            <td>{{ $purchaseData->item_cost }}</td>
-				            <td>{{ $purchaseData->qty }}</td>
-				            <td>{{ $purchaseData->total_cost }}</td>
+				            <td>{{ number_format($purchaseData->item_cost, 2) }}</td>
+				            <td class="text-center">{{ $purchaseData->qty }}</td>
+				            <td>{{ number_format($purchaseData->total_cost, 2) }}</td>
 				            <td></td>
-				            <td>{{ $purchaseData->qty }}</td>
+				            <td class="text-center">{{ $purchaseData->qty }}</td>
 				            <td></td>
 				            <td>{{ $purchaseData->remarks }}</td>
 				            <td>{{ $purchaseData->office_name }}</td>
+							@if($locationcolumn == 1)
+								<td>{{ $purchaseData->itemlocated }}</td>
+							@endif
 							@if($serial == 1)
-							<td>{{ $purchaseData->serial_number }}</td>
+								<td>{{ $purchaseData->serial_number }}</td>
+							@endif
+							@if($acquired == 1)
+								<td width="65" style="text-align: center;">{{ strtoupper(\Carbon\Carbon::parse($purchaseData->date_acquired)->format('M. d, Y')) }}</td>
 							@endif
 				        </tr>
 				        @if (is_numeric(str_replace(',', '', $purchaseData->total_cost)))
@@ -171,14 +197,26 @@
 				    <tr>
 			        	<td colspan="6" style="text-align: right"><strong>Total</strong></td>
 			        	<td colspan="6"><strong>{{ number_format($overallTotal, 2) }}</strong></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						@if($serial == 1)
+							<td></td>
+						@endif
+						@if($acquired == 1)
 							<td></td>
 						@endif
 			        </tr>
 			        <tr>
 			        	<td colspan="6" style="text-align: right"><strong>Grand Total </strong></td>
 			        	<td colspan="6"><strong>{{ number_format($overallTotal + $bforward, 2) }}</strong></td>
+						@if($locationcolumn == 1)
+							<td></td>
+						@endif
 						@if($serial == 1)
+							<td></td>
+						@endif
+						@if($acquired == 1)
 							<td></td>
 						@endif
 			        </tr>
@@ -205,7 +243,13 @@
 							<div class="footer-cell-text">Signature over Printed Name of COA Representative</div>
 						</div>
 					</td>
+					@if($locationcolumn == 1)
+						<td></td>
+					@endif
 					@if($serial == 1)
+						<td></td>
+					@endif
+					@if($acquired == 1)
 						<td></td>
 					@endif
 					{{-- <td rowspan=""></td> --}}

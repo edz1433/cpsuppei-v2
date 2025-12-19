@@ -105,6 +105,9 @@
                     <th>Total Cost</th>
                     <th>Date Acquired</th>
                     <th>Inventory Item No.</th>
+                    @if($locationcolumn == 1)
+					<th class="">Location</th>
+					@endif
                     <th width="30">Estimated Useful Life</th>
                 </tr>
             </thead>
@@ -134,6 +137,9 @@
                             @endif
                         </td>
                         <td>{{ $icsitem->property_no_generated }}</td>
+                        @if($locationcolumn == 1)
+                            <td>{{ $icsitem->itemlocated }}</td>
+                        @endif
                         <td></td>
                             @if (is_numeric(str_replace(',', '', $icsitem->item_cost)))
                             {{-- @php $overallTotal += str_replace(',', '', $icsitem->item_cost); @endphp --}}
@@ -157,6 +163,9 @@
                     <td></td>
                     <td></td>
                     <td></td>
+                    @if($locationcolumn == 1)
+						<td></td>
+					@endif
                     <td></td>
                 </tr>
                 <tr>
@@ -168,10 +177,13 @@
                     <td></td>
                     <td></td>
                     <td></td>
+                    @if($locationcolumn == 1)
+						<td></td>
+					@endif
                     <td></td>
                 </tr>
                 <tr>
-                    <th colspan="4" style="text-align: right"><b class="text-total">Total:</b></th>
+                    <th colspan="{{ $locationcolumn == 1 ? 5 : 4 }}" style="text-align: right"><b class="text-total">Total:</b></th>
                     <th colspan="4" style="text-align: left"><b class="text-total">{{ number_format($grandTotal, 2) }}</b></th>
                     <th></th>
                 </tr>

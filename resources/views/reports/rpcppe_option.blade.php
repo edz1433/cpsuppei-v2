@@ -42,9 +42,10 @@
                                     <select class="form-control select2bs4" id="location" name="location" style="width: 100%;">
                                         <option disabled selected value=""> --- Select Location --- </option>
                                         <option value="All" selected>All</option>
-                                        <option value="null">Office/Campus</option>
                                         @foreach ($office as $data)
-                                            <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @if ($data->office_code == '0000')
+                                                <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
@@ -113,7 +114,7 @@
                                             <option value="All">All</option>
                                             @foreach ($office as $data)
                                                 @if ($data->office_code == '0000')
-                                                    <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                                    <option value="{{ $data->id }}">{{ $data->office_name }} ({{ strtoupper($data->campus_abbr) }})</option>
                                                 @endif
                                             @endforeach
                                         </select>
@@ -129,12 +130,16 @@
                                             <option value="EXCEL">EXCEL</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-1 text-center">
+                                        <label>Location Column:</label>
+                                        <input type="checkbox" name="locationcolumn" class="form-control" value="1">
+                                    </div>
+                                    <div class="col-md-1 text-center">
                                         <label>Serial Column:</label>
                                         <input type="checkbox" name="serial" class="form-control" value="1">
                                     </div>
-                                    <div class="col-md-1">
-                                        <label>Date Acquired:</label>
+                                    <div class="col-md-1 text-center">
+                                        <label>Date Acquired Column:</label>
                                         <input type="checkbox" name="acquired" class="form-control" value="1">
                                     </div>
                                 @endif
