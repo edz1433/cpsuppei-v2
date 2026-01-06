@@ -70,17 +70,22 @@ class ReportsController extends Controller
         $formattedStartDate = $startDate ? date('M. d, Y', strtotime($startDate)) : '';
         $formattedEndDate = $endDate ? date('M. d, Y', strtotime($endDate)) : '';
 
+        $cond = ($categoriesId == 'All') ? '!=' : '=';
         $allOffice = ($officeId == 'All') ? '!=' : '=';
 
+        $propId = ($categoriesId == 'All') ? $propId = '0' : $propId;
+        $selectId = ($categoriesId == 'All') ? $selectId = '0' : $selectId;
+        $categoriesId = ($categoriesId == 'All') ? $categoriesId = '0' : $categoriesId;
+
         $location = $request->input('location');
-        // dd($selectId);
+
         $purchase = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->select('enduser_property.*', 'offices.*', 'properties.*', 'units.*', 'items.*', 'locations.office_abbr as itemlocated')
-            ->where(function ($query) use ($officeId, $allOffice) {
+            ->where(function ($query) use ($officeId, $allOffice, $cond) {
                 if ($officeId == 1) {
                     $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
                 } else {
@@ -94,21 +99,9 @@ class ReportsController extends Controller
                     $query->where('enduser_property.properties_id', $propertiesId);
                 }
             })
-            ->where(function ($query) use ($categoriesId) {
-                if ($categoriesId !== 'All') {
-                    $query->where('enduser_property.categories_id', $categoriesId);
-                }
-            })
-            ->where(function ($query) use ($propId) {
-                if ($propId !== 'All') {
-                    $query->where('enduser_property.property_id', $propId);
-                }
-            })
-            // ->where(function ($query) use ($selectId) {
-            //     if ($selectId !== 'All') {
-            //         $query->where('enduser_property.selected_account_id', $selectId);
-            //     }
-            // })
+            ->where('enduser_property.categories_id', $cond, $categoriesId)
+            ->where('enduser_property.property_id', $cond, $propId)
+            ->where('enduser_property.selected_account_id', $cond, $selectId)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
                     $query->whereBetween('enduser_property.date_acquired', [$startDate, $endDate]);
@@ -134,30 +127,16 @@ class ReportsController extends Controller
 
         $purchase = $purchase->get();
 
-        $cond = ($categoriesId == 'All') ? '!=' : '=';
-        
+        // dd($purchase);
+
         $baseQuery = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
-            ->when(!empty($propertiesId), function ($query) use ($propertiesId) {
-                if (is_array($propertiesId)) {
-                    $query->whereIn('enduser_property.properties_id', $propertiesId);
-                } else {
-                    $query->where('enduser_property.properties_id', $propertiesId);
-                }
-            })
-            ->where(function ($query) use ($categoriesId) {
-                if ($categoriesId !== 'All') {
-                    $query->where('enduser_property.categories_id', $categoriesId);
-                }
-            })
-            ->where(function ($query) use ($propId) {
-                if ($propId !== 'All') {
-                    $query->where('enduser_property.property_id', $propId);
-                }
-            })
-            // ->where('enduser_property.selected_account_id', $cond, $selectId)
+            ->where('enduser_property.properties_id', $propertiesId)
+            ->where('enduser_property.categories_id', $cond, $categoriesId)
+            ->where('enduser_property.property_id', $cond, $propId)
+            ->where('enduser_property.selected_account_id', $cond, $selectId)
             ->when($exists, function ($query) use ($ucampid) {
                 $query->where('offices.camp_id', $ucampid);
             });

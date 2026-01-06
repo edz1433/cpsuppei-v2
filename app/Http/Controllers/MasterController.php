@@ -33,7 +33,6 @@ class MasterController extends Controller
         $MainHighCount = Inventory::where('properties_id', '1')->whereIn('office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17])->count();
         $MainLowCount = Inventory::where('properties_id', '2')->whereIn('office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17])->count();
 
-
         $IlogPpeCount = Inventory::where('properties_id', '3')->where('office_id', '7')->count();
         $IlogHighCount = Inventory::where('properties_id', '1')->where('office_id', '7')->count();
         $IlogLowCount = Inventory::where('properties_id', '2')->where('office_id', '7')->count();

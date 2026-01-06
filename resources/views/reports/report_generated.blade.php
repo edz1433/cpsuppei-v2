@@ -176,9 +176,7 @@
 				            <td class="text-center">{{ $purchaseData->unit_name }}</td>
 				            <td class="text-center">{{ number_format($purchaseData->item_cost, 2) }}</td>
 				            <td class="text-center">{{ $purchaseData->qty }}</td>
-				            <td class="text-center">
-								{{ number_format(str_replace(',', '', $purchaseData->total_cost), 2, '.', '') }}
-							</td>
+				            <td class="text-center">{{ number_format((float) str_replace(',', '', $purchaseData->total_cost), 2) }}</td>
 				            <td></td>
 				            <td class="text-center">{{ $purchaseData->qty }}</td>
 				            <td></td>
