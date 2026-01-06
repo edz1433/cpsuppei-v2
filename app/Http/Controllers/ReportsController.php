@@ -135,7 +135,7 @@ class ReportsController extends Controller
         $purchase = $purchase->get();
 
         $cond = ($categoriesId == 'All') ? '!=' : '=';
-        
+
         $baseQuery = EnduserProperty::join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
@@ -275,6 +275,9 @@ class ReportsController extends Controller
                 $sheet->setCellValue('L' . $row, $pur->office_name);
                 if ($serial == 1) {
                     $sheet->setCellValue('M' . $row, $pur->serial_number ?? 'N/A');
+                }
+                if ($acquired == 1) {
+                    $sheet->setCellValue('N' . $row, $pur->date_acquired ?? 'N/A');
                 }
                 $style = $sheet->getStyle('A' . $row . ':L' . $row);
                 $style->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
