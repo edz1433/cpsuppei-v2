@@ -32,7 +32,7 @@ class PurchaseController extends Controller
     
     public function purchaseREAD(Request $request) {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::where('id', '!=', 1)->where('office_code', '!=', '0000')->get();
+        $office = Office::where('office_code', '!=', '0000')->get();
         $accnt = Accountable::all();
         $item = Item::all();
         $unit = Unit::all();
