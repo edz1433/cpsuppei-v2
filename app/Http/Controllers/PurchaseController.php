@@ -35,7 +35,7 @@ class PurchaseController extends Controller
         $office = Office::where('office_code', '!=', '0000')->get();
         $accnt = Accountable::all();
         $item = Item::all();
-        $unit = Unit::all();
+        $unit = Unit::all();    
         $category = Category::all();
         $currentPrice = floatval(str_replace(',', '', $request->input('item_cost'))) ?? 0;
         $property = Property::whereIn('id', [1, 2, 3])->get();
