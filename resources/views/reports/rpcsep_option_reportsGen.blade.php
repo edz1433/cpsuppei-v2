@@ -150,7 +150,7 @@
 					<td></td>
 				@endif
 			</tr>
-			<tbody>
+			{{-- <tbody>
 				@if ($purchase->isEmpty())
 				<tr>
 				    <td colspan="11" align="center">No purchase data available.</td>
@@ -220,6 +220,84 @@
 							<td></td>
 						@endif
 			        </tr>
+				@endif
+			</tbody> --}}
+			<tbody>
+				@if ($purchase->isEmpty())
+					<tr>
+						<td colspan="11" align="center">No purchase data available.</td>
+						@if($locationcolumn == 1)<td></td>@endif
+						@if($serial == 1)<td></td>@endif
+						@if($acquired == 1)<td></td>@endif
+					</tr>
+				@else
+					@php
+						$overallTotal = 0;
+						$chunkSize    = 500;           // 300–800 is usually good balance
+					@endphp
+
+					@foreach ($purchase->chunk($chunkSize) as $chunk)
+						@foreach ($chunk as $purchaseData)
+							<tr>
+								<td>{{ $purchaseData->item_name ?? '' }}</td>
+								<td>{{ $purchaseData->item_descrip ?? '' }}</td>
+								<td>{{ $purchaseData->property_no_generated ?? '' }}</td>
+								<td>{{ $purchaseData->unit_name ?? '' }}</td>
+								<td>{{ number_format((float) str_replace(',', '', $purchaseData->item_cost ?? '0'), 2) }}</td>
+								<td class="text-center">{{ $purchaseData->qty ?? '' }}</td>
+								<td>{{ number_format((float) str_replace(',', '', $purchaseData->total_cost ?? '0'), 2) }}</td>
+								<td></td>
+								<td class="text-center">{{ $purchaseData->qty ?? '' }}</td>
+								<td></td>
+								<td>{{ $purchaseData->remarks ?? '' }}</td>
+								<td>{{ $purchaseData->office_name ?? '' }}</td>
+
+								@if($locationcolumn == 1)
+									<td>{{ $purchaseData->itemlocated ?? '' }}</td>
+								@endif
+								@if($serial == 1)
+									<td>{{ $purchaseData->serial_number ?? '' }}</td>
+								@endif
+								@if($acquired == 1)
+									<td width="65" style="text-align: center;">
+										@if($purchaseData->date_acquired)
+											{{ strtoupper(\Carbon\Carbon::parse($purchaseData->date_acquired)->format('M. d, Y')) }}
+										@else
+											—
+										@endif
+									</td>
+								@endif
+							</tr>
+
+							@php
+								$cost = (float) str_replace(',', '', $purchaseData->total_cost ?? '0');
+								if (is_numeric($cost) && $cost > 0) {
+									$overallTotal += $cost;
+								}
+
+								// Force garbage collection periodically
+								if ($loop->parent->iteration % 4 === 0) {   // every 4 chunks (~2000 rows)
+									gc_collect_cycles();
+								}
+							@endphp
+						@endforeach
+					@endforeach
+
+					<!-- Totals – now safe to display -->
+					<tr>
+						<td colspan="6" style="text-align: right"><strong>Total</strong></td>
+						<td colspan="6"><strong>{{ number_format($overallTotal, 2) }}</strong></td>
+						@if($locationcolumn == 1)<td></td>@endif
+						@if($serial == 1)<td></td>@endif
+						@if($acquired == 1)<td></td>@endif
+					</tr>
+					<tr>
+						<td colspan="6" style="text-align: right"><strong>Grand Total</strong></td>
+						<td colspan="6"><strong>{{ number_format($overallTotal + ($bforward ?? 0), 2) }}</strong></td>
+						@if($locationcolumn == 1)<td></td>@endif
+						@if($serial == 1)<td></td>@endif
+						@if($acquired == 1)<td></td>@endif
+					</tr>
 				@endif
 			</tbody>
 			<tfoot>
