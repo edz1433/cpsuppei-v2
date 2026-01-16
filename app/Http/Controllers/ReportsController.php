@@ -41,6 +41,9 @@ class ReportsController extends Controller
     }
 
     public function reportOptionView(Request $request) {
+        ini_set('memory_limit', '1536M');
+        set_time_limit(600);
+        
         $ucampid = auth()->user()->campus_id;
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
