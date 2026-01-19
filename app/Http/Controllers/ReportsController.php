@@ -22,6 +22,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Support\Facades\File;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Barryvdh\Snappy\Facades\SnappyPdf as Snappy; 
 
 class ReportsController extends Controller
 {
@@ -41,9 +42,9 @@ class ReportsController extends Controller
     }
 
     public function reportOptionView(Request $request) {
-        ini_set('memory_limit', '1536M');
-        set_time_limit(600);
-        
+        ini_set('memory_limit', '2G');  
+        set_time_limit(600);            
+
         $ucampid = auth()->user()->campus_id;
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
@@ -229,10 +230,12 @@ class ReportsController extends Controller
                 : '');
 
         if($request->file_type == "PDF"){
-            ini_set('memory_limit', '1024M'); // Increase to 1GB
-            set_time_limit(300);
-            $pdf = PDF::loadView($page, $data)->setPaper('Legal', 'landscape');
-            return $pdf->stream();
+            // $pdf = PDF::loadView($page, $data)->setPaper('Legal', 'landscape');
+            $pdf = Snappy::loadView($page, $data)
+                        ->setPaper('Legal')
+                        ->setOrientation('landscape');
+
+            return $pdf->inline();
         }else {
             $filePath = public_path('Forms/RPCPPE Reports.xlsx');
             
