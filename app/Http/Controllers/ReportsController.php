@@ -233,8 +233,8 @@ class ReportsController extends Controller
                 $pdf = Snappy::loadView($page, $data)
                     ->setPaper('Legal')
                     ->setOrientation('landscape')
-                    ->setOption('disable-smart-shrinking', true)
-                    ->setOption('no-stop-slow-scripts', true)
+                    // ->setOption('disable-smart-shrinking', true)
+                    // ->setOption('no-stop-slow-scripts', true)
                     ->setOption('quiet', true);
 
                 return $pdf->inline();
