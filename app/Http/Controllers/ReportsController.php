@@ -230,12 +230,14 @@ class ReportsController extends Controller
                 : '');
 
         if($request->file_type == "PDF"){
-            // $pdf = PDF::loadView($page, $data)->setPaper('Legal', 'landscape');
-            $pdf = Snappy::loadView($page, $data)
-                        ->setPaper('Legal')
-                        ->setOrientation('landscape');
+                $pdf = Snappy::loadView($page, $data)
+                    ->setPaper('Legal')
+                    ->setOrientation('portrait')
+                    ->setOption('disable-smart-shrinking', true)
+                    ->setOption('no-stop-slow-scripts', true)
+                    ->setOption('quiet', true);
 
-            return $pdf->inline();
+                return $pdf->inline();
         }else {
             $filePath = public_path('Forms/RPCPPE Reports.xlsx');
             
