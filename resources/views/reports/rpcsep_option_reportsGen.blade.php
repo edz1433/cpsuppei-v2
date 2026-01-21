@@ -4,10 +4,10 @@
 	<meta charset="utf-8">
 	<title></title>
 	<style>
-		table {
-			width: 100%;        /* Fit table inside page */
-			table-layout: fixed; /* Columns respect width */
-		}
+		/*.table-responsive { 
+		  	overflow-x: auto;
+		  	max-width: 100%; 
+		}*/
 		.text-type {
 			text-align: center;
 			margin-top: -5px;
