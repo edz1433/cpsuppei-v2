@@ -9,8 +9,8 @@ return [
         'options' => [
             'enable-local-file-access' => true,
             'lowquality' => true,
-            // 'no-stop-slow-scripts' => true,
-            // 'disable-smart-shrinking' => true,
+            'no-stop-slow-scripts' => true,
+            'disable-smart-shrinking' => true,
         ],
         'env' => [],
     ],
