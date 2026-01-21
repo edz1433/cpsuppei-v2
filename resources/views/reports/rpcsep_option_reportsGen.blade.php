@@ -19,11 +19,11 @@
 			text-align: center;
 		}
 		.text3 {
-			font-size: 11pt;
+			font-size: 9pt;
 			margin-top: 10px;
 		}
 		.text4 {
-			font-size: 11pt;
+			font-size: 9pt;
 		}
 
 		#rpcppe {
