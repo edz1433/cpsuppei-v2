@@ -4,10 +4,9 @@
 	<meta charset="utf-8">
 	<title></title>
 	<style>
-		/*.table-responsive { 
-		  	overflow-x: auto;
-		  	max-width: 100%; 
-		}*/
+		.table-responsive { 
+			width: 100%;
+		}
 		.text-type {
 			text-align: center;
 			margin-top: -5px;
