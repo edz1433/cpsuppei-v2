@@ -5,7 +5,7 @@ return [
     'pdf' => [
         'enabled' => true,
         'binary' => env('WKHTMLTOPDF_BINARY'),
-        'timeout' => null,
+        'timeout' => 1200,
         'options' => [
             'enable-local-file-access' => true,
             'lowquality' => true,
