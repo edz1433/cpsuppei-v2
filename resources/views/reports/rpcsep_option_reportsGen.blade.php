@@ -234,7 +234,7 @@
 								<td>{{ $purchaseData->item_name ?? '' }}</td>
 								<td>{{ $purchaseData->item_descrip ?? '' }}</td>
 								<td>{{ $purchaseData->property_no_generated ?? '' }}</td>
-								<td>{{ $purchaseData->unit_name ?? '' }}</td>
+								<td class="text-center">{{ $purchaseData->unit_name ?? '' }}</td>
 								<td>{{ number_format((float) str_replace(',', '', $purchaseData->item_cost ?? '0'), 2) }}</td>
 								<td class="text-center">{{ $purchaseData->qty ?? '' }}</td>
 								<td>{{ number_format((float) str_replace(',', '', $purchaseData->total_cost ?? '0'), 2) }}</td>
