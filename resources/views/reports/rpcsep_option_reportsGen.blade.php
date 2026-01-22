@@ -3,86 +3,79 @@
 <head>
 	<meta charset="utf-8">
 	<title></title>
-	<style>
-		.table-responsive { 
-			width: 100%;
-		}
-		.text-type {
-			text-align: center;
-			margin-top: -5px;
-		}
-		.text1 {
-			text-align: center;
-		}
-		.text2 {
-			text-align: center;
-		}
-		.text3 {
-			font-size: 11pt;
-			margin-top: 10px;
-		}
-		.text4 {
-			font-size: 11pt;
-		}
+<style>
+    /* General text alignment */
+    .text-type, .text1, .text2 {
+        text-align: center;
+    }
 
-		#rpcppe {
-		  	font-family: Bookman Old Style, Georgia, serif;
-		  	border-collapse: collapse;
-		  	width: 100%;
-		  	margin-top: 20px;
-		}
+    .text-type { margin-top: -5px; }
+    .text3 { font-size: 11pt; margin-top: 10px; }
+    .text4 { font-size: 11pt; }
 
-		#rpcppe td {
-			border: 1px solid #000;
-		  	padding: 8px;
-		} 
-		#rpcppe th {
-		  	border: 2px solid #000;
-		  	padding: 8px;
-		}
+    /* Table styling */
+    #rpcppe {
+        font-family: "Bookman Old Style", Georgia, serif;
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;        /* Fix column widths */
+        margin-top: 20px;
+        word-wrap: break-word;      /* Wrap long text */
+    }
 
-		#rpcppe tfoot {
-		  	border: 2px solid #000;
-		  	padding: 8px;
-		}
+    #rpcppe th, #rpcppe td {
+        border: 1px solid #000;
+        padding: 4px 6px;           /* smaller padding for fitting */
+        font-size: 9pt;             /* smaller font for wide tables */
+    }
 
-		#rpcppe tr:nth-child(even){background-color: #f2f2f2;}
+    #rpcppe th {
+        text-align: center;
+        background-color: #fff;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        font-weight: bold;
+    }
 
-		#rpcppe tr:hover {background-color: #ddd;}
+    #rpcppe tr:nth-child(even) { background-color: #f2f2f2; }
+    #rpcppe tr:hover { background-color: #ddd; }
 
-		#rpcppe th {
-		  	padding-top: 12px;
-		  	padding-bottom: 12px;
-		  	text-align: center;
-		  	background-color: #fff;
-		  	font-size: 10pt;
-		}
-		.footer-cell {
-			width: 32%;
-			float: left;
-			text-align: left;
-			padding: 5px; 
-		}
+    #rpcppe tfoot td {
+        font-size: 9pt;
+        padding: 4px 6px;
+        border: 1px solid #000;
+    }
 
-		.footer-cell-title {
-  			font-weight: bold;
-		}
+    /* Footer signature cells */
+    .footer-cell {
+        width: 32%;
+        float: left;
+        text-align: left;
+        padding: 5px; 
+    }
 
-		.footer-cell-sign {
-  			margin-top: 20px;
-		}
-		.footer-cell-text {
-			font-size: 8pt;
-		  	margin-top: 5px;
-		  	text-align: left;
-		}
-		.sign {
-			height: 80px;
-		}
-		.text-center{
-			text-align: center;
-		}
-	</style>
+    .footer-cell-title { font-weight: bold; }
+    .footer-cell-sign { margin-top: 20px; }
+    .footer-cell-text {
+        font-size: 8pt;
+        margin-top: 5px;
+        text-align: left;
+    }
+
+    .sign { height: 80px; }
+
+    /* Center helper */
+    .text-center { text-align: center; }
+
+    /* Optional: reduce table width if too many columns */
+    @media print, screen {
+        #rpcppe th, #rpcppe td {
+            font-size: 8.5pt;
+            padding: 3px 5px;
+        }
+    }
+</style>
+
 </head>
 <body>
 	<header style="margin-top: -40px; margin-left: 250px;">
@@ -113,11 +106,11 @@
 					<th rowspan="2">ARTICLE</th>
 					<th rowspan="2">DESCRIPTION</th>
 					<th rowspan="2">PROPERTY NO.</th>
-					<th rowspan="2" width="30">UNIT OF MEASURE</th>
-					<th rowspan="2" width="30">UNIT VALUE</th>
-					<th rowspan="2" width="30">QUANTITY <br>PER<br> PROPERTY CARD</th>
-					<th rowspan="2" width="30">Total Cost</th>
-					<th rowspan="2" width="30">QUANTITY <br>PER<br> PHYSICAL COUNT</th>
+					<th rowspan="2" width="80">UNIT OF MEASURE</th>
+					<th rowspan="2" width="80">UNIT VALUE</th>
+					<th rowspan="2" width="80">QUANTITY <br>PER<br> PROPERTY CARD</th>
+					<th rowspan="2" width="80">Total Cost</th>
+					<th rowspan="2" width="80">QUANTITY <br>PER<br> PHYSICAL COUNT</th>
 					<th colspan="2">SHORTAGE<br>OVERAGE</th>
 					<th rowspan="2">REMARKS</th>
 					<th rowspan="2" width="100">Whereabout</th>
