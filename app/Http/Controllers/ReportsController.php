@@ -1324,7 +1324,11 @@ class ReportsController extends Controller
             ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
             ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer', 'locations.office_abbr as itemlocated');
     
-        if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
+        $itemId = $request->input('item_id');
+        $itemId = is_array($itemId) ? $itemId : (array) $itemId;
+        $itemId = array_filter($itemId);
+
+        if (!empty($itemId) && !in_array('All', $itemId, true)) {
             $paritemquery->whereIn('enduser_property.id', $itemId);
         }
     
@@ -1333,9 +1337,9 @@ class ReportsController extends Controller
         } else {
             $paritemquery->where('enduser_property.office_id', $officecond, $officeId);
         }
-    
+
         $paritems = $paritemquery
-            ->where('enduser_property.properties_id', 3)
+            ->where('enduser_property.item_cost', '>=', 50000)
             ->where('enduser_property.categories_id', $condcategories, $categoriesId)
             ->where('enduser_property.property_id', $condpropid, $propId)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
@@ -1354,6 +1358,7 @@ class ReportsController extends Controller
         } 
         
         $paritems = $paritems->get();
+
         $pAccountable2 = $request->person_accnt1;
 
         if($paritems->isNotEmpty()){
@@ -1515,22 +1520,28 @@ class ReportsController extends Controller
                 $locoptions .= "<option value='" . $location->id . "'>" . htmlspecialchars($location->office_name) . "</option>";
             }
         } else {
-            $itempar = EnduserProperty::orwhere('person_accnt', $id)
-                ->orwhere('person_accnt1', $id)
+            $itempar = EnduserProperty::query()
+                ->where(function ($q) use ($id) {
+                    $q->where('person_accnt', $id)
+                    ->orWhere('person_accnt1', $id);
+                })
                 ->join('items', 'items.id', '=', 'enduser_property.item_id')
                 ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
                 ->when($properties_id == 'ics', function ($query) {
                     return $query->whereIn('enduser_property.properties_id', [1, 2]);
                 })
                 ->when($properties_id == 'par', function ($query) {
-                    return $query->whereIn('enduser_property.properties_id', [3])
-                    ->where('enduser_property.item_cost', '>=', 50000);
+                    return $query->where('enduser_property.properties_id', 3)
+                                ->where('enduser_property.item_cost', '>=', 50000);
                 })
                 ->where('enduser_property.categories_id', $condcategories, $categoriesId)
                 ->where('enduser_property.property_id', $condpropid, $propId)
                 ->when($startDate || $endDate, function ($query) use ($startDate, $endDate) {
                     if ($startDate && $endDate) {
-                        $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                        $query->whereBetween('enduser_property.date_acquired', [
+                            $startDate . ' 00:00:00', 
+                            $endDate   . ' 23:59:59'
+                        ]);
                     } elseif ($startDate) {
                         $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                     } elseif ($endDate) {
@@ -1545,6 +1556,7 @@ class ReportsController extends Controller
                     . $icsItem->item_name . ' ' 
                     . $icsItem->item_descrip 
                     . ' (Acquired: ' . date('Y-m-d', strtotime($icsItem->date_acquired)) . ")"
+                    .$icsItem->item_cost
                     . "</option>";
             }
 
