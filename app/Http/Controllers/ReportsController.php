@@ -1539,8 +1539,6 @@ class ReportsController extends Controller
                 })
                 ->get();
 
-                dd($itempar);
-
             $options = "<option value=''>Select Items</option>";
             foreach ($itempar as $icsItem) {
                 $options .= "<option value='" . $icsItem->pid . "'>"
