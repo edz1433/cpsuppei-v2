@@ -1524,6 +1524,7 @@ class ReportsController extends Controller
                 })
                 ->when($properties_id == 'par', function ($query) {
                     return $query->whereIn('enduser_property.properties_id', [3]);
+                    return $query->whereIn('enduser_property.item_cost', '>=', 50000);
                 })
                 ->where('enduser_property.categories_id', $condcategories, $categoriesId)
                 ->where('enduser_property.property_id', $condpropid, $propId)
