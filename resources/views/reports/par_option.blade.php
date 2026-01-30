@@ -78,7 +78,7 @@
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
-                                    <label>End User:</label>
+                                    <label>Person Accountable:</label>
                                     <input type="hidden" id="accountType" name="pAccountable">
                                     <select class="form-control select2bs4" id="person_accnt" data-placeholder="Select Accountable" onchange="allgenOption(this.value, 'user', this.options[this.selectedIndex].getAttribute('data-person-cat'))" name="person_accnt" style="width: 100%;">
                                         <option></option>
@@ -91,13 +91,17 @@
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
-                                    <label>End User 2:</label>
+                                    <label>End User:</label>
                                     <input type="hidden" id="accountType" name="pAccountable">
-                                    <select class="form-control select2bs4" name="person_accnt1">
+                                    {{-- <select class="form-control select2bs4" name="person_accnt1">
                                         <option value="0">NONE</option>
                                         @foreach ($accntables as $acc)
                                             <option>{{ $acc->person_accnt }}</option>
                                         @endforeach
+                                    </select> --}}
+                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1">
+                                        <option></option>
+                                     
                                     </select>
                                 </div>
                             </div>
@@ -221,6 +225,10 @@ function categor(val) {
                         $('#person_accnt').empty();
                         $('#person_accnt').append("<option value=''></option>");
                         $('#person_accnt').append(response.options);
+                        
+                        $('#person_accnt1').empty();
+                        $('#person_accnt1').append("<option value=''></option>");
+                        $('#person_accnt1').append(response.options1);
                     }else{
                          $('#item_id').empty();
                          $('#item_id').append("<option value=''></option>");

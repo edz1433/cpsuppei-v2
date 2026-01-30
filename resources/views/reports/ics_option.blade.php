@@ -114,9 +114,13 @@
                                 </div> 
                                 <div class="col-md-6"> 
                                     <label>End User:</label> 
-                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1" data-placeholder="Select End User" > 
+                                    {{-- <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1" data-placeholder="Select End User" > 
                                         <option></option> 
-                                    </select> 
+                                    </select>  --}}
+                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1">
+                                        <option></option>
+                                     
+                                    </select>
                                 </div> 
                             </div>
                         </div>
@@ -234,6 +238,10 @@ function allgenOption(val, type, pAccountable, startDate = null, endDate = null)
                     // Update accountable person dropdown
                     $('#person_accnt').empty().append(response.options); 
                     $('#person_accnt1').empty().append(response.endusers); 
+
+                    $('#person_accnt1').empty();
+                    $('#person_accnt1').append("<option value=''></option>");
+                    $('#person_accnt1').append(response.options1);
                     
                     // Update location dropdown only if it's a campus selection
                     $('#location').empty().append(response.location);

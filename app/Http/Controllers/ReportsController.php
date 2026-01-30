@@ -1446,59 +1446,80 @@ class ReportsController extends Controller
         $condselaccnt = ($selaccnt == 'All') ? '!=' : '=';
         $selaccnt = ($selaccnt == 'All') ? '0' : $selaccnt;
 
+        $options = "";  
+        $options1 = "";
+
         if ($type == 'campus') {
             $office = Office::find($id);
             
             $endusers = "<option value=''>None</option>";
 
             if ($office->camp_id == '') { 
-               $userAccountable = Accountable::where('off_id', $id)
-                    ->select('person_accnt', 'id')
-                    ->get();
 
-                $options = "<option value=''>Select Accountable</option>";
-            
+                $userAccountable = Accountable::where('off_id', $id)->get();
+
+                // ACCOUNTABLE
+                $options  = "<option value=''>Select Accountable</option>";
+
+                // END USER
+                $options1 = "<option value=''>Select End User</option>";
+
                 foreach ($userAccountable as $accnt) {
-                    $roleLabel = '';
-                    if ($accnt->accnt_role == 1) {
-                        $roleLabel = ' - HEAD';
+
+                    // ACCOUNTABLE (all)
+                    $roleLabel = ($accnt->accnt_role == 1) ? ' - HEAD' : '';
+
+                    $options .= "<option value='{$accnt->id}'
+                                    data-person-cat='accountable'
+                                    data-account-id='{$accnt->id}'>
+                                    {$accnt->person_accnt}{$roleLabel}
+                                </option>";
+
+                    // END USER (exclude 1,2,3)
+                    if (!in_array($accnt->accnt_role, [1, 2, 3])) {
+                        $options1 .= "<option value='{$accnt->id}'
+                                        data-person-cat='enduser'
+                                        data-account-id='{$accnt->id}'>
+                                        {$accnt->person_accnt}
+                                    </option>";
                     }
-
-                    $options .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
                 }
-            }else{
-                $userAccountable = Accountable::where('off_id', $id)
+
+            } else {
+
+                /* ================= ACCOUNTABLE ================= */
+
+                $custodians = Accountable::where('off_id', $id)
                     ->where('accnt_role', 2)
-                    ->select('person_accnt', 'id')
                     ->get();
 
                 $options = "<option value=''>Select Accountable</option>";
-            
-                foreach ($userAccountable as $accnt) {
-                    $roleLabel = ' - CUSTODIAN';
 
-                    $options .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
+                foreach ($custodians as $accnt) {
+                    $options .= "<option value='{$accnt->id}'
+                                    data-person-cat='accountable'
+                                    data-account-id='{$accnt->id}'>
+                                    {$accnt->person_accnt} - CUSTODIAN
+                                </option>";
                 }
 
-                $endUsersAccountable = Accountable::where('off_id', $id)
-                    ->where('accnt_role', '!=', 2)
-                    ->select('person_accnt', 'id')
-                    ->get();
+                /* ================= END USER (SAME LOGIC) ================= */
 
-                $endusers = "<option value='All'>All</option>";
+                $endUsersAccountable = Accountable::where('off_id', $id)->get();
+
+                $options1 = "<option value=''>Select End User</option>";
 
                 foreach ($endUsersAccountable as $accnt) {
-                    $roleLabel = '';
-                    if ($accnt->accnt_role == 1) {
-                        $roleLabel = ' - HEAD';
+
+                    // SAME filter: NOT IN (1,2,3)
+                    if (!in_array($accnt->accnt_role, [1, 2, 3])) {
+                        $options1 .= "<option value='{$accnt->id}'
+                                        data-person-cat='enduser'
+                                        data-account-id='{$accnt->id}'>
+                                        {$accnt->person_accnt}
+                                    </option>";
                     }
-
-                    $endusers .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
                 }
-
             }
 
             // Get the campus location options
@@ -1566,6 +1587,7 @@ class ReportsController extends Controller
 
         return response()->json([
             "options" => $options,
+            "options1" => $options1,
             "endusers" => $endusers,
             "location" => $locoptions,
         ]);
