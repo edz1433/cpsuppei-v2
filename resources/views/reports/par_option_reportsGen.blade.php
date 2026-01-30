@@ -156,7 +156,7 @@
 							<td>{{ $paritem->itemlocated }}</td>
 						@endif
 			            <td>{{ $paritem->date_acquired }}</td>
-			            <td align="right"><b>{{ $paritem->item_cost }}</b></td>
+			            <td align="right"><b>{{ number_format($paritem->item_cost, 2) }}</b></td>
 
 			            @if (is_numeric(str_replace(',', '', $paritem->item_cost)))
 			                {{-- @php $overallTotal += str_replace(',', '', $paritem->item_cost); @endphp --}}
