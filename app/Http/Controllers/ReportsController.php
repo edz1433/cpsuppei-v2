@@ -1556,7 +1556,6 @@ class ReportsController extends Controller
                     . $icsItem->item_name . ' ' 
                     . $icsItem->item_descrip 
                     . ' (Acquired: ' . date('Y-m-d', strtotime($icsItem->date_acquired)) . ")"
-                    .$icsItem->item_cost
                     . "</option>";
             }
 
