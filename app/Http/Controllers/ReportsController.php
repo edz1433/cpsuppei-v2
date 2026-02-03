@@ -1344,6 +1344,7 @@ class ReportsController extends Controller
             ->whereIn('enduser_property.office_id', $officeFilter)
             ->where('enduser_property.person_accnt', $personaccountable)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
+            ->where('enduser_property.deleted_at', 0)
             ->when(!empty($request->person_accnt1), function ($q) use ($request) {
                 $q->where('person_accnt1', $request->person_accnt1);
             })
