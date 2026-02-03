@@ -1341,7 +1341,7 @@ class ReportsController extends Controller
             ->where('enduser_property.item_cost', '>=', 50000)
             ->where('enduser_property.categories_id', $condcategories, $categoriesId)
             ->where('enduser_property.property_id', $condpropid, $propId)
-            ->whereIn('enduser_property.office_id', $officeId)
+            ->where('enduser_property.office_id', $officeId)
             ->where('enduser_property.person_accnt', $personaccountable)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
             ->where('enduser_property.deleted', 0)
