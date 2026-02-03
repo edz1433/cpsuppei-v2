@@ -82,7 +82,7 @@
     <div class="header-container">
         <p class="appendix">Appendix 71</p>
         <header>
-            <img src="{{ asset('template/img/header-2026.png') }}" width="50%" class="header-image">
+            <img src="{{ asset('template/img/header-2026.png') }}" width="60%" class="header-image">
         </header>
     </div>
 
