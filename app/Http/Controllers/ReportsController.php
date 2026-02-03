@@ -1339,11 +1339,11 @@ class ReportsController extends Controller
 
         $paritems = $paritemquery
             ->where('enduser_property.item_cost', '>=', 50000)
-            ->where($condcategories, $categoriesId)
-            ->where($condpropid, $propId)
-            ->whereIn('enduser_property.office_id', $officeFilter) 
+            ->where('enduser_property.categories_id', $condcategories, $categoriesId)
+            ->where('enduser_property.property_id', $condpropid, $propId)
+            ->whereIn('enduser_property.office_id', $officeFilter)
             ->where('enduser_property.person_accnt', $personaccountable)
-            ->where($conaccountid, $selectId)
+            ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
             ->when(!empty($request->person_accnt1), function ($q) use ($request) {
                 $q->where('person_accnt1', $request->person_accnt1);
             })
