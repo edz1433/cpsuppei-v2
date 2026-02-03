@@ -1,120 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<title>{{ strtoupper('PAR REPORT ' . $datereport) }}</title>
-	<style>
-		/*.table-responsive {
-		  	overflow-x: auto;
-		  	max-width: 100%; 
-		}*/
-		.text-type {
-			text-align: center;
-			margin-top: -5px;
-		}
-		.text1 {
-			text-align: center;
-		}
-		.text2 {
-			text-align: center;
-		}
-		.text3 {
-			font-size: 11pt;
-			margin-top: 10px;
-		}
-		.text4 {
-			font-size: 11pt;
-		}
-
-		#rpcppe {
-		  	font-family: Arial;
-		  	border-collapse: collapse;
-		  	width: 100%;
-		  	font-size: 11pt;
-		}
-
-		#rpcppe td {
-			border: 1px solid #000;
-		  	padding: 3px;
-		} 
-		#rpcppe th {
-		  	border: 1px solid #000;
-		  	/*padding: 8px;*/
-		}
-		.icsno{
-			text-align: right !important;
-			font-size: 8pt;
-		}
-		.text-total {
-			font-size: 12pt !important;
-			height: 9px;
-		}
-		#rpcppe tfoot {
-		  	border: 1px solid #000;
-		  	padding: 8px;
-		}
-
-		#rpcppe tr:nth-child(even){background-color: #f2f2f2;}
-
-		#rpcppe tr:hover {background-color: #ddd;}
-
-		#rpcppe th {
-		  	padding-top: 12px;
-		  	padding-bottom: 12px;
-		  	text-align: center;
-		  	background-color: #fff;
-		  	font-size: 10pt;
-		}
-		.footer-cell {
-			width: 32%;
-			padding: 5px; 
-		}
-
-		.footer-cell-title {
-  			font-weight: bold;
-		}
-
-		.footer-cell-sign {
-  			margin-top: 20px;
-		}
-		.footer-cell-text {
-			font-size: 8pt;
-		  	margin-top: 5px;
-		}
-		.sign {
-			height: 80px;
-		}
-		.text-receivedby {
-			font-size: 8pt;
-		}
-		.text-center{
-			text-align: center;
-		}
-	</style>
+    <meta charset="utf-8">
+    <title>{{ strtoupper('PAR REPORT ' . $datereport) }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .header-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .appendix {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+        .header-image {
+            display: block;
+            margin: 0 auto;
+        }
+        .title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12pt;
+            margin-top: 10px;
+        }
+        .details {
+            font-weight: bold;
+            font-size: 10pt;
+            margin-top: 15px;
+        }
+        .details p {
+            margin: 3px 0;
+        }
+        table#rpcppe {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 11pt;
+        }
+        #rpcppe td, #rpcppe th {
+            border: 1px solid #000;
+            padding: 3px;
+        }
+        #rpcppe tr:nth-child(even) { background-color: #f2f2f2; }
+        #rpcppe tr:hover { background-color: #ddd; }
+        #rpcppe th {
+            padding: 8px;
+            text-align: center;
+            background-color: #fff;
+            font-size: 10pt;
+        }
+        .footer-cell {
+            width: 32%;
+            padding: 5px; 
+        }
+        .footer-cell-title {
+            font-weight: bold;
+        }
+        .footer-cell-sign {
+            margin-top: 20px;
+        }
+        .footer-cell-text {
+            font-size: 8pt;
+            margin-top: 5px;
+        }
+        .sign {
+            height: 80px;
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-	<p style="margin-top: -30px; margin-left: 640px;">Appendix 71</p>
-	<header style="margin-top: -10px; margin-left: 135px;">
-		<img src="{{ asset('template/img/par-header.png') }}">
-	</header>
-	<p style="font-weight: bolder; font-family: sans-serif; text-align: center;">PROPERTY ACKNOWLEDGEMENT RECEIPT</p>
 
-	<div>
-		<p style="font-weight: bolder; font-family: sans-serif; font-size: 10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-			@if (!$paritems->isEmpty())
-			    <p style="font-weight: bolder; font-family: sans-serif; font-size: 10pt;">
-			        Entity Name: {{ $paritems[0]->office_name }}
-			    </p>
-			@else
-			    <p style="font-weight: bolder; font-family: sans-serif; font-size: 10pt;">
-			    	No related items found
-			    </p>
-			@endif
+    <div class="header-container">
+        <p class="appendix">Appendix 71</p>
+        <header>
+            <img src="{{ asset('template/img/par-header.png') }}" class="header-image">
+        </header>
+    </div>
 
-		</p>
-		<p style="font-weight: bolder; font-family: sans-serif; font-size: 10pt; margin-top: -28px;">Entity Name: ___________________________________________________</p>
-		<p style="font-weight: bolder; font-family: sans-serif; font-size: 10pt;">Fund Cluster: __________________________________________________  PAR No.: _______________________</p>
-	</div>
+    <p class="title">PROPERTY ACKNOWLEDGEMENT RECEIPT</p>
+
+    <div class="details">
+        @if (!$paritems->isEmpty())
+            <p>Entity Name: {{ $paritems[0]->office_name }}</p>
+        @else
+            <p>Entity Name: ___________________________________________________</p>
+        @endif
+        <p>Fund Cluster: __________________________________________________  PAR No.: _______________________</p>
+    </div>
 	<div class="table-responsive">
 		<table id="rpcppe" class="table table-bordered">
 			<thead>
