@@ -1469,6 +1469,7 @@ class ReportsController extends Controller
             if ($office->camp_id == '') { 
 
                 $userAccountable = Accountable::where('off_id', $id)->get();
+                $userDesignate = Accountable::whereJsonContains('desig_offid', (string)$id)->get();
 
                 // ACCOUNTABLE
                 $options  = "<option value=''>Select Accountable</option>";
@@ -1476,9 +1477,11 @@ class ReportsController extends Controller
                 // END USER
                 $options1 = "<option value=''>Select End User</option>";
 
-                foreach ($userAccountable as $accnt) {
+                // Keep track of added IDs to avoid duplicates in $options
+                $addedAccountables = [];
 
-                    // ACCOUNTABLE (all)
+                // Add accountables first
+                foreach ($userAccountable as $accnt) {
                     $roleLabel = ($accnt->accnt_role == 1) ? ' - HEAD' : '';
 
                     $options .= "<option value='{$accnt->id}'
@@ -1487,8 +1490,10 @@ class ReportsController extends Controller
                                     {$accnt->person_accnt}{$roleLabel}
                                 </option>";
 
-                    // END USER (exclude 1,2,3)
-                    if (!in_array($accnt->accnt_role, [1, 2, 3])) {
+                    $addedAccountables[] = $accnt->id;
+
+                    // END USER (exclude roles 1,2,3)
+                    if (!in_array($accnt->accnt_role, [1,2,3])) {
                         $options1 .= "<option value='{$accnt->id}'
                                         data-person-cat='enduser'
                                         data-account-id='{$accnt->id}'>
@@ -1497,8 +1502,18 @@ class ReportsController extends Controller
                     }
                 }
 
+                // Add designates to ACCOUNTABLE dropdown if not already included
+                foreach ($userDesignate as $desig) {
+                    if (!in_array($desig->id, $addedAccountables)) {
+                        $options .= "<option value='{$desig->id}'
+                                        data-person-cat='accountable'
+                                        data-account-id='{$desig->id}'>
+                                        {$desig->person_accnt}
+                                    </option>";
+                        $addedAccountables[] = $desig->id;
+                    }
+                }
             } else {
-
                 /* ================= ACCOUNTABLE ================= */
 
                 $custodians = Accountable::where('off_id', $id)
