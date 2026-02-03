@@ -185,7 +185,6 @@ Route::group(['middleware' => ['login_auth']], function () {
 
         Route::get('/list/cat/{id}/{mode}', [PropertiesController::class, 'invCatIcsPar'])->name('invCatIcsPar');
 
-
         Route::post('/allgenoption', [ReportsController::class, 'allgenOption'])->name('allgenOption');
     });
 

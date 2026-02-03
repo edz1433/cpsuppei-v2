@@ -1343,6 +1343,9 @@ class ReportsController extends Controller
             ->where('enduser_property.categories_id', $condcategories, $categoriesId)
             ->where('enduser_property.property_id', $condpropid, $propId)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
+            ->when(!empty($request->person_accnt1), function ($q) use ($request) {
+                $q->where('person_accnt1', $request->person_accnt1);
+            })
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
                     $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -1572,6 +1575,7 @@ class ReportsController extends Controller
                 ->get();
 
             $options = "<option value=''>Select Items</option>";
+            $options = "<option value='All'>All Items</option>";
             foreach ($itempar as $icsItem) {
                 $options .= "<option value='" . $icsItem->pid . "'>"
                     . $icsItem->item_name . ' ' 
