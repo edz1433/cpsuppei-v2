@@ -1344,7 +1344,7 @@ class ReportsController extends Controller
             ->whereIn('enduser_property.office_id', $officeFilter)
             ->where('enduser_property.person_accnt', $personaccountable)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
-            ->where('enduser_property.deleted_at', 0)
+            ->where('enduser_property.deleted', 0)
             ->when(!empty($request->person_accnt1), function ($q) use ($request) {
                 $q->where('person_accnt1', $request->person_accnt1);
             })
@@ -1581,7 +1581,7 @@ class ReportsController extends Controller
                         $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                     }
                 })
-                ->where('enduser_property.deleted_at', 0)
+                ->where('enduser_property.deleted', 0)
                 ->get();
 
             $options = "<option value=''>Select Items</option>";
