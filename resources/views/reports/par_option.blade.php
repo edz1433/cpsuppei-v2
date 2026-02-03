@@ -28,7 +28,8 @@
                             <div class="form-row">
                                 <div class="col-md-6" {{ auth()->user()->role !== 'Campus Admin' ? '' : 'hidden' }}>
                                     <label>Campus or Office:</label>
-                                    <select class="form-control select2bs4" multiple id="office_id" name="office_id" style="width: 100%;" onchange="allgenOption(this.value, 'campus', this.options[this.selectedIndex].getAttribute('data-person-cat'))">
+                                    <select class="form-control select2bs4" id="office_id" name="office_id" style="width: 100%;" onchange="allgenOption(this.value, 'campus', this.options[this.selectedIndex].getAttribute('data-person-cat'))">
+                                        <option disabled selected value=""> --- Select Campus or Office Type --- </option>
                                         @foreach ($office as $data)
                                             @if($data->id != 1 && $data->office_code != 0000)
                                                 <option value="{{ $data->id }}"  data-person-cat='none'>{{ $data->office_abbr }} - {{ $data->office_name }}</option>
