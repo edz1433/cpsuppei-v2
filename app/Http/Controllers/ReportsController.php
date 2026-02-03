@@ -1465,7 +1465,7 @@ class ReportsController extends Controller
                 $options  = "<option value=''>Select Accountable</option>";
 
                 // END USER
-                $options1 = "<option value=''>Select End User</option><option value='All'>Select End User</option>";
+                $options1 = "<option value=''>Select End User</option>";
 
                 foreach ($userAccountable as $accnt) {
 
