@@ -1580,6 +1580,7 @@ class ReportsController extends Controller
                         $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                     }
                 })
+                ->where('enduser_property.deleted_at', 0)
                 ->get();
 
             $options = "<option value=''>Select Items</option>";
