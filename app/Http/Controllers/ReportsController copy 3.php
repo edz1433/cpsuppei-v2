@@ -1333,17 +1333,19 @@ class ReportsController extends Controller
         }
 
         $desigOffice = Accountable::where('id', $request->person_accnt)->value('desig_offid');
-        $desigOfficeArray = json_decode($desigOffice, true);
-
-        $officeFilter = array_merge([$officeId], $desigOfficeArray); 
+        dd($desigOffice);
+    
+        if ($pAccountable == 'accountable') {
+            $paritemquery->where($condAccnt, $personaccountable);
+        } else {
+            $paritemquery->where('enduser_property.office_id', $officecond, $officeId);
+        }
 
         $paritems = $paritemquery
             ->where('enduser_property.item_cost', '>=', 50000)
-            ->where($condcategories, $categoriesId)
-            ->where($condpropid, $propId)
-            ->whereIn('enduser_property.office_id', $officeFilter) 
-            ->where('enduser_property.person_accnt', $personaccountable)
-            ->where($conaccountid, $selectId)
+            ->where('enduser_property.categories_id', $condcategories, $categoriesId)
+            ->where('enduser_property.property_id', $condpropid, $propId)
+            ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
             ->when(!empty($request->person_accnt1), function ($q) use ($request) {
                 $q->where('person_accnt1', $request->person_accnt1);
             })

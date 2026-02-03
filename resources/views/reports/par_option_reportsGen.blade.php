@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ strtoupper('PAR REPORT ' . $datereport) }}</title>
+    <title>{{ strtoupper('PAR REPORT') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -125,7 +125,7 @@
 			        <tr>
 						<td style="text-align: center;">{{ $no++ }}</td>
 			            <td style="text-align: center;">{{ $paritem->qty }}</td>
-			            <td>{{ $paritem->unit_name }}</td>
+			            <td class="text-center">{{ $paritem->unit_name }}</td>
 						<td>
 							<b>{{ $paritem->item_name }}</b>
 							<br><i> {{ $paritem->item_descrip }}</i><br>
