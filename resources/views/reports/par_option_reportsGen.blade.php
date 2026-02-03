@@ -223,9 +223,9 @@
 							</span><br>
 							<span class="footer-cell-text">Signature Over Printed Name</span><br><br>
 
-							@if($pAccountable2 != 0)
+							@if($enduser != "N/A")
 								<span class="footer-cell-sign" style="text-decoration: underline;">
-									<b>{{ strtoupper($pAccountable2) }}</b>
+									<b>{{ strtoupper($enduser) }}</b>
 								</span><br>                                                                                                                                                                                                                              
 								<span class="footer-cell-text">End User</span><br><br>
 							@endif
