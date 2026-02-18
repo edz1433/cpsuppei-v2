@@ -1205,10 +1205,12 @@ class ReportsController extends Controller
 
         $locationcolumn = $request->locationcolumn;
 
-        $icsitemquery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
+        $icsitemquery = EnduserProperty::query()
+            ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
+            ->leftJoin('accountable', 'enduser_property.person_accnt1', '=', 'accountable.id')
             ->where('enduser_property.deleted', 0)
             ->select(
                 'enduser_property.*',
@@ -1220,43 +1222,69 @@ class ReportsController extends Controller
                 'units.*',
                 'offices.office_abbr',
                 'offices.office_officer',
-                'locations.office_abbr as itemlocated'
+                'locations.office_abbr as itemlocated',
+                'accountable.person_accnt as enduser_name'
             );
-        
-        if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
+
+        // ────────────────────────────────────────────────
+        // Priority filter: person_accnt1 (employee / person accountable)
+        $icsitemquery->when($request->filled('person_accnt1'), function ($q) use ($request) {
+            // When person_accnt1 is sent → ONLY filter by this field
+            $q->where('enduser_property.person_accnt1', $request->person_accnt1);
+            
+            // IMPORTANT: we do NOT apply person_accnt or office_id in this case
+        });
+
+        // Fallback: only apply old logic when NO person_accnt1 was provided
+        $icsitemquery->when(!$request->filled('person_accnt1'), function ($q) use ($pAccountable, $accntcond, $paccount, $officecond, $officeId) {
+            if ($pAccountable === 'accountable') {
+                $q->where('enduser_property.person_accnt', $accntcond, $paccount);
+            } else {
+                $q->where('enduser_property.office_id', $officecond, $officeId);
+            }
+        });
+
+        // ────────────────────────────────────────────────
+        // Common filters (always applied)
+        if ($itemId[0] !== 'All' && !in_array('All', $itemId)) {
             $icsitemquery->whereIn('enduser_property.id', $itemId);
         }
-        
-        if ($pAccountable == 'accountable') {
-            $icsitemquery->where('enduser_property.person_accnt', $accntcond, $paccount);
-        } else {
-            $icsitemquery->where('enduser_property.office_id', $officecond, $officeId);
-        }
 
-        $icsitems = $icsitemquery
+        $icsitemquery
             ->whereIn('enduser_property.properties_id', [1, 2])
             ->where('enduser_property.categories_id', $condcategories, $categoriesId)
             ->where('enduser_property.property_id', $condpropid, $propId)
             ->where('enduser_property.selected_account_id', $condsel, $selectId)
-            ->where(function ($query) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
-                    $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                    $q->whereBetween('enduser_property.date_acquired', [
+                        $startDate . ' 00:00:00',
+                        $endDate   . ' 23:59:59'
+                    ]);
                 } elseif ($startDate) {
-                    $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
+                    $q->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                 } elseif ($endDate) {
-                    $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
+                    $q->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                 }
             })
-            
             ->where('enduser_property.item_cost', '<', 50000);
 
-        if ($exists){
-            $icsitems->where('offices.camp_id', $ucampid);
-        } 
+        if ($exists) {
+            $icsitemquery->where('offices.camp_id', $ucampid);
+        }
 
-        $icsitems = $icsitems->get();
+        // ────────────────────────────────────────────────
+        // Final execution
+        $icsitems = $icsitemquery->get();
 
-        // dd($request->item_id);
+        // dd($icsitems);
+
+        // // For debugging – use one of these (not both at once)
+        // dd(
+        //     $icsitems->count(),           // how many rows?
+        //     $icsitems->pluck('person_accnt', 'enduser_property1')->unique(), // see which accountable persons appear
+        //     // or: $icsitemquery->toSql(), $icsitemquery->getBindings()
+        // );
 
         $pAccountable2 = $request->person_accnt1;
 
@@ -1475,7 +1503,7 @@ class ReportsController extends Controller
                 $options  = "<option value=''>Select Accountable</option>";
 
                 // END USER
-                $options1 = "<option value=''>Select End User</option>";
+                // $options1 = "<option value=''>Select End User</option>";
 
                 // Keep track of added IDs to avoid duplicates in $options
                 $addedAccountables = [];
@@ -1534,7 +1562,7 @@ class ReportsController extends Controller
 
                 $endUsersAccountable = Accountable::where('off_id', $id)->get();
 
-                $options1 = "<option value=''>Select End User</option>";
+                // $options1 = "<option value=''>Select End User</option>";
 
                 foreach ($endUsersAccountable as $accnt) {
 

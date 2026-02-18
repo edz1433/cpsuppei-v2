@@ -204,10 +204,10 @@
 							</span><br>
 							<span class="footer-cell-text">Signature Over Printed Name</span><br><br>
 
-							@if($enduser != "N/A")
+							@if($paritems->isNotEmpty() && $paritems->first()?->enduser_name)
 								<span class="footer-cell-sign" style="text-decoration: underline;">
-									<b>{{ strtoupper($enduser) }}</b>
-								</span><br>                                                                                                                                                                                                                              
+									<b>{{ strtoupper($paritems->first()->enduser_name) }}</b>
+								</span><br>
 								<span class="footer-cell-text">End User</span><br><br>
 							@endif
 

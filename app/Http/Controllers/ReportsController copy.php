@@ -22,6 +22,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Support\Facades\File;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Barryvdh\Snappy\Facades\SnappyPdf as Snappy; 
 
 class ReportsController extends Controller
 {
@@ -41,6 +42,9 @@ class ReportsController extends Controller
     }
 
     public function reportOptionView(Request $request) {
+        ini_set('memory_limit', '2G');  
+        set_time_limit(600);            
+
         $ucampid = auth()->user()->campus_id;
         $exists = Office::whereNotNull('camp_id')
             ->where('camp_id', $ucampid)
@@ -80,6 +84,7 @@ class ReportsController extends Controller
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->select('enduser_property.*', 'offices.*', 'properties.*', 'units.*', 'items.*', 'locations.office_abbr as itemlocated')
+            ->where('enduser_property.deleted', 0)
             ->where(function ($query) use ($officeId, $allOffice) {
                 if ($officeId == 1) {
                     $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
@@ -140,6 +145,7 @@ class ReportsController extends Controller
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->where('enduser_property.deleted', 0)
             ->when(!empty($propertiesId), function ($query) use ($propertiesId) {
                 if (is_array($propertiesId)) {
                     $query->whereIn('enduser_property.properties_id', $propertiesId);
@@ -224,10 +230,14 @@ class ReportsController extends Controller
                 : '');
 
         if($request->file_type == "PDF"){
-            ini_set('memory_limit', '1024M'); // Increase to 1GB
-            set_time_limit(300);
-            $pdf = PDF::loadView($page, $data)->setPaper('Legal', 'landscape');
-            return $pdf->stream();
+                $pdf = Snappy::loadView($page, $data)
+                    ->setPaper('Legal')
+                    ->setOrientation('landscape')
+                    ->setOption('disable-smart-shrinking', true)
+                    ->setOption('no-stop-slow-scripts', true)
+                    ->setOption('quiet', true);
+
+                return $pdf->inline();
         }else {
             $filePath = public_path('Forms/RPCPPE Reports.xlsx');
             
@@ -444,6 +454,7 @@ class ReportsController extends Controller
                     $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
+            ->where('enduser_property.deleted', 0)
             ->where('enduser_property.properties_id', $propertiesId)
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
@@ -484,6 +495,7 @@ class ReportsController extends Controller
                     $query->where('enduser_property.office_id', $allOffice, $officeId);
                 }
             })
+            ->where('enduser_property.deleted', 0)
             ->where('enduser_property.properties_id', $propertiesId)
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
@@ -513,6 +525,7 @@ class ReportsController extends Controller
                     $query->where('enduser_property.office_id', $cond, $allOffice);
                 }
             })
+            ->where('enduser_property.deleted', 0)
             ->where('enduser_property.properties_id', $propertiesId)
             ->where('enduser_property.categories_id', $cond, $categoriesId)
             ->where('enduser_property.property_id', $cond, $propId)
@@ -775,6 +788,7 @@ class ReportsController extends Controller
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->where('enduser_property.deleted', 0)
             ->where(function ($query) use ($officeId, $allOffice) {
                 if ($officeId == 1) {
                     $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
@@ -818,6 +832,7 @@ class ReportsController extends Controller
             ->join('properties', 'enduser_property.selected_account_id', '=', 'properties.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
+            ->where('enduser_property.deleted', 0)
             ->where(function ($query) use ($officeId, $allOffice) {
                 if ($officeId == 1) {
                     $query->whereNotIn('enduser_property.office_id', [2, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17]);
@@ -854,6 +869,7 @@ class ReportsController extends Controller
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('items', 'enduser_property.item_id', '=', 'items.id')
             ->where('enduser_property.office_id', $allOffice, $officeId)
+            ->where('enduser_property.deleted', 0)
             ->where(function ($query) use ($condProperties, $propertiesId) {
                 if (!empty($propertiesId)) {
                     $query->where('enduser_property.properties_id', $condProperties, $propertiesId);
@@ -1110,6 +1126,7 @@ class ReportsController extends Controller
             ->where('enduser_property.categories_id', $condcategories, $categoriesId)
             ->where('enduser_property.property_id', $condpropid, $propId)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
+            ->where('enduser_property.deleted', 0)
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
                     $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -1192,6 +1209,7 @@ class ReportsController extends Controller
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
+            ->where('enduser_property.deleted', 0)
             ->select(
                 'enduser_property.*',
                 'items.*',
@@ -1299,28 +1317,37 @@ class ReportsController extends Controller
         $condAccnt = ($pAccountable == 'accountable') ? 'enduser_property.person_accnt' : 'enduser_property.office_id';
 
         $locationcolumn = $request->locationcolumn;
-    
+
         $paritemquery = EnduserProperty::join('items', 'enduser_property.item_id', '=', 'items.id')
             ->join('units', 'enduser_property.unit_id', '=', 'units.id')
             ->join('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('offices as locations', 'enduser_property.location', '=', 'locations.id')
             ->select('enduser_property.*', 'items.*', 'offices.*', 'offices.id as oid', 'items.id as itemid', 'units.*', 'offices.office_abbr', 'offices.office_officer', 'locations.office_abbr as itemlocated');
     
-        if ($itemId[0] != 'All' && !in_array('All', $itemId)) {
+        $itemId = $request->input('item_id');
+        $itemId = is_array($itemId) ? $itemId : (array) $itemId;
+        $itemId = array_filter($itemId);
+
+        if (!empty($itemId) && !in_array('All', $itemId, true)) {
             $paritemquery->whereIn('enduser_property.id', $itemId);
         }
-    
-        if ($pAccountable == 'accountable') {
-            $paritemquery->where($condAccnt, $personaccountable);
-        } else {
-            $paritemquery->where('enduser_property.office_id', $officecond, $officeId);
-        }
-    
+
+        $desigOffice = Accountable::where('id', $request->person_accnt)->value('desig_offid');
+        $desigOfficeArray = json_decode($desigOffice, true);
+
+        // $officeFilter = array_merge([$officeId], $desigOfficeArray); 
+
         $paritems = $paritemquery
-            ->where('enduser_property.properties_id', 3)
+            ->where('enduser_property.item_cost', '>=', 50000)
             ->where('enduser_property.categories_id', $condcategories, $categoriesId)
             ->where('enduser_property.property_id', $condpropid, $propId)
+            ->where('enduser_property.office_id', $officeId)
+            ->where('enduser_property.person_accnt', $personaccountable)
             ->where('enduser_property.selected_account_id', $conaccountid, $selectId)
+            ->where('enduser_property.deleted', 0)
+            ->when(!empty($request->person_accnt1), function ($q) use ($request) {
+                $q->where('person_accnt1', $request->person_accnt1);
+            })
             ->where(function ($query) use ($startDate, $endDate) {
                 if ($startDate && $endDate) {
                     $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
@@ -1336,10 +1363,18 @@ class ReportsController extends Controller
         } 
         
         $paritems = $paritems->get();
-        $pAccountable2 = $request->person_accnt1;
+
+        $enduser = "N/A";        
+
+        if (!empty($request->person_accnt1)) {
+            $accountable = Accountable::find($request->person_accnt1);
+            if ($accountable) {
+                $enduser = $accountable->person_accnt;
+            }
+        }
 
         if($paritems->isNotEmpty()){
-            $pdf = PDF::loadView('reports.par_option_reportsGen', compact('selectedItem', 'paritems', 'itemId', 'pAccountable', 'pAccountable2', 'datereport', 'locationcolumn'))->setPaper('Legal', 'portrait');
+            $pdf = PDF::loadView('reports.par_option_reportsGen', compact('selectedItem', 'paritems', 'itemId', 'pAccountable', 'enduser', 'datereport', 'locationcolumn'))->setPaper('Legal', 'portrait');
             return $pdf->stream();
         }else{
             return redirect()->back()->with('error', 'No Item Found Belong to this End User!');
@@ -1423,59 +1458,95 @@ class ReportsController extends Controller
         $condselaccnt = ($selaccnt == 'All') ? '!=' : '=';
         $selaccnt = ($selaccnt == 'All') ? '0' : $selaccnt;
 
+        $options = "";  
+        $options1 = "";
+
         if ($type == 'campus') {
             $office = Office::find($id);
             
             $endusers = "<option value=''>None</option>";
 
             if ($office->camp_id == '') { 
-               $userAccountable = Accountable::where('off_id', $id)
-                    ->select('person_accnt', 'id')
-                    ->get();
 
-                $options = "<option value=''>Select Accountable</option>";
-            
+                $userAccountable = Accountable::where('off_id', $id)->get();
+                $userDesignate = Accountable::whereJsonContains('desig_offid', (string)$id)->get();
+
+                // ACCOUNTABLE
+                $options  = "<option value=''>Select Accountable</option>";
+
+                // END USER
+                $options1 = "<option value=''>Select End User</option>";
+
+                // Keep track of added IDs to avoid duplicates in $options
+                $addedAccountables = [];
+
+                // Add accountables first
                 foreach ($userAccountable as $accnt) {
-                    $roleLabel = '';
-                    if ($accnt->accnt_role == 1) {
-                        $roleLabel = ' - HEAD';
+                    $roleLabel = ($accnt->accnt_role == 1) ? ' - HEAD' : '';
+
+                    $options .= "<option value='{$accnt->id}'
+                                    data-person-cat='accountable'
+                                    data-account-id='{$accnt->id}'>
+                                    {$accnt->person_accnt}{$roleLabel}
+                                </option>";
+
+                    $addedAccountables[] = $accnt->id;
+
+                    // END USER (exclude roles 1,2,3)
+                    if (!in_array($accnt->accnt_role, [1,2,3])) {
+                        $options1 .= "<option value='{$accnt->id}'
+                                        data-person-cat='enduser'
+                                        data-account-id='{$accnt->id}'>
+                                        {$accnt->person_accnt}
+                                    </option>";
                     }
-
-                    $options .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
                 }
-            }else{
-                $userAccountable = Accountable::where('off_id', $id)
+
+                // Add designates to ACCOUNTABLE dropdown if not already included
+                foreach ($userDesignate as $desig) {
+                    if (!in_array($desig->id, $addedAccountables)) {
+                        $options .= "<option value='{$desig->id}'
+                                        data-person-cat='accountable'
+                                        data-account-id='{$desig->id}'>
+                                        {$desig->person_accnt}
+                                    </option>";
+                        $addedAccountables[] = $desig->id;
+                    }
+                }
+            } else {
+                /* ================= ACCOUNTABLE ================= */
+
+                $custodians = Accountable::where('off_id', $id)
                     ->where('accnt_role', 2)
-                    ->select('person_accnt', 'id')
                     ->get();
 
                 $options = "<option value=''>Select Accountable</option>";
-            
-                foreach ($userAccountable as $accnt) {
-                    $roleLabel = ' - CUSTODIAN';
 
-                    $options .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
+                foreach ($custodians as $accnt) {
+                    $options .= "<option value='{$accnt->id}'
+                                    data-person-cat='accountable'
+                                    data-account-id='{$accnt->id}'>
+                                    {$accnt->person_accnt} - CUSTODIAN
+                                </option>";
                 }
 
-                $endUsersAccountable = Accountable::where('off_id', $id)
-                    ->where('accnt_role', '!=', 2)
-                    ->select('person_accnt', 'id')
-                    ->get();
+                /* ================= END USER (SAME LOGIC) ================= */
 
-                $endusers = "<option value='All'>All</option>";
+                $endUsersAccountable = Accountable::where('off_id', $id)->get();
+
+                $options1 = "<option value=''>Select End User</option>";
 
                 foreach ($endUsersAccountable as $accnt) {
-                    $roleLabel = '';
-                    if ($accnt->accnt_role == 1) {
-                        $roleLabel = ' - HEAD';
+
+                    // SAME filter: NOT IN (1,2,3)
+                    if (!in_array($accnt->accnt_role, [1, 2, 3])) {
+                        $options1 .= "<option value='{$accnt->id}'
+                                        data-person-cat='enduser'
+                                        data-account-id='{$accnt->id}'>
+                                        {$accnt->person_accnt}
+                                    </option>";
                     }
-
-                    $endusers .= "<option value='" . $accnt->id . "' data-person-cat='accountable' data-account-id='" . $accnt->id . "'>"
-                        . $accnt->person_accnt . $roleLabel . "</option>";
                 }
-
             }
 
             // Get the campus location options
@@ -1497,30 +1568,39 @@ class ReportsController extends Controller
                 $locoptions .= "<option value='" . $location->id . "'>" . htmlspecialchars($location->office_name) . "</option>";
             }
         } else {
-            $itempar = EnduserProperty::orwhere('person_accnt', $id)
-                ->orwhere('person_accnt1', $id)
+            $itempar = EnduserProperty::query()
+                ->where(function ($q) use ($id) {
+                    $q->where('person_accnt', $id)
+                    ->orWhere('person_accnt1', $id);
+                })
                 ->join('items', 'items.id', '=', 'enduser_property.item_id')
                 ->select('enduser_property.*', 'items.*', 'enduser_property.id as pid')
                 ->when($properties_id == 'ics', function ($query) {
                     return $query->whereIn('enduser_property.properties_id', [1, 2]);
                 })
                 ->when($properties_id == 'par', function ($query) {
-                    return $query->whereIn('enduser_property.properties_id', [3]);
+                    return $query->where('enduser_property.properties_id', 3)
+                                ->where('enduser_property.item_cost', '>=', 50000);
                 })
                 ->where('enduser_property.categories_id', $condcategories, $categoriesId)
                 ->where('enduser_property.property_id', $condpropid, $propId)
                 ->when($startDate || $endDate, function ($query) use ($startDate, $endDate) {
                     if ($startDate && $endDate) {
-                        $query->whereBetween('enduser_property.date_acquired', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                        $query->whereBetween('enduser_property.date_acquired', [
+                            $startDate . ' 00:00:00', 
+                            $endDate   . ' 23:59:59'
+                        ]);
                     } elseif ($startDate) {
                         $query->where('enduser_property.date_acquired', '>=', $startDate . ' 00:00:00');
                     } elseif ($endDate) {
                         $query->where('enduser_property.date_acquired', '<=', $endDate . ' 23:59:59');
                     }
                 })
+                ->where('enduser_property.deleted', 0)
                 ->get();
 
             $options = "<option value=''>Select Items</option>";
+            $options = "<option value='All'>All Items</option>";
             foreach ($itempar as $icsItem) {
                 $options .= "<option value='" . $icsItem->pid . "'>"
                     . $icsItem->item_name . ' ' 
@@ -1536,6 +1616,7 @@ class ReportsController extends Controller
 
         return response()->json([
             "options" => $options,
+            "options1" => $options1,
             "endusers" => $endusers,
             "location" => $locoptions,
         ]);
