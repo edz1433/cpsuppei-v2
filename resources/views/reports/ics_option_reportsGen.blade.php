@@ -13,6 +13,15 @@
             text-align: center;
             margin-top: -5px;
         }
+        .header-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .header-image {
+            display: block;
+            margin: 0 auto;
+        }
         .text1 {
             text-align: center;
         }
@@ -83,8 +92,8 @@
     </style>
 </head>
 <body>
-    <header style="margin-top: -40px; margin-left: ;">
-        <img src="{{ asset('template/img/ics.png') }}">
+    <header class="header-container"> 
+        <img src="{{ asset('template/img/header-2026.png') }}" width="60%" class="header-image">
         <table id="rpcppe" class="table table-bordered">
             <thead>
                 <tr>

@@ -9,27 +9,49 @@ use Carbon\Carbon;
 use App\Models\Setting;
 use App\Models\Item;
 use App\Models\Inventory;
+use App\Models\EnduserProperty;
 use App\Models\Campus;
 use App\Models\Office;
 
 class ItemController extends Controller
 {
     //
-    public function itemRead(Request $request){
+    public function itemRead(Request $request)
+    {
         $off = $request->off;
+        $descrip = $request->descrip; // matches form input
         $setting = Setting::firstOrNew(['id' => 1]);
-        $item = Item::all();
         $campus = Campus::all();
         $office = Office::all();
 
-        $inventoryCount = [];
+        // Get all items (so your table shows all items)
+        $item = Item::all();
 
+        // Start base query for EnduserProperty
+        $query = EnduserProperty::query()
+            ->where('deleted', 0); // only non-deleted
+
+        // Filter by office
+        if (!empty($off)) {
+            $query->where('office_id', $off);
+        }
+
+        // Filter by description
+        if (!empty($descrip)) {
+            $query->where('item_descrip', 'LIKE', '%' . $descrip . '%');
+        }
+
+        // Group by item_id and count in SQL
+        $inventoryCountRaw = $query
+            ->selectRaw('item_id, COUNT(*) as total')
+            ->groupBy('item_id')
+            ->pluck('total', 'item_id')
+            ->toArray();
+
+        // Make sure all items have a count, default to 0 if no matching record
+        $inventoryCount = [];
         foreach ($item as $ite) {
-            $query = Inventory::where('item_id', $ite->id);
-            if (isset($off)) {
-                $query->where('office_id', $off);
-            }
-            $inventoryCount[$ite->id] = $query->count();
+            $inventoryCount[$ite->id] = $inventoryCountRaw[$ite->id] ?? 0;
         }
 
         return view('manage.items.list', compact('setting', 'item', 'inventoryCount', 'campus', 'office'));

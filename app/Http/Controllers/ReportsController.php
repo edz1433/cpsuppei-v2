@@ -1649,6 +1649,29 @@ class ReportsController extends Controller
             "location" => $locoptions,
         ]);
     }
+
+    public function displayItem($enduserId)
+    {
+        // Get items for the enduser
+        $items = EnduserProperty::where('person_accnt1', $enduserId)
+            ->where('deleted', 0) // optional: only non-deleted items
+            ->get();
+
+        // Build JSON array for Select2
+        $options = [];
+
+        // Optional "All Items" at the top
+        $options[] = ['id' => 'All', 'text' => 'All Items'];
+
+        foreach ($items as $item) {
+            $options[] = [
+                'id' => $item->pid,
+                'text' => $item->item_name . ' ' . $item->item_descrip . ' (Acquired: ' . date('Y-m-d', strtotime($item->date_acquired)) . ')'
+            ];
+        }
+
+        return response()->json($options);
+    }
         
     // public function allgenOption(Request $request) {
     //     $id = $request->id;

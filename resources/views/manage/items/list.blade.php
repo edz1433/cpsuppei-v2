@@ -17,21 +17,33 @@
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-body">
-                    <div class="container mb-3" style="margin-left: 58%;">
-                        <form action="" method="GET" >
+                    <div class="container mb-3" style="margin-left: 26%;">
+                        <form action="" method="GET">
                             <div class="row">
-                        
-                                <div class="col-4">
+
+                                <!-- Description Filter -->
+                                <div class="col-5">
+                                    <input type="text" class="form-control form-control-sm" name="descrip" 
+                                        placeholder="Search description..." value="{{ request('descrip') }}">
+                                </div>
+
+                                <!-- Office Filter -->
+                                <div class="col-3">
                                     <select class="form-control form-control-sm" name="off">
                                         <option value="">All</option>
                                         @foreach($office as $off)
-                                            <option value="{{ $off->id }}" @if(request('off') == $off->id) selected @endif>{{ $off->office_name }}</option>
+                                            <option value="{{ $off->id }}" @if(request('off') == $off->id) selected @endif>
+                                                {{ $off->office_name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
-                        
-                                <div class="col-4">
-                                    <button type="submit" class="btn btn-secondary btn-sm">Filter <i class="fas fa-filter fa-sm"></i> </button>
+
+                                <!-- Filter Button -->
+                                <div class="col-2">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        Filter <i class="fas fa-filter fa-sm"></i>
+                                    </button>
                                 </div>
                             </div>
                         </form>

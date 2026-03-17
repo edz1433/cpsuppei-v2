@@ -99,7 +99,7 @@
                                             <option>{{ $acc->person_accnt }}</option>
                                         @endforeach
                                     </select> --}}
-                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1">
+                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1" onchange="displayItem(this.value)">
                                         <option></option>
                                      
                                     </select>
@@ -154,6 +154,31 @@
     </script>
 @endif
 <script>
+function displayItem(enduserId) {
+    // Generate the URL for the AJAX call
+    var url = "{{ route('displayItem', [':enduserId']) }}".replace(':enduserId', enduserId);
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            // Clear existing options
+            $('#item_id').empty();
+
+            // Append new options using Select2 format
+            $('#item_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Items',
+                data: response // array of {id, text}
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+        }
+    });
+}
+
 function acctTitle(){
     $('#item_id').empty();
 }
