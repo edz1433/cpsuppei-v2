@@ -1654,6 +1654,7 @@ class ReportsController extends Controller
     {
         // Get items for the enduser
         $items = EnduserProperty::where('person_accnt1', $enduserId)
+            ->where('item_cost', '>=', 50000)
             ->where('deleted', 0) // optional: only non-deleted items
             ->get();
 
