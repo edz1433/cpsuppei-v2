@@ -154,8 +154,23 @@
     </script>
 @endif
 <script>
+$(document).ready(function() {
+    // Initialize Select2 once
+    $('#item_id').select2({
+        theme: 'bootstrap4',
+        placeholder: '-- Select Items --',
+        allowClear: true
+    });
+});
+
 function displayItem(enduserId) {
-    // Generate the URL for the AJAX call
+    if (!enduserId) {
+        // If no enduser is selected, just clear the select
+        $('#item_id').empty().trigger('change');
+        return;
+    }
+
+    // Generate URL from named route
     var url = "{{ route('displayItem', [':enduserId']) }}".replace(':enduserId', enduserId);
 
     $.ajax({
@@ -163,22 +178,26 @@ function displayItem(enduserId) {
         type: "GET",
         dataType: "json",
         success: function(response) {
+            var $select = $('#item_id');
+            console.log(response);
             // Clear existing options
-            $('#item_id').empty();
+            $select.empty();
 
-            // Append new options using Select2 format
-            $('#item_id').select2({
-                theme: 'bootstrap4',
-                placeholder: 'Select Items',
-                data: response // array of {id, text}
+            // Append items from response
+            $.each(response, function(index, item) {
+                $select.append(
+                    $('<option></option>').val(item.id).text(item.text)
+                );
             });
+
+            // Refresh Select2 to display new options
+            $select.trigger('change');
         },
-        error: function(xhr, status, error) {
-            console.error("AJAX Error:", status, error);
+        error: function(xhr) {
+            console.error("AJAX Error:", xhr.responseText || xhr.statusText);
         }
     });
 }
-
 function acctTitle(){
     $('#item_id').empty();
 }

@@ -1666,7 +1666,7 @@ class ReportsController extends Controller
 
         foreach ($items as $item) {
             $options[] = [
-                'id' => $item->pid,
+                'id' => $item->id,
                 'text' => $item->item_name . ' ' . $item->item_descrip . ' (Acquired: ' . date('Y-m-d', strtotime($item->date_acquired)) . ')'
             ];
         }
