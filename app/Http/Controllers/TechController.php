@@ -84,7 +84,7 @@ class TechController extends Controller
         $request->validate([
             'prop_id'   => 'required',
             'diagnosis' => 'required',
-            'repair_status' => 'required|integer|between:1,5',
+            'repair_status' => 'required|integer',
         ]);
 
         // Find the most recent repair for this property
