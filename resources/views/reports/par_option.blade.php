@@ -6,19 +6,11 @@
 
 <div class="container-fluid">
     <div class="row" style="padding-top: 100px;">
-        <div class="col-lg-2">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title" style="font-size: 17pt"></h5>
-                    @include('partials.control_reportsSidebar')
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-10">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="fas fa-file-pdf"></i> PAR Reports
+                        <i class="fas fa-file-pdf"></i> Reports
                     </h3>
                 </div>
                 <div class="card-body">
@@ -26,7 +18,17 @@
                         @csrf
                         <div class="form-group">
                             <div class="form-row">
-                                <div class="col-md-6" {{ auth()->user()->role !== 'Campus Admin' ? '' : 'hidden' }}>
+                                <div class="col-md-6">
+                                    <label>Type:</label>
+                                    <select class="form-control">
+                                        <option value="1">RPCPPE</option>
+                                        <option value="2">RPCSEP</option>
+                                        <option value="3">ICS</option>
+                                        <option value="4">PAR</option>
+                                        <option value="5">UNSERVICEABLE</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
                                     <label>Campus or Office:</label>
                                     <select class="form-control select2bs4" id="office_id" name="office_id" style="width: 100%;" onchange="allgenOption(this.value, 'campus', this.options[this.selectedIndex].getAttribute('data-person-cat'))">
                                         <option disabled selected value=""> --- Select Campus or Office Type --- </option>
@@ -37,7 +39,20 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-{{ auth()->user()->role !== 'Campus Admin' ? '6' : '12' }}">
+                                <div class="col-md-6 mt-2"> 
+                                    <label>Location:</label> 
+                                    <select class="form-control select2bs4" id="location" name="location" style="width: 100%;">
+                                        <option disabled selected value=""> --- Select Location --- </option>
+                                        <option value="All" selected>All</option>
+                                        @foreach ($office as $data)
+                                            @if ($data->office_code == '0000')
+                                                 <option value="{{ $data->id }}">{{ $data->office_name }} ({{ strtoupper($data->campus_abbr) }})</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                    <input type="hidden" name="file_type" value="PDF"> 
+                                </div> 
+                                <div class="col-md-6 mt-2">
                                     <label>Category:</label>
                                     <select id="category_id" name="categories_id" onchange="categor(this.value)" data-placeholder="---Select Category---" class="form-control select2bs4" style="width: 100%;">
                                         <option></option>
@@ -50,31 +65,38 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
-                        </div> 
-
-                        <div class="form-group">
-                            <div class="form-row">
-                                <div class="col-md-6" id="account-div">
-                                    <label>Account Title:</label>
-                                    <select id="account_title" name="property_id" data-placeholder="---Select Account Title---" onchange="acctTitle()" class="form-control select2bs4" style="width: 100%;">
-                                    </select>
-                                </div>
-                                <input type="hidden" id="selected_account_id" name="selected_account_id">
-                                <div class="col-md-6">
-                                    <label>Date Range:</label>
-                                    <div class="input-group">
-                                        <div class="sdate col-md-6">
-                                            <input type="date" name="start_date_acquired" class="form-control" placeholder="Start Date">
+                                <div class="col-md-6 mt-2">
+                                    <div class="form-group">
+                                        <div class="form-row">
+                                            <div class="col-md-12" id="account-div">
+                                                <label>Account Title:</label>
+                                                <select id="account_title" name="property_id" data-placeholder="---Select Account Title---" onchange="acctTitle()" class="form-control select2bs4" style="width: 100%;">
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div class="edate col-md-6">
-                                            <input type="date" name="end_date_acquired" class="form-control" placeholder="End Date">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mt-2">
+                                    <div class="form-group">
+                                        <div class="form-row">
+                                            <div class="col-md-12" id="account-div">
+                                                <label>Date Range:</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">
+                                                            <i class="far fa-calendar-alt"></i>
+                                                        </span>
+                                                    </div>
+                                                    <input type="text" name="date_range" id="date_range" class="form-control float-right">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        
+                        </div> 
+                   
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-12">
@@ -198,6 +220,7 @@ function displayItem(enduserId) {
         }
     });
 }
+
 function acctTitle(){
     $('#item_id').empty();
 }
@@ -283,7 +306,5 @@ function categor(val) {
             
         }
     };
-    </script>
-
-
+</script>
 @endsection

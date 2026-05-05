@@ -189,6 +189,16 @@ Route::group(['middleware' => ['login_auth']], function () {
 
         Route::get('/display-item/{enduserId}', [ReportsController::class, 'displayItem'])->name('displayItem');
         
+        
+    });
+
+    Route::prefix('/report')->group(function () {
+        Route::get('', [ReportsController::class, 'reportForm'])->name('reportForm');
+        Route::post('/generate', [ReportsController::class, 'generateReport'])->name('generateReport');
+        Route::get('/generate-items', [ReportsController::class, 'generateItems'])->name('generateItems');
+
+        Route::get('/gen-prop-type/{id}', [ReportsController::class, 'genPropType'])->name('genPropType'); 
+        Route::get('/generate-mix/{id}', [ReportsController::class, 'generateMix'])->name('generateMix');
     });
 
     //Users

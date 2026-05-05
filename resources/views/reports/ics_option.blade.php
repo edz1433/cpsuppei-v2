@@ -10,7 +10,7 @@
                     @include('partials.control_reportsSidebar') 
                 </div> 
             </div> 
-        </div> 
+        </div>  
         <div class="col-lg-10"> 
             <div class="card"> 
                 <div class="card-header"> 
@@ -117,7 +117,7 @@
                                     {{-- <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1" data-placeholder="Select End User" > 
                                         <option></option> 
                                     </select>  --}}
-                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1">
+                                    <select class="form-control select2bs4" id="person_accnt1" name="person_accnt1" onchange="displayItem(this.value)"> 
                                         <option></option>
                                      
                                     </select>
@@ -257,4 +257,41 @@ function allgenOption(val, type, pAccountable, startDate = null, endDate = null)
     } 
 };
 </script> 
+<script>
+function displayItem(enduserId) {
+    if (!enduserId) {
+        // If no enduser is selected, just clear the select
+        $('#item_id').empty().trigger('change');
+        return;
+    }
+
+    // Generate URL from named route
+    var url = "{{ route('displayItem', [':enduserId']) }}".replace(':enduserId', enduserId);
+
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            var $select = $('#item_id');
+            console.log(response);
+            // Clear existing options
+            $select.empty();
+
+            // Append items from response
+            $.each(response, function(index, item) {
+                $select.append(
+                    $('<option></option>').val(item.id).text(item.text)
+                );
+            });
+
+            // Refresh Select2 to display new options
+            $select.trigger('change');
+        },
+        error: function(xhr) {
+            console.error("AJAX Error:", xhr.responseText || xhr.statusText);
+        }
+    });
+}
+</script>
 @endsection

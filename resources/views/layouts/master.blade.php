@@ -230,6 +230,15 @@
 <script src="{{ asset('js/validation/icsValidation.js') }}"></script>
 <script src="{{ asset('js/validation/parValidation.js') }}"></script>
 
+<!-- Moment -->
+<script src="{{ asset('template/plugins/moment/moment.min.js') }}"></script>
+
+<!-- Date Range Picker -->
+<script src="{{ asset('template/plugins/daterangepicker/daterangepicker.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('template/plugins/daterangepicker/daterangepicker.css') }}">
+
+@yield('scripts')
+
 @endif
 <script>
     @if(Session::has('error'))
@@ -304,14 +313,41 @@
             "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
 
         }).buttons().container().appendTo('#example3_wrapper .col-md-6:eq(0)');
-        $('.select2').select2()
+        @if(!request()->is('report'))
+            $('.select2').select2()
 
-        //Initialize Select2 Elements
-        $('.select2bs4').select2({
-          theme: 'bootstrap4'
-        })
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+            theme: 'bootstrap4'
+            
+            })
+        @endif
         //Bootstrap Duallistbox
         $('.duallistbox').bootstrapDualListbox()
+
+        $('#date_range').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear',
+                format: 'YYYY-MM-DD'
+            }
+        });
+
+        // Apply event
+        $('#date_range').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(
+                picker.startDate.format('YYYY-MM-DD') + ' - ' +
+                picker.endDate.format('YYYY-MM-DD')
+            );
+
+            console.log("Start:", picker.startDate.format('YYYY-MM-DD'));
+            console.log("End:", picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        // Clear event
+        $('#date_range').on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+        });
     });
 </script>
 
