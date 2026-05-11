@@ -199,8 +199,9 @@
     $extraColumns = $locationcolumn + $serial + $acquired;
     $totalColumns = $baseColumns + $extraColumns;
     
-    // DYNAMIC PAGINATION LOGIC: First page: 9 items, middle pages: 13 items, last page: up to 12 items
-    $needsPagination = $showEachpageSubtotal;
+    // DYNAMIC PAGINATION LOGIC: paginate whenever a per-page option needs
+    // predictable PDF pages instead of relying on the PDF engine's automatic table split.
+    $needsPagination = $showEachpageSubtotal || $showEachpageHeader || $showEachpageFooter;
     $paginatedItems = collect();
     
     if ($needsPagination && $originalPurchase->count() > 0) {
@@ -256,14 +257,12 @@
         $pageSubtotal = 0;
     @endphp
 
-    {{-- Page Header - Show on each page if checkbox is checked, otherwise only on first page --}}
-    @if($showEachpageHeader)
-        {{-- Show on EVERY page --}}
-        <header class="report-header">
-            <img src="{{ asset('template/img/rpcsep.png') }}">
-        </header>
-    @elseif($loop->first)
-        {{-- Show only on FIRST page (default behavior) --}}
+    @php
+        $showHeaderOnThisPage = $showEachpageHeader || $loop->first;
+    @endphp
+
+    {{-- Header Each Page checked: every page. Unchecked: first page only. --}}
+    @if($showHeaderOnThisPage)
         <header class="report-header">
             <img src="{{ asset('template/img/rpcsep.png') }}">
         </header>
@@ -470,9 +469,8 @@
                 @endif
             </tbody>
 
-            {{-- Page Footer - Show on each page if checkbox is checked, otherwise only on last page --}}
+            {{-- Footer Each Page checked: every page. --}}
             @if($showEachpageFooter)
-                {{-- Show on EVERY page --}}
                 <tfoot>
                     <tr>
                         <td colspan="{{ $totalColumns }}" class="sign">
@@ -496,9 +494,13 @@
                         </td>
                     </tr>
                 </tfoot>
-            @elseif($loop->last)
-                {{-- Show only on LAST page (default behavior) --}}
-                <tfoot>
+            @endif
+        </table>
+
+        {{-- Footer Each Page unchecked: only once, after the final table. --}}
+        @if(!$showEachpageFooter && $loop->last)
+            <table id="table" class="table table-bordered">
+                <tbody>
                     <tr>
                         <td colspan="{{ $totalColumns }}" class="sign">
                             <div class="footer-cell">
@@ -519,10 +521,10 @@
                                 <div class="footer-cell-text">State Auditor IV</div>
                             </div>
                         </td>
-                    <tr>
-                </tfoot>
-            @endif
-        </table>
+                    </tr>
+                </tbody>
+            </table>
+        @endif
     </div>
 
     @if($needsPagination && !$loop->last)

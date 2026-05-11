@@ -73,6 +73,8 @@
 
         .sign { height: 80px; }
 
+        .page-break { page-break-after: always; }
+
     </style>
 </head>
 
@@ -90,10 +92,25 @@
     $locationcolumn = in_array('location', $selected_columns) 
         || in_array('itemlocated', $selected_columns) ? 1 : 0;
 
+    $showEachpageHeader = $show_eachpage_header ?? false;
+    $showEachpageFooter = $show_eachpage_footer ?? false;
+    $needsPagination = $showEachpageHeader || $showEachpageFooter;
+    $itemsPerPage = $showEachpageFooter ? 6 : 10;
+    $paginatedItems = $needsPagination && $paritems->count() > 0
+        ? $paritems->values()->chunk($itemsPerPage)
+        : collect([$paritems]);
+
     $grandTotal = 0;
+    $pageNumber = 1;
+@endphp
+
+@foreach($paginatedItems as $pageItems)
+@php
+    $isLastPage = $loop->last;
 @endphp
 
 <!-- HEADER -->
+@if($showEachpageHeader || $loop->first)
 <div class="header-container">
     <p class="appendix">Appendix 71</p>
     <header>
@@ -102,8 +119,10 @@
 </div>
 
 <p class="title">PROPERTY ACKNOWLEDGEMENT RECEIPT</p>
+@endif
 
 <!-- DETAILS -->
+@if($loop->first)
 <div class="details">
     @if (!$paritems->isEmpty())
         <p>Entity Name: {{ $paritems[0]->office_name }}</p>
@@ -113,6 +132,7 @@
 
     <p>Fund Cluster: __________________________________________________  PAR No.: _______________________</p>
 </div>
+@endif
 
 <div class="table-responsive">
 <table id="rpcppe">
@@ -135,17 +155,18 @@
 
     <tbody>
 
-    @forelse ($paritems as $paritem)
+    @forelse ($pageItems as $paritem)
 
         @php
             $qty = $paritem->qty ?? 0;
             $cost = str_replace(',', '', $paritem->item_cost ?? 0);
             $itemTotal = is_numeric($cost) ? $qty * $cost : 0;
             $grandTotal += $itemTotal;
+            $itemNumber = (($pageNumber - 1) * $itemsPerPage) + $loop->iteration;
         @endphp
 
         <tr>
-            <td>{{ $loop->iteration }}</td>
+            <td>{{ $itemNumber }}</td>
             <td style="text-align:center;">{{ $qty }}</td>
             <td>{{ $paritem->unit_name }}</td>
 
@@ -180,6 +201,7 @@
     @endforelse
 
     <!-- GRAND TOTAL -->
+    @if($isLastPage)
     <tr>
         <td></td><td></td><td></td><td></td>
 
@@ -198,10 +220,12 @@
         </td>
         <td colspan="4"></td>
     </tr>
+    @endif
 
     </tbody>
 
-    <!-- FOOTER -->
+    <!-- FOOTER EACH PAGE -->
+    @if($showEachpageFooter)
     <tfoot>
         <tr>
             <td colspan="4" class="sign" style="text-align:center;">
@@ -215,9 +239,9 @@
 
                     <span class="footer-cell-text">Signature Over Printed Name</span><br><br>
 
-                    @if($paritems->isNotEmpty() && $paritems->first()->enduser_name)
+                    @if($paritems->isNotEmpty() && $paritems->first()->end_user_name)
                         <span class="footer-cell-sign">
-                            <b>{{ strtoupper($paritems->first()->enduser_name) }}</b>
+                            <b>{{ strtoupper($paritems->first()->end_user_name) }}</b>
                         </span><br>
                         <span class="footer-cell-text">End User</span><br><br>
                     @endif
@@ -250,9 +274,70 @@
             </td>
         </tr>
     </tfoot>
+    @endif
 
 </table>
+
+@if(!$showEachpageFooter && $isLastPage)
+<table id="rpcppe">
+    <tbody>
+        <tr>
+            <td colspan="4" class="sign" style="text-align:center;">
+                <span style="float:left;">Received by:</span><br>
+
+                <span class="footer-cell">
+
+                    <span class="footer-cell-sign">
+                        <b>{{ strtoupper($paritems[0]->person_accnt_name ?? '') }}</b>
+                    </span><br>
+
+                    <span class="footer-cell-text">Signature Over Printed Name</span><br><br>
+
+                    @if($paritems->isNotEmpty() && $paritems->first()->end_user_name)
+                        <span class="footer-cell-sign">
+                            <b>{{ strtoupper($paritems->first()->end_user_name) }}</b>
+                        </span><br>
+                        <span class="footer-cell-text">End User</span><br><br>
+                    @endif
+
+                    <span class="footer-cell-sign">
+                        <b>{{ strtoupper($paritems[0]->office_name ?? '') }}</b>
+                    </span><br>
+
+                    <span class="footer-cell-text">Position / Office</span><br><br>
+
+                    <span>____________________</span><br>
+                    <span class="footer-cell-text">Date</span>
+
+                </span>
+            </td>
+
+            <td colspan="4" class="sign" style="text-align:center;">
+                <span style="float:left;">Issued by:</span><br>
+
+                <span class="footer-cell">
+                    <span class="footer-cell-sign"><b>MA. SOCORRO T. LLAMAS</b></span><br>
+                    <span class="footer-cell-text">Signature Over Printed Name</span><br><br>
+
+                    <span class="footer-cell-sign"><b>Supply Officer / SUPPLY OFFICE</b></span><br>
+                    <span class="footer-cell-text">Position / Office</span><br><br>
+
+                    <span class="footer-cell-sign"><b>{{ \Carbon\Carbon::now()->format('M. j, Y') }}</b></span><br>
+                    <span class="footer-cell-text">Date</span>
+                </span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+@endif
 </div>
+
+@if($needsPagination && !$loop->last)
+<div class="page-break"></div>
+@endif
+
+@php $pageNumber++; @endphp
+@endforeach
 
 </body>
 </html>

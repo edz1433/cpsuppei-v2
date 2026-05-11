@@ -25,7 +25,6 @@
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
- 
     <!-- Logo  -->
     <link rel="shortcut icon" type="" href="{{ asset('template/img/CPSU_L.png') }}">
 
@@ -110,54 +109,61 @@
         }
         
     </style>
+    <!-- Custom AdminLTE overrides -->
+    <link rel="stylesheet" href="{{ asset('template/css/custom-style.css') }}">
 </head>
 
 <body class="hold-transition layout-top-nav layout-navbar-fixed text-sm">
     <div class="wrapper">
-        @if(!request()->is('technician/form/*') && !request()->is('technician/qr-scan*'))
-        <nav class="main-header navbar navbar-expand-md navbar-light bg-greenn">
+        @if(!request()->is('technician/form*') && !request()->is('technician/qr-scan*'))
+        @php
+            $currentUser = auth()->user();
+            $systemName = $setting->system_name ?: 'CPSU PPEI';
+            $systemLogo = $setting->photo_filename ? asset('uploads/'. $setting->photo_filename) : asset('template/img/default-logo.png');
+            $userInitial = strtoupper(substr($currentUser->fname ?? $currentUser->username ?? 'U', 0, 1));
+        @endphp
+        <nav class="main-header navbar navbar-expand-md navbar-light bg-greenn app-topbar" aria-label="Application header">
             <div class="container-fluid">
-                <a href="" class="mt-2">
-                    @if($setting->photo_filename)
-                        <img src="{{ asset('uploads/'. $setting->photo_filename) }}" class="brand-image img-circle" alt="System Photo" style="box-shadow: 0 0 4px white;">
-                    @else
-                        <img class="brand-image img-circle" src="{{ asset('template/img/default-logo.png') }}" alt="User profile picture" style="box-shadow: 0 0 4px white;">
-                    @endif
-
-                    @if($setting->system_name)
-                        <span class="brand-text text-light text-bold">{{ $setting->system_name }}</span>
-                    @else
-                        <span class="brand-text text-light text-bold"> Name of System</span>
-                    @endif
+                <a href="{{ route('dashboard') }}" class="navbar-brand app-brand" aria-label="Go to dashboard">
+                    <span class="app-brand-logo-wrap">
+                        <img src="{{ $systemLogo }}" class="brand-image img-circle app-brand-image" alt="System Photo">
+                    </span>
+                    <span class="app-brand-copy">
+                        <span class="brand-text text-light text-bold app-brand-text">{{ $systemName }}</span>
+                        <span class="app-brand-subtitle">Property, plant, equipment, and inventory management workspace.</span>
+                    </span>
                 </a>
 
-                <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" data-widget="fullscreen" href="#" role="button" style="color: #fff">
-                            <i class="fas fa-expand-arrows-alt"></i>
-                        </a>
+
+                <ul class="navbar-nav navbar-no-expand ml-auto app-topbar-actions">
+                    <li class="nav-item app-session-state">
+                        <span class="app-session-dot"></span>
+                        <span>Secure Session</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button" style="color: #fff">
-                            <i class="fas fa-user"></i>&nbsp;&nbsp;Signed In: {{auth()->user()->fname}}
+                        <a class="nav-link app-user-link" data-widget="control-sidebar" data-slide="true" href="#" role="button" title="Signed in user">
+                            <span class="app-user-avatar">{{ $userInitial }}</span>
+                            <span class="app-user-meta">
+                                <span class="signed-in-name">{{ $currentUser->fname }}</span>
+                                <span class="signed-in-label">{{ $currentUser->role }}</span>
+                            </span>
                         </a>
                     </li>
                 </ul>
             </div>
         </nav>
-        <!-- /.navbar -->
         @endif
 
-        <div class="content-wrapper"> 
+        <div class="content-wrapper">
             @if(!request()->is('technician/form*') && !request()->is('technician/qr-scan*'))
-            <div class="content-header">
-                <div class="container-fluid" style="margin-top: -5px">
+            <div class="content-header app-control-header">
+                <div class="container-fluid">
                     @include('partials.control')
                 </div> 
             </div>
             @endif
             <!-- Main content -->
-            <div class="content">
+            <div class="content pt-3">
                 @yield('body')
             </div>
             <!-- /.content -->
@@ -297,6 +303,28 @@
 
 <script>
     $(function () {
+        if ($.fn.dataTable) {
+            $.extend(true, $.fn.dataTable.defaults, {
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                language: {
+                    search: '',
+                    searchPlaceholder: 'Search records...',
+                    lengthMenu: 'Show _MENU_ rows',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ records',
+                    infoEmpty: 'No records available',
+                    zeroRecords: 'No matching records found',
+                    paginate: {
+                        previous: '<i class="fas fa-chevron-left"></i>',
+                        next: '<i class="fas fa-chevron-right"></i>'
+                    }
+                },
+                dom: "<'datatable-toolbar'<'datatable-length'l><'datatable-filter'f>>" +
+                     "<'datatable-scroll'tr>" +
+                     "<'datatable-footer'<'datatable-info'i><'datatable-pagination'p>>"
+            });
+        }
+
         $("#example1").DataTable({
             "responsive": false,
             "lengthChange": true, 

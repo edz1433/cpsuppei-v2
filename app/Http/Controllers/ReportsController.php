@@ -28,7 +28,15 @@ class ReportsController extends Controller
 {
     public function reportForm() {
         $setting = Setting::firstOrNew(['id' => 1]);
-        $office = Office::all();
+        $user = auth()->user();
+
+        if($user->role == "Administrator"){
+            $office = Office::all();
+            
+        }else{
+            $office = Office::where('camp_id', $user->campus_id)->get();
+        }
+
         $uid = auth()->user()->campus_id;
         $uoffice = Office::where('camp_id', $uid)->first();
         $property = Property::all();
@@ -63,10 +71,12 @@ class ReportsController extends Controller
         // Start with a fresh query builder (NOT Property::all())
         $query = Property::query();
 
-        if ($reportType == 1) {
-            $query->where('id', '=', 3);
-        } elseif ($reportType == 2) {
+        if (in_array($reportType, [1, 4])) {
+            $query->where('id', 3);
+        } elseif (in_array($reportType, [2, 3])) {
             $query->whereIn('id', [1, 2]);
+        }else{
+            $query->whereIn('id', [1, 2, 3]);
         }
 
         $properties = $query->get();

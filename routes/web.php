@@ -21,6 +21,7 @@ use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\EnduserController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\TechController;
+use App\Http\Controllers\ReturnSlipController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -43,6 +44,16 @@ Route::post('/login', [LoginController::class, 'postLogin'])->name('postLogin');
 //Middleware
 Route::group(['middleware' => ['login_auth']], function () {
     Route::get('/dashboard', [MasterController::class, 'dashboard'])->name('dashboard');
+
+    Route::prefix('/return-slips')->group(function () {
+        Route::get('/', [ReturnSlipController::class, 'index'])->name('returnSlips.index');
+        Route::get('/create', [ReturnSlipController::class, 'create'])->name('returnSlips.create');
+        Route::post('/store', [ReturnSlipController::class, 'store'])->name('returnSlips.store');
+        Route::post('/items/{itemId}/confirm', [ReturnSlipController::class, 'confirmItem'])->name('returnSlips.items.confirm');
+        Route::post('/items/{itemId}/cancel', [ReturnSlipController::class, 'cancelItem'])->name('returnSlips.items.cancel');
+        Route::post('/items/{itemId}/delete', [ReturnSlipController::class, 'deleteItem'])->name('returnSlips.items.delete');
+        Route::get('/{id}', [ReturnSlipController::class, 'show'])->name('returnSlips.show');
+    });
 
     //View
     Route::prefix('/view')->group(function () {

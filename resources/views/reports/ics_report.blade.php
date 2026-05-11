@@ -172,8 +172,9 @@
     $extraColumns = $locationcolumn + $serial + $acquired;
     $totalColumns = $baseColumns + $extraColumns;
     
-    // DYNAMIC PAGINATION LOGIC: First page: 9 items, middle pages: 13 items, last page: up to 12 items
-    $needsPagination = $showEachpageSubtotal;
+    // DYNAMIC PAGINATION LOGIC: paginate whenever a per-page option needs
+    // predictable PDF pages instead of relying on the PDF engine's automatic table split.
+    $needsPagination = $showEachpageSubtotal || $showEachpageHeader || $showEachpageFooter;
     $originalPurchase = $purchase; // Keep reference to original for header info
     $paginatedItems = collect();
     
@@ -220,6 +221,8 @@
         if ($pageNumber == 1) $no = 1;
     @endphp
 
+    {{-- Header Each Page checked: every page. Unchecked: first page only. --}}
+    @if($showEachpageHeader || $loop->first)
     <header class="header-container"> 
         <img src="{{ asset('template/img/header-2026.png') }}" width="60%" class="header-image">
         <table id="rpcppe" class="table table-bordered">
@@ -230,6 +233,7 @@
             </thead>
         </table>
     </header>
+    @endif
     <div class="table-responsive">
         <table id="rpcppe" class="table table-bordered">
             <thead>
@@ -324,30 +328,26 @@
             </tbody>
         </table>
         
-        {{-- Page Footer - Show on each page if checkbox is checked, otherwise only on last page --}}
+        {{-- Footer Each Page checked: every page. --}}
         @if($showEachpageFooter)
-            {{-- Show on EVERY page --}}
             <table id="rpcppe" class="table table-bordered">
                 <tfoot>
                     <tr>
                         <td colspan="4" class="sign" style="text-align: center;">
                             <span class="text-receivedby" style="float: left">Received by:</span><br>
                             <span class="footer-cell"> 
-                                {{-- <span class="footer-cell-sign" style="text-decoration: underline;">
-                                    @if($pAccountable == 'officeAccountable')
-                                        <b>{{ isset($originalPurchase->first()->office_officer) ? strtoupper($originalPurchase->first()->office_officer) : '' }}</b>
-                                    @else
-                                        <b>{{ isset($originalPurchase->first()->person_accnt_name) ? strtoupper($originalPurchase->first()->person_accnt_name) : '' }}</b>
-                                    @endif          
-                                </span><br>                                                                                                                                                                                                                              
+                                {{-- ICS FOOTER - UPDATED WITH PAR LOGIC (using person_accnt_name and end_user_name) --}}
+                                <span class="footer-cell-sign">
+                                    <b>{{ isset($originalPurchase->first()->person_accnt_name) ? strtoupper($originalPurchase->first()->person_accnt_name) : (isset($originalPurchase->first()->person_accnt) ? strtoupper($originalPurchase->first()->person_accnt) : '') }}</b>
+                                </span><br>
                                 <span class="footer-cell-text">Signature Over Printed Name</span><br><br>
 
-                                @if($pAccountable2 != 0)
-                                    <span class="footer-cell-sign" style="text-decoration: underline;">
-                                        <b>{{ strtoupper($pAccountable2) }}</b>
-                                    </span><br>                                                                                                                                                                                                                              
+                                @if($originalPurchase->isNotEmpty() && ($originalPurchase->first()->end_user_name ?? false))
+                                    <span class="footer-cell-sign">
+                                        <b>{{ strtoupper($originalPurchase->first()->end_user_name) }}</b>
+                                    </span><br>
                                     <span class="footer-cell-text">End User</span><br><br>
-                                @endif --}}
+                                @endif
                                 
                                 <span class="footer-cell-sign" style="text-decoration: underline;">
                                     <b>{{ isset($originalPurchase->first()->person_accnt) ? strtoupper($originalPurchase->first()->office_name) : strtoupper($originalPurchase->first()->office_name ?? '') }}</b>
@@ -374,28 +374,25 @@
                 </tfoot>
             </table>
         @elseif($loop->last)
-            {{-- Show only on LAST page (default behavior) --}}
+            {{-- Footer Each Page unchecked: only once, after the final table. --}}
             <table id="rpcppe" class="table table-bordered">
-                <tfoot>
+                <tbody>
                     <tr>
                         <td colspan="4" class="sign" style="text-align: center;">
                             <span class="text-receivedby" style="float: left">Received by:</span><br>
                             <span class="footer-cell"> 
-                                {{-- <span class="footer-cell-sign" style="text-decoration: underline;">
-                                    @if($pAccountable == 'officeAccountable')
-                                        <b>{{ isset($originalPurchase->first()->office_officer) ? strtoupper($originalPurchase->first()->office_officer) : '' }}</b>
-                                    @else
-                                        <b>{{ isset($originalPurchase->first()->person_accnt_name) ? strtoupper($originalPurchase->first()->person_accnt_name) : '' }}</b>
-                                    @endif          
-                                </span><br>                                                                                                                                                                                                                              
+                                {{-- ICS FOOTER - UPDATED WITH PAR LOGIC (using person_accnt_name and end_user_name) --}}
+                                <span class="footer-cell-sign">
+                                    <b>{{ isset($originalPurchase->first()->person_accnt_name) ? strtoupper($originalPurchase->first()->person_accnt_name) : (isset($originalPurchase->first()->person_accnt) ? strtoupper($originalPurchase->first()->person_accnt) : '') }}</b>
+                                </span><br>
                                 <span class="footer-cell-text">Signature Over Printed Name</span><br><br>
 
-                                @if($pAccountable2 != 0)
-                                    <span class="footer-cell-sign" style="text-decoration: underline;">
-                                        <b>{{ strtoupper($pAccountable2) }}</b>
-                                    </span><br>                                                                                                                                                                                                                              
+                                @if($originalPurchase->isNotEmpty() && ($originalPurchase->first()->end_user_name ?? false))
+                                    <span class="footer-cell-sign">
+                                        <b>{{ strtoupper($originalPurchase->first()->end_user_name) }}</b>
+                                    </span><br>
                                     <span class="footer-cell-text">End User</span><br><br>
-                                @endif --}}
+                                @endif
                                 
                                 <span class="footer-cell-sign" style="text-decoration: underline;">
                                     <b>{{ isset($originalPurchase->first()->person_accnt) ? strtoupper($originalPurchase->first()->office_name) : strtoupper($originalPurchase->first()->office_name ?? '') }}</b>
@@ -419,7 +416,7 @@
                             </span>
                         </td>
                     </tr>
-                </tfoot>
+                </tbody>
             </table>
         @endif
     </div>

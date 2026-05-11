@@ -1,54 +1,80 @@
 $(function () {
 
     var ticksStyle = {
-        fontColor: '#495057',
-        fontStyle: 'bold'
+        fontColor: '#52606d',
+        fontStyle: 'bold',
+        fontSize: 11
     }
 
     var mode = 'index';
-    var intersect = true;
+    var intersect = false;
 
     var $salesChartMain = $('#sales-chartMain');
+
+    if (!$salesChartMain.length || typeof Chart === 'undefined') {
+        return;
+    }
+
+    var salesChartMainCanvas = $salesChartMain.get(0).getContext('2d');
+    var dataArray = function (key) {
+        var value = $salesChartMain.data(key);
+
+        if (typeof value === 'string') {
+            try {
+                value = JSON.parse(value);
+            } catch (error) {
+                value = [];
+            }
+        }
+
+        return Array.isArray(value) ? value.map(function (item) {
+            return key === 'labels' ? item : Number(item) || 0;
+        }) : [];
+    };
+
     // eslint-disable-next-line no-unused-vars
-    var salesChartMain = new Chart($salesChartMain, {
+    new Chart(salesChartMainCanvas, {
         type: 'bar',
         data: {
-            labels: ['Main'],
+            labels: dataArray('labels'),
             datasets: [
                 {
-                    backgroundColor: '#ffc107',
-                    borderColor: '#ced4da',
-                    data: [
-                        $salesChartMain.data('main'),
-                    ],
+                    label: 'RPCPPE / PAR',
+                    backgroundColor: '#d99a00',
+                    borderColor: '#c78d00',
+                    borderWidth: 1,
+                    data: dataArray('rpcppe'),
                 },
                 {
-                    backgroundColor: '#00a65a',
-                    borderColor: '#ced4da',
-                    data: [
-                        $salesChartMain.data('main-high'),
-                    ],
+                    label: 'RPCSEP / ICS',
+                    backgroundColor: '#137a4b',
+                    borderColor: '#0f653e',
+                    borderWidth: 1,
+                    data: dataArray('rpcsep'),
                 },
                 {
-                    backgroundColor: '#90ee90',
-                    borderColor: '#ced4da',
-                    data: [
-                        $salesChartMain.data('main-low'),
-                    ],
+                    label: 'Unserviceable',
+                    backgroundColor: '#b24a3b',
+                    borderColor: '#963d31',
+                    borderWidth: 1,
+                    data: dataArray('unserviceable'),
                 },
             ]
         },
         options: {
             maintainAspectRatio: false,
+            responsive: true,
             tooltips: {
                 mode: mode,
                 intersect: intersect,
+                backgroundColor: '#1f2d3d',
+                titleFontStyle: 'bold',
                 callbacks: {
                     title: function (tooltipItem, data) {
                         return data.labels[tooltipItem[0].index];
                     },
                     label: function (tooltipItem, data) {
-                        return 'Count: ' + tooltipItem.value;
+                        return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.value;
                     }
                 }
             },
@@ -60,10 +86,21 @@ $(function () {
                 display: false
             },
             scales: {
+                yAxes: [{
+                    display: true,
+                    gridLines: {
+                        color: 'rgba(82, 96, 109, .12)',
+                        zeroLineColor: 'rgba(82, 96, 109, .18)'
+                    },
+                    ticks: $.extend({
+                        beginAtZero: true,
+                        precision: 0
+                    }, ticksStyle)
+                }],
                 xAxes: [{
                     display: true,
                     gridLines: {
-                        display: true
+                        display: false
                     },
                     ticks: ticksStyle
                 }]

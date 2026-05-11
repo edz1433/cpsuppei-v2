@@ -3,13 +3,23 @@ $(function () {
         rules: {
             password: {
                 required: true,
-                minlength: 5
+                minlength: 8
+            },
+            password_confirmation: {
+                required: true,
+                minlength: 8,
+                equalTo: '[name="password"]'
             },
         },
         messages: {
             password: {
                 required: "Please provide a password",
-                minlength: "Your password must be at least 5 characters long"
+                minlength: "Your password must be at least 8 characters long"
+            },
+            password_confirmation: {
+                required: "Please confirm your password",
+                minlength: "Your password must be at least 8 characters long",
+                equalTo: "Password confirmation must match"
             },
         },
         errorElement: 'span',

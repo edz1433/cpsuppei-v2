@@ -20,21 +20,32 @@
                 <div class="card-body">
                     <form class="form-horizontal" action="{{ route('profileUpdate') }}" method="post" id="addEmp">
                         @csrf
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <strong>Please check the account settings form.</strong>
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-4">
                                     <label for="exampleInputName">First Name:</label>
-                                    <input type="text" name="fname" oninput="this.value = this.value.toUpperCase()" placeholder="Enter First Name" value="{{ Auth::guard('web')->user()->fname}}" class="form-control">
+                                    <input type="text" name="fname" oninput="this.value = this.value.toUpperCase()" placeholder="Enter First Name" value="{{ old('fname', Auth::guard('web')->user()->fname) }}" class="form-control" required>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label for="exampleInputName">Middle Name:</label>
-                                    <input type="text" name="mname" oninput="this.value = this.value.toUpperCase()" placeholder="Enter Middle Name" value="{{ Auth::guard('web')->user()->mname}}" class="form-control">
+                                    <input type="text" name="mname" oninput="this.value = this.value.toUpperCase()" placeholder="Enter Middle Name" value="{{ old('mname', Auth::guard('web')->user()->mname) }}" class="form-control">
                                 </div>
 
                                 <div class="col-md-4">
                                     <label for="exampleInputName">Last Name:</label>
-                                    <input type="text" name="lname" oninput="this.value = this.value.toUpperCase()" placeholder="Enter Last Name" value="{{ Auth::guard('web')->user()->lname}}" class="form-control">
+                                    <input type="text" name="lname" oninput="this.value = this.value.toUpperCase()" placeholder="Enter Last Name" value="{{ old('lname', Auth::guard('web')->user()->lname) }}" class="form-control" required>
                                 </div>
                             </div>
                         </div>
@@ -43,29 +54,22 @@
                             <div class="form-row">
                                 <div class="col-md-4">
                                     <label for="exampleInputName">Username:</label>
-                                    <input type="text" name="username" placeholder="Enter Username" value="{{ Auth::guard('web')->user()->username}}" class="form-control">
+                                    <input type="text" name="username" placeholder="Enter Username" value="{{ old('username', Auth::guard('web')->user()->username) }}" class="form-control" required minlength="5" autocomplete="username">
                                 </div>
 
                                 <div class="col-md-4">
                                     <label for="exampleInputName">Gender:</label>
-                                    <select name="gender" class="form-control">
+                                    <select name="gender" class="form-control" required>
                                         <option disabled selected value=""> --- Select --- </option>
-                                        <option value="Male" {{Auth::guard('web')->user()->gender == 'Male' ? 'selected="selected"' : '' }}>Male</option>
-                                        <option value="Female" {{Auth::guard('web')->user()->gender == 'Female' ? 'selected="selected"' : '' }}>Female</option>
+                                        <option value="Male" {{ old('gender', Auth::guard('web')->user()->gender) == 'Male' ? 'selected="selected"' : '' }}>Male</option>
+                                        <option value="Female" {{ old('gender', Auth::guard('web')->user()->gender) == 'Female' ? 'selected="selected"' : '' }}>Female</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label for="exampleInputName">Role:</label>
-                                    <select name="role" class="form-control" style="pointer-events: none;">
-                                        <option disabled selected value=""> --- Select --- </option>
-                                        @if(Auth::user()->role=='Administrator')
-                                        <option value="Administrator" {{Auth::guard('web')->user()->role == 'Administrator' ? 'selected="selected"' : '' }}>Administrator</option>
-                                        @endif
-                                        <option value="Supply Officer" {{Auth::guard('web')->user()->role == 'Supply Officer' ? 'selected="selected"' : '' }}>Supply Officer</option>
-                                        <option value="Campus Admin" {{Auth::guard('web')->user()->role == 'Campus Admin' ? 'selected="selected"' : '' }}>Campus Admin</option>
-                                        <option value="Staff" {{Auth::guard('web')->user()->role == 'Staff' ? 'selected="selected"' : '' }}>Staff</option>
-                                    </select>
+                                    <input type="text" value="{{ Auth::guard('web')->user()->role }}" class="form-control" disabled>
+                                    <small class="text-muted">Role changes are handled by an administrator.</small>
                                 </div>
                             </div>
                         </div>
@@ -93,7 +97,11 @@
                             <div class="form-row">
                                 <div class="col-md-6">
                                     <label for="exampleInputName">Password:</label>
-                                    <input type="text" name="password" placeholder="Enter Password" class="form-control">
+                                    <input type="password" name="password" placeholder="Enter New Password" class="form-control" required minlength="8" autocomplete="new-password">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password_confirmation">Confirm Password:</label>
+                                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Confirm New Password" class="form-control" required minlength="8" autocomplete="new-password">
                                 </div>
                             </div>
                         </div>

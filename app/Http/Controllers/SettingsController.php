@@ -29,54 +29,43 @@ class SettingsController extends Controller
     }
 
     public function profileUpdate(Request $request) {
-        try {
-            $request->validate([
-                'lname' => 'required|string|max:255',
-                'fname' => 'required|string|max:255',
-                'mname' => 'required|string|max:255',
-                'username' => 'required|string|max:255',
-                'role' => 'required',
-                'gender' => 'required',
-            ]);
+        $user = Auth::user();
 
-            $user = Auth::user();
-            $exist = User::where('username', $request->input('username'))
-                        ->where('id', '!=', $user->id)
-                        ->first();
+        $validated = $request->validate([
+            'lname' => 'required|string|max:255',
+            'fname' => 'required|string|max:255',
+            'mname' => 'nullable|string|max:255',
+            'username' => [
+                'required',
+                'string',
+                'min:5',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
+            'gender' => 'required|in:Male,Female',
+        ]);
 
-            $updateData = [
-                'lname'  => $request->input('lname'),
-                'fname'  => $request->input('fname'),
-                'mname'  => $request->input('mname'),
-                'gender' => $request->input('gender'),
-            ];
+        $user->update([
+            'lname' => strtoupper($validated['lname']),
+            'fname' => strtoupper($validated['fname']),
+            'mname' => strtoupper($validated['mname'] ?? ''),
+            'username' => $validated['username'],
+            'gender' => $validated['gender'],
+        ]);
 
-            if (!$exist) {
-                $updateData['username'] = $request->input('username');
-            }
-
-            $user->update($updateData);
-
-            return redirect()->route('user_settings')->with('success', 'Profile updated successfully');
-        } catch (Exception $e) {
-            return redirect()->route('user_settings')->with('error', 'Failed to update profile');
-        }
+        return redirect()->route('user_settings')->with('success', 'Profile updated successfully');
     }
 
     public function profilePassUpdate(Request $request) {
-        try {
-            $request->validate([
-                'password' => 'required|string|min:5,' . Auth::id(),
-            ]);
+        $validated = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
 
-            Auth::guard('web')->user()->update([
-                'password' => Hash::make($request->input('password')),
-            ]);
+        Auth::user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
 
-            return redirect()->route('user_settings')->with('success', 'Password updated successfully');
-        } catch (Exception $e) {
-            return redirect()->route('user_settings')->with('error', 'Failed to update Password');
-        }
+        return redirect()->route('user_settings')->with('success', 'Password updated successfully');
     }
 
     public function upload(Request $request) {

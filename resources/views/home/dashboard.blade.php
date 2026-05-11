@@ -1,182 +1,358 @@
 @extends('layouts.master')
 
 @section('body')
-<div class="container-fluid">
-    <div class="row" style="padding-top: 100px;">
-        @if(auth()->user()->role != 'Campus Admin')
-            <div class="col-lg-12">
-                <div class="row">
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-info">
-                            <div class="inner">
-                                <h3>{{ $userCount }}</h3>
-                                <p>Users</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fa fa-users"></i>
-                            </div>
-                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-secondary">
-                            <div class="inner">
-                                <h3>{{ $offCount }}</h3>
-                                <p>Offices</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fa fa-building"></i>
-                            </div>
-                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-success">
-                            <div class="inner">
-                                <h3>{{ $campusCount }}</h3>
-                                <p>Campuses</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fa fa-map-marker"></i>
-                            </div>
-                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-                        </div>
-                    </div>
+@php
+    $inventoryTotal = $reportableItemsCount;
+    $latestReportableDate = $latestReportableItem ? date('M d, Y', strtotime($latestReportableItem)) : 'No acquired date yet';
 
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-warning">
-                            <div class="inner">
-                                <h3>{{ $propertyCount }}</h3>
-                                <p>Property Type</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fa fa-gear"></i>
-                            </div>
-                            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-                        </div>
+    $propertyBreakdown = [
+        ['label' => 'RPCPPE / PAR', 'value' => $rpcppeCount, 'amount' => $rpcppeValue, 'color' => '#d99a00'],
+        ['label' => 'RPCSEP / ICS', 'value' => $rpcsepCount, 'amount' => $rpcsepValue, 'color' => '#137a4b'],
+        ['label' => 'Unserviceable', 'value' => $unserviceableCount, 'amount' => $unserviceableValue, 'color' => '#b24a3b'],
+    ];
+@endphp
+
+<div class="container-fluid dashboard-page">
+    <div class="dashboard-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                @if($isTechnician)
+                    <h1>Technician Repair Dashboard</h1>
+                    <p>Track pending diagnosis, items ready for release, and repair workload for your assigned campus.</p>
+                @elseif($isCampusAdmin)
+                    <h1>Campus Inventory Dashboard</h1>
+                    <p>Review reportable campus records using the same active rules used by report generation.</p>
+                @else
+                    <h1>{{ $isSupplyOfficer ? 'Supply Officer Dashboard' : 'Administrator Dashboard' }}</h1>
+                    <p>Monitor system records, reportable inventory, and campus activity from one operating view.</p>
+                @endif
+            </div>
+            <div class="col-lg-4 text-lg-right mt-3 mt-lg-0">
+                <span class="dashboard-chip">
+                    <i class="fas fa-shield-alt"></i>
+                    {{ auth()->user()->role }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    @if($isAdministrator || $isSupplyOfficer)
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Users</div>
+                        <div class="metric-value">{{ number_format($userCount) }}</div>
+                        <div class="metric-note">Registered system accounts</div>
                     </div>
+                    <div class="metric-icon icon-blue"><i class="fas fa-users"></i></div>
                 </div>
             </div>
-        @endif
-        <div class="col-lg-3">
-            <div class="card">
-                <div class="card-header text-dark" style="background-color: #c5cdd4;">
-                    <h3 class="card-title">MAIN CAMPUS (PROPERTY TYPE)</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                        </button>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Offices</div>
+                        <div class="metric-value">{{ number_format($offCount) }}</div>
+                        <div class="metric-note">Managed offices and units</div>
+                    </div>
+                    <div class="metric-icon icon-gray"><i class="fas fa-building"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Campuses</div>
+                        <div class="metric-value">{{ number_format($campusCount) }}</div>
+                        <div class="metric-note">Active campus locations</div>
+                    </div>
+                    <div class="metric-icon icon-green"><i class="fas fa-map-marker-alt"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Property Types</div>
+                        <div class="metric-value">{{ number_format($propertyCount) }}</div>
+                        <div class="metric-note">Configured classifications</div>
+                    </div>
+                    <div class="metric-icon icon-gold"><i class="fas fa-layer-group"></i></div>
+                </div>
+            </div>
+        </div>
+    @elseif($isTechnician)
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Repair Records</div>
+                        <div class="metric-value">{{ number_format($repairTotalCount) }}</div>
+                        <div class="metric-note">Total repair transactions in scope</div>
+                    </div>
+                    <div class="metric-icon icon-blue"><i class="fas fa-screwdriver-wrench"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">For Diagnosis</div>
+                        <div class="metric-value">{{ number_format($repairPendingCount) }}</div>
+                        <div class="metric-note">Received items without diagnosis</div>
+                    </div>
+                    <div class="metric-icon icon-gold"><i class="fas fa-stethoscope"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">For Release</div>
+                        <div class="metric-value">{{ number_format($repairForReleaseCount) }}</div>
+                        <div class="metric-note">Diagnosed items waiting release</div>
+                    </div>
+                    <div class="metric-icon icon-green"><i class="fas fa-box-open"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Released</div>
+                        <div class="metric-value">{{ number_format($repairReleasedCount) }}</div>
+                        <div class="metric-note">Completed repair releases</div>
+                    </div>
+                    <div class="metric-icon icon-gray"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Reportable Records</div>
+                        <div class="metric-value">{{ number_format($inventoryTotal) }}</div>
+                        <div class="metric-note">{{ $isCampusAdmin ? 'Campus scoped records' : 'Active report source records' }}</div>
+                    </div>
+                    <div class="metric-icon icon-green"><i class="fas fa-clipboard-list"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">RPCPPE / PAR</div>
+                        <div class="metric-value">{{ number_format($rpcppeCount) }}</div>
+                        <div class="metric-note">Serviceable items worth 50,000 and above</div>
+                    </div>
+                    <div class="metric-icon icon-gold"><i class="fas fa-file-invoice"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">RPCSEP / ICS</div>
+                        <div class="metric-value">{{ number_format($rpcsepCount) }}</div>
+                        <div class="metric-note">Serviceable items below 50,000</div>
+                    </div>
+                    <div class="metric-icon icon-blue"><i class="fas fa-receipt"></i></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="metric-card">
+                    <div>
+                        <div class="metric-label">Unserviceable</div>
+                        <div class="metric-value">{{ number_format($unserviceableCount) }}</div>
+                        <div class="metric-note">Records marked unserviceable</div>
+                    </div>
+                    <div class="metric-icon icon-gray"><i class="fas fa-triangle-exclamation"></i></div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="card-title">{{ $isCampusAdmin || $isTechnician ? 'Campus Office Report Readiness' : 'Extension Campus Report Readiness' }}</h3><br>
+                            <div class="card-subtitle">{{ number_format($extensionCampusTotal) }} reportable records grouped by active report classification</div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="chart">
-                        <div class="position-relative mb-4">
-                            <canvas id="sales-chartMain"
-                                    data-main="{!! $MainPpeCount !!}"
-                                    data-main-high="{!! $MainHighCount !!}" 
-                                    data-main-low="{!! $MainLowCount !!}"
-                                    height="200">
-                            </canvas>
-                        </div>
-                        <div class="d-flex flex-row justify-content-end">
-                            <span class="mr-2">
-                                <i class="fas fa-square" style="color: #ffc107"></i> PPE
-                            </span>
+                    <div class="chart-frame">
+                        <canvas id="sales-chart"
+                                data-labels='@json($campusReportLabels)'
+                                data-rpcppe='@json($campusReportRpcppe)'
+                                data-rpcsep='@json($campusReportRpcsep)'
+                                data-unserviceable='@json($campusReportUnserviceable)'>
+                        </canvas>
+                    </div>
+                    <ul class="legend-list">
+                        <li><span class="legend-dot" style="background:#d99a00"></span> RPCPPE / PAR</li>
+                        <li><span class="legend-dot" style="background:#137a4b"></span> RPCSEP / ICS</li>
+                        <li><span class="legend-dot" style="background:#b24a3b"></span> Unserviceable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-                            <span class="mr-2">
-                                <i class="fas fa-square" style="color: #00a65a"></i> High Value
-                            </span>
-
-                            <span>
-                                <i class="fas fa-square" style="color: #90ee90"></i> Low Value
-                            </span>
+        <div class="col-xl-4">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="card-title">{{ $isCampusAdmin || $isTechnician ? 'Campus Summary' : 'Main Campus Report Readiness' }}</h3><br>
+                            <div class="card-subtitle">{{ number_format($mainCampusTotal) }} reportable records from main campus offices</div>
                         </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-frame chart-frame-sm">
+                        <canvas id="sales-chartMain"
+                                data-labels='@json($mainReportLabels)'
+                                data-rpcppe='@json($mainReportRpcppe)'
+                                data-rpcsep='@json($mainReportRpcsep)'
+                                data-unserviceable='@json($mainReportUnserviceable)'>
+                        </canvas>
+                    </div>
+                    <ul class="legend-list">
+                        <li><span class="legend-dot" style="background:#d99a00"></span> RPCPPE / PAR</li>
+                        <li><span class="legend-dot" style="background:#137a4b"></span> RPCSEP / ICS</li>
+                        <li><span class="legend-dot" style="background:#b24a3b"></span> Unserviceable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-4">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Report Composition</h3><br>
+                    <div class="card-subtitle">{{ number_format($inventoryTotal) }} active reportable records</div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-frame chart-frame-sm">
+                        <canvas id="pieChart"
+                                data-rpcppe="{{ $rpcppeCount }}"
+                                data-rpcsep="{{ $rpcsepCount }}"
+                                data-unserviceable="{{ $unserviceableCount }}">
+                        </canvas>
+                    </div>
+
+                    <div class="inventory-breakdown">
+                        @foreach($propertyBreakdown as $item)
+                            @php
+                                $percentage = $inventoryTotal > 0 ? round(($item['value'] / $inventoryTotal) * 100) : 0;
+                            @endphp
+                            <div class="breakdown-row">
+                                <div class="breakdown-label">{{ $item['label'] }}</div>
+                                <div class="breakdown-value">{{ number_format($item['value']) }} <span class="text-muted">({{ $percentage }}%)</span></div>
+                                <div class="breakdown-track">
+                                    <div class="breakdown-bar" style="width: {{ $percentage }}%; background: {{ $item['color'] }}"></div>
+                                </div>
+                                <div class="text-muted small" style="grid-column: 1 / -1;">Estimated value: PHP {{ number_format($item['amount'], 2) }}</div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-9">
-            <div class="card">
-                <div class="card-header text-dark" style="background-color: #c5cdd4;">
-                    <h3 class="card-title">EXTENSION CAMPUSES (PROPERTY TYPE)</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                        </button>
-                    </div>
+        <div class="col-xl-4">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Operational Summary</h3><br>
+                    <div class="card-subtitle">Campus coverage and classification health</div>
                 </div>
                 <div class="card-body">
-                    <div class="chart">
-                        <div class="position-relative mb-4">
-                            <canvas id="sales-chart"
-                                    data-ilog="{!! $IlogPpeCount !!}"
-                                    data-ilog-high="{!! $IlogHighCount !!}" 
-                                    data-ilog-low="{!! $IlogLowCount !!}"
-                                    data-cauayan="{!! $CauayanPpeCount !!}"
-                                    data-cauayan-high="{!! $CauayanHighCount !!}" 
-                                    data-cauayan-low="{!! $CauayanLowCount !!}"
-                                    data-siplay="{!! $SipalayPpeCount !!}"
-                                    data-siplay-high="{!! $SipalayHighCount !!}" 
-                                    data-siplay-low="{!! $SipalayLowCount !!}" 
-                                    data-hinobaan="{!! $HinobaanPpeCount !!}"
-                                    data-hinobaan-high="{!! $HinobaanHighCount !!}" 
-                                    data-hinobaan-low="{!! $HinobaanLowCount !!}" 
-                                    data-hinigaran="{!! $HinigaranPpeCount !!}"
-                                    data-hinigaran-high="{!! $HinigaranHighCount !!}" 
-                                    data-hinigaran-low="{!! $HinigaranLowCount !!}"
-                                    data-moises="{!! $MoisesPpeCount !!}"
-                                    data-moises-high="{!! $MoisesHighCount !!}" 
-                                    data-moises-low="{!! $MoisesLowCount !!}" 
-                                    data-sancarlos="{!! $SancarlosPpeCount !!}"
-                                    data-sancarlos-high="{!! $SancarlosHighCount !!}" 
-                                    data-sancarlos-low="{!! $SancarlosLowCount !!}" 
-                                    data-victorias="{!! $VictoriasPpeCount !!}"
-                                    data-victorias-high="{!! $VictoriasHighCount !!}" 
-                                    data-victorias-low="{!! $VictoriasLowCount !!}"  
-                                    height="200">
-                            </canvas>
+                    <div class="metric-card mb-3">
+                        <div>
+                            <div class="metric-label">Reportable Records</div>
+                            <div class="metric-value">{{ number_format($inventoryTotal) }}</div>
+                            <div class="metric-note">Deleted records excluded, same as reports</div>
                         </div>
-                        <div class="d-flex flex-row justify-content-end">
-                            <span class="mr-2">
-                                <i class="fas fa-square" style="color: #ffc107"></i> PPE
-                            </span>
-
-                            <span class="mr-2">
-                                <i class="fas fa-square" style="color: #00a65a"></i> High Value
-                            </span>
-
-                            <span>
-                                <i class="fas fa-square" style="color: #90ee90"></i> Low Value
-                            </span>
+                        <div class="metric-icon icon-green"><i class="fas fa-chart-pie"></i></div>
+                    </div>
+                    <div class="metric-card mb-0">
+                        <div>
+                            <div class="metric-label">Asset Value</div>
+                            <div class="metric-value">PHP {{ number_format($reportableAssetsValue, 0) }}</div>
+                            <div class="metric-note">{{ number_format($reportableQuantity) }} total quantity, latest {{ $latestReportableDate }}</div>
                         </div>
+                        <div class="metric-icon icon-gold"><i class="fas fa-chart-column"></i></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3">
-            <div class="card">
+        <div class="col-xl-4">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Quick Actions</h3><br>
+                    <div class="card-subtitle">Common workflows for faster follow-through</div>
+                </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <ul class="chart-legend clearfix">
-                                <li><i class="fas fa-square" style="color: #ffc107"></i> PPE</li>
-                                <li><i class="fas fa-square" style="color: #00a65a"></i> High Value</li>
-                                <li><i class="fas fa-square" style="color: #90ee90"></i> Low Value</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="chart-responsive pt-1">
-                                <canvas id="pieChart"
-                                        data-ppe="{{ $inventoryPPECount }}"
-                                        data-high="{{ $inventoryHighCount }}"
-                                        data-low="{{ $inventoryLowCount }}"
-                                        style="min-height: 500;">
-                                </canvas>
+                    @if($isTechnician)
+                        <a href="{{ route('qr-scan') }}" class="quick-link-card">
+                            <div>
+                                <div class="quick-link-title">Scan Property QR</div>
+                                <div class="quick-link-note">Receive, diagnose, or release repair items</div>
                             </div>
-                        </div>
-                    </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="{{ route('repairRead') }}" class="quick-link-card">
+                            <div>
+                                <div class="quick-link-title">Repair Records</div>
+                                <div class="quick-link-note">Review repair transaction history</div>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    @else
+                        <a href="{{ route('inventoryRead') }}" class="quick-link-card">
+                            <div>
+                                <div class="quick-link-title">Open Inventory</div>
+                                <div class="quick-link-note">Review and update inventory records</div>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="{{ route('propertiesRead', 4) }}" class="quick-link-card">
+                            <div>
+                                <div class="quick-link-title">Manage Properties</div>
+                                <div class="quick-link-note">Add, classify, and track property items</div>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    @endif
+                    @if($isAdministrator || $isSupplyOfficer)
+                        <a href="{{ route('reportForm') }}" class="quick-link-card">
+                            <div>
+                                <div class="quick-link-title">Generate Reports</div>
+                                <div class="quick-link-note">Prepare printable inventory documents</div>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    @endif
+                    @if(!$isSupplyOfficer)
+                        <a href="{{ route('user_settings') }}" class="quick-link-card">
+                            <div>
+                                <div class="quick-link-title">Account Settings</div>
+                                <div class="quick-link-note">Update your username or password</div>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
