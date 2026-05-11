@@ -37,7 +37,7 @@
                 <i class="fas fa-user mt-1"></i> Technician
             </a>
 
-            <a href="{{ route('returnSlips.index') }}" class="btn btn-app {{ request()->is('return-slips*') ? 'active' : '' }}" title="Return Slip">
+            <a href="{{ route('returnSlip.index') }}" class="btn btn-app {{ request()->is('return-slips*') ? 'active' : '' }}" title="Return Slip">
                 <i class="fas fa-clipboard-check mt-1"></i> Return Slip
             </a>
             
