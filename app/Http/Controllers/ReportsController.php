@@ -30,9 +30,8 @@ class ReportsController extends Controller
         $setting = Setting::firstOrNew(['id' => 1]);
         $user = auth()->user();
 
-        if($user->role == "Administrator"){
+        if (in_array($user->role, ['Administrator', 'Supply Officer'])) {
             $office = Office::all();
-            
         }else{
             $office = Office::where('camp_id', $user->campus_id)->get();
         }
