@@ -4,6 +4,37 @@
 
 @php $cr = request()->route()->getName(); @endphp
 
+<style>
+    #parReport .select2-container--bootstrap4 .select2-selection--multiple {
+        height: auto !important;
+        min-height: 38px;
+        max-height: 120px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #parReport .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__rendered {
+        display: block;
+        max-height: 110px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-bottom: 4px;
+    }
+
+    #parReport .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
+        max-width: calc(100% - 8px);
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    #parReport .report-show-options,
+    #parReport .report-action-buttons {
+        clear: both;
+        position: relative;
+        z-index: 2;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row" style="padding-top: 100px;">
         <div class="col-lg-12">
@@ -121,7 +152,7 @@
                             </div>
 
                             <!-- Show Columns -->
-                            <div class="col-md-5 mt-3">
+                            <div class="col-md-5 mt-3 report-show-options">
                                 <label class="fw-bold">SHOW:</label>
 
                                 <div class="row mt-2">
@@ -186,7 +217,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group mt-4">
+                    <div class="form-group mt-4 report-action-buttons">
                         <button type="reset" class="btn btn-danger">Reset</button>
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> Generate

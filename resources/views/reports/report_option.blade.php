@@ -4,6 +4,35 @@
 
 @php $cr = request()->route()->getName(); @endphp
 
+<style>
+    #rpcppeReport .select2-container--bootstrap4 .select2-selection--multiple {
+        height: auto !important;
+        min-height: 38px;
+        max-height: 115px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #rpcppeReport .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__rendered {
+        display: block;
+        max-height: 105px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #rpcppeReport .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    #rpcppeReport .report-action-buttons {
+        clear: both;
+        position: relative;
+        z-index: 2;
+        margin-top: 10px;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row" style="padding-top: 100px;">
         <div class="col-lg-2">
@@ -150,7 +179,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
+                        <div class="form-group report-action-buttons">
                             <div class="form-row">
                                 <div class="col-md-12">
                                     <button type="reset" class="btn btn-danger" data-dismiss="modal">
