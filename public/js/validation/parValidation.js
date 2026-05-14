@@ -4,9 +4,6 @@ $(function () {
             campus_id: {
                 required: true,
             },
-            person_accnt: {
-                required: true,
-            },
             item_id: {
                 required: true,
             },
@@ -14,9 +11,6 @@ $(function () {
         messages: {
             campus_id: {
                 required: "Select Campus",
-            },
-            person_accnt: {
-                required: "Select End User",
             },
             item_id: {
                 required: "Select Items",

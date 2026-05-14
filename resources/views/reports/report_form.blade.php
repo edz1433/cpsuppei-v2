@@ -54,7 +54,7 @@
                             <!-- Type -->
                             <div class="col-md-3">
                                 <label>Type:</label>
-                                <select class="form-control select2bs4" required name="report_type" id="report_type" style="width: 100%;">
+                                <select class="form-control select2bs4" name="report_type" id="report_type" style="width: 100%;">
                                     <option disabled selected value=""> --- select --- </option>
                                     <option value="1">RPCPPE</option>
                                     <option value="2">RPCSEP</option>
@@ -77,7 +77,7 @@
                                 <select class="form-control select2bs4" id="office_id" name="office_id" style="width: 100%;">
                                     <option disabled selected value=""> --- select --- </option>
                                     @foreach ($office as $data)
-                                        @if($data->id != 1 && $data->office_code != '0000')
+                                        @if($data->office_code != '0000')
                                             <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
                                         @endif
                                     @endforeach
@@ -145,7 +145,7 @@
                             <!-- Items -->
                             <div class="col-md-12 mt-2">
                                 <label>Item:</label>
-                                <select class="form-control select2bs4" multiple="multiple" id="item_id" name="item_id[]" style="width: 100%;" required>
+                                <select class="form-control select2bs4" multiple="multiple" id="item_id" name="item_id[]" style="width: 100%;">
                                     <option disabled selected value=""> --- select --- </option>
                                     <option value="All">All Items</option>
                                 </select>
@@ -291,7 +291,10 @@ $(function() {
             locationHtml += response.selectlocation.replace('<option disabled value=""> --- select --- </option>', '');
 
             $('#location').html(locationHtml).trigger('change.select2');
-            $('#person_accntable').html(response.selectedaccntable).trigger('change.select2');
+            let accountableHtml = '<option disabled value=""> --- select --- </option><option value="All" selected>All</option>';
+            accountableHtml += (response.selectedaccntable || '').replace('<option disabled value=""> --- select --- </option>', '');
+
+            $('#person_accntable').html(accountableHtml).trigger('change.select2');
             $('#enduser').html(response.selectedenduser).trigger('change.select2');
             $('#item_id').html(response.selectitems).trigger('change.select2');
 
