@@ -21,6 +21,10 @@ class UserController extends Controller
 
         $user = User::join('campuses', 'users.campus_id', '=', 'campuses.id')
             ->select('users.id as uid', 'users.*', 'campuses.*')
+            // Supply Officers cannot see Administrator accounts
+            ->when(auth()->user()->role === 'Supply Officer', function ($q) {
+                $q->where('users.role', '!=', 'Administrator');
+            })
             ->get();
 
         return view("users.list", compact('user', 'camp', 'setting'));
@@ -44,7 +48,12 @@ class UserController extends Controller
                 'role' => 'required',
             ]);
 
-            $userName = $request->input('username'); 
+            // Supply Officers are not allowed to create Administrator accounts
+            if (auth()->user()->role === 'Supply Officer' && $request->input('role') === 'Administrator') {
+                return redirect()->route('userRead')->with('error', 'You are not allowed to assign the Administrator role!');
+            }
+
+            $userName = $request->input('username');
             $existingUser = User::where('username', $userName)->first();
 
             if ($existingUser) {
@@ -74,14 +83,25 @@ class UserController extends Controller
         $setting = Setting::firstOrNew(['id' => 1]);
         $camp = Campus::all();
         
+        $isSupplyOfficer = auth()->user()->role === 'Supply Officer';
+
         $user = User::join("campuses", "users.campus_id", "=", "campuses.id")
             ->select('users.id as uid', 'users.*', 'campuses.*')
+            // Supply Officers cannot see Administrator accounts
+            ->when($isSupplyOfficer, function ($q) {
+                $q->where('users.role', '!=', 'Administrator');
+            })
             ->get();
 
         $selectedUser = User::join("campuses", "users.campus_id", "=", "campuses.id")
             ->select('users.id as uid', 'users.*', 'campuses.*')
-            ->where('users.id', $id) 
+            ->where('users.id', $id)
             ->first();
+
+        // Prevent Supply Officers from opening an Administrator account for editing
+        if ($isSupplyOfficer && $selectedUser && $selectedUser->role === 'Administrator') {
+            return redirect()->route('userRead')->with('error', 'You are not allowed to edit an Administrator account!');
+        }
 
         return view('users.list', compact('setting', 'user', 'camp', 'selectedUser'));
     }
@@ -100,6 +120,17 @@ class UserController extends Controller
         ]);
 
         try {
+            $isSupplyOfficer = auth()->user()->role === 'Supply Officer';
+
+            // Supply Officers cannot assign the Administrator role, nor edit an existing Administrator
+            if ($isSupplyOfficer) {
+                $targetUser = User::find($request->input('id'));
+
+                if ($request->input('role') === 'Administrator' || ($targetUser && $targetUser->role === 'Administrator')) {
+                    return redirect()->back()->with('error', 'You are not allowed to manage an Administrator account!');
+                }
+            }
+
             $userName = $request->input('username');
             $existingUser = User::where('username', $userName)->where('id', '!=', $request->input('id'))->first();
 
@@ -127,6 +158,15 @@ class UserController extends Controller
     
     public function userDelete($id){
         $users = User::find($id);
+
+        // Supply Officers cannot delete Administrator accounts
+        if (auth()->user()->role === 'Supply Officer' && $users && $users->role === 'Administrator') {
+            return response()->json([
+                'status'  => 403,
+                'message' => 'You are not allowed to delete an Administrator account!',
+            ], 403);
+        }
+
         $users->delete();
 
         return response()->json([

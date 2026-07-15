@@ -141,7 +141,9 @@
                                     <label for="exampleInputName">Role:</label>
                                     <select class="form-control select_camp" name="role">
                                         <option value=""> --- Select Role --- </option>
+                                        @if(auth()->user()->role !== 'Supply Officer')
                                         <option value="Administrator" @if($cr === 'userEdit' && $selectedUser->role == 'Administrator' ? 'selected' : '' ) selected @endif>Administrator</option>
+                                        @endif
                                         <option value="Supply Officer" @if($cr === 'userEdit' && $selectedUser->role == 'Supply Officer' ? 'selected' : '' ) selected @endif>Supply Officer</option>
                                         <option value="Campus Admin" @if($cr === 'userEdit' && $selectedUser->role == 'Campus Admin' ? 'selected' : '' ) selected @endif>Campus Admin</option>
                                         <option value="Supply Staff" @if($cr === 'userEdit' && $selectedUser->role == 'Supply Staff' ? 'selected' : '' ) selected @endif>Supply Staff</option>
