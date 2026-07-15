@@ -33,15 +33,48 @@ class ReportsController extends Controller
 
     private function applyOfficeFilter($query, $officeId)
     {
-        if ($officeId === null || $officeId === '' || $officeId === 'All') {
+        // Normalize to an array so single and multiple selections share one path
+        $officeIds = is_array($officeId) ? $officeId : [$officeId];
+        $officeIds = array_values(array_filter($officeIds, function ($id) {
+            return $id !== null && $id !== '' && $id !== 'All';
+        }));
+
+        if (empty($officeIds)) {
             return $query;
         }
 
-        if ((string) $officeId === '1') {
-            return $query->whereNotIn('enduser_property.office_id', $this->mainCampusExcludedOfficeIds());
+        return $query->where(function ($q) use ($officeIds) {
+            foreach ($officeIds as $officeId) {
+                if ((string) $officeId === '1') {
+                    // Main campus: match everything except the excluded satellite offices
+                    $q->orWhereNotIn('enduser_property.office_id', $this->mainCampusExcludedOfficeIds());
+                } else {
+                    $q->orWhere('enduser_property.office_id', $officeId);
+                }
+            }
+        });
+    }
+
+    /**
+     * Resolve a representative Office model for the report header / filename.
+     * Returns the single selected office, or the first of a multi-selection.
+     */
+    private function resolveSelectedOffice($officeId)
+    {
+        $officeIds = is_array($officeId) ? $officeId : [$officeId];
+        $officeIds = array_values(array_filter($officeIds, function ($id) {
+            return $id !== null && $id !== '' && $id !== 'All';
+        }));
+
+        if (empty($officeIds)) {
+            return null;
         }
 
-        return $query->where('enduser_property.office_id', $officeId);
+        if (count($officeIds) === 1) {
+            return Office::find($officeIds[0]);
+        }
+
+        return Office::whereIn('id', $officeIds)->first();
     }
 
     private function getMainCampusDefaultAccountableName()
@@ -51,7 +84,12 @@ class ReportsController extends Controller
 
     private function applyDefaultAccountableName($items, $request)
     {
-        if ((string) $request->office_id !== '1' || ($request->filled('person_accnt') && $request->person_accnt !== 'All')) {
+        $officeId = $request->office_id;
+        $isMainCampusOnly = is_array($officeId)
+            ? (count($officeId) === 1 && (string) reset($officeId) === '1')
+            : ((string) $officeId === '1');
+
+        if (!$isMainCampusOnly || ($request->filled('person_accnt') && $request->person_accnt !== 'All')) {
             return $items;
         }
 
@@ -142,9 +180,14 @@ class ReportsController extends Controller
     // ==================== generateMix ====================
     public function generateMix($id)
     {
-        $office = Office::find($id);
+        // Supports single ("5") or multiple ("5,7,9") office selection
+        $ids = array_values(array_filter(explode(',', (string) $id), function ($v) {
+            return trim($v) !== '';
+        }));
 
-        if (!$office) {
+        $offices = Office::whereIn('id', $ids)->get();
+
+        if ($offices->isEmpty()) {
             return response()->json([
                 'selectlocation'    => '<option disabled selected value=""> --- select --- </option>',
                 'selectedaccntable' => '<option disabled selected value=""> --- select --- </option>',
@@ -154,40 +197,64 @@ class ReportsController extends Controller
         }
 
         $label = '';
+        $location  = collect();
+        $accntable = collect();
+        $enduser   = collect();
 
-        if (!is_null($office->camp_id)) {
-            // Camp / Custodian Case
-            $location = Office::where('loc_camp', $office->camp_id)
-                ->where('office_code', '0000')
-                ->get();
+        foreach ($offices as $office) {
+            $oid = $office->id;
 
-            $accntable = Accountable::where('off_id', $id)
-                ->whereIn('accnt_role', [1, 2])
-                ->get();
+            if (!is_null($office->camp_id)) {
+                // Camp / Custodian Case
+                $location = $location->merge(
+                    Office::where('loc_camp', $office->camp_id)
+                        ->where('office_code', '0000')
+                        ->get()
+                );
 
-            $enduser = Accountable::where('off_id', $id)
-                ->where('accnt_role', 0)
-                ->get();
+                $accntable = $accntable->merge(
+                    Accountable::where('off_id', $oid)
+                        ->whereIn('accnt_role', [1, 2])
+                        ->get()
+                );
 
-            $label = ' - CUSTODIAN';
-        } else {
-            // Regular Office Case
-            $enduserlocation = EnduserProperty::where('office_id', $id)
-                ->pluck('location');
-            
-            $location = Office::where('loc_camp', 1)
-                ->where('office_code', '0000')
-                ->whereIn('id', $enduserlocation)
-                ->get();
+                $enduser = $enduser->merge(
+                    Accountable::where('off_id', $oid)
+                        ->where('accnt_role', 0)
+                        ->get()
+                );
 
-            $accntable = Accountable::where('off_id', $id)
-                ->where('accnt_role', 1)
-                ->get();
+                $label = ' - CUSTODIAN';
+            } else {
+                // Regular Office Case
+                $enduserlocation = EnduserProperty::where('office_id', $oid)
+                    ->pluck('location');
 
-            $enduser = Accountable::where('off_id', $id)
-                ->where('accnt_role', 0)
-                ->get();
+                $location = $location->merge(
+                    Office::where('loc_camp', 1)
+                        ->where('office_code', '0000')
+                        ->whereIn('id', $enduserlocation)
+                        ->get()
+                );
+
+                $accntable = $accntable->merge(
+                    Accountable::where('off_id', $oid)
+                        ->where('accnt_role', 1)
+                        ->get()
+                );
+
+                $enduser = $enduser->merge(
+                    Accountable::where('off_id', $oid)
+                        ->where('accnt_role', 0)
+                        ->get()
+                );
+            }
         }
+
+        // De-duplicate across the selected offices
+        $location  = $location->unique('id')->values();
+        $accntable = $accntable->unique('id')->values();
+        $enduser   = $enduser->unique('id')->values();
 
         // Build Location
         $selectlocation = '<option disabled value=""> --- select --- </option>';
@@ -210,7 +277,7 @@ class ReportsController extends Controller
             $first = false;
         }
 
-        if ((string) $id === '1') {
+        if (count($ids) === 1 && (string) reset($ids) === '1') {
             $selectedaccntable = '<option value="" selected>'
                 . htmlspecialchars($this->getMainCampusDefaultAccountableName(), ENT_QUOTES, 'UTF-8')
                 . '</option>';
@@ -554,7 +621,8 @@ class ReportsController extends Controller
         $request->validate([
             'report_type'   => 'nullable|in:1,2,3,4,5',
             'properties_id' => 'nullable|array',
-            'office_id'     => 'nullable',
+            'office_id'     => 'nullable', // scalar (single) or array (multiple offices)
+            'office_id.*'   => 'nullable',
             'location'      => 'nullable',
             'categories_id' => 'nullable',
             'property_id'   => 'nullable',
@@ -614,7 +682,7 @@ class ReportsController extends Controller
         // Get category breakdown
         $categoryBreakdown = $this->getCategoryBreakdown($items);
 
-        $office = Office::find($request->office_id);
+        $office = $this->resolveSelectedOffice($request->office_id);
         $selectedColumns = $request->input('columns', []);
 
         // Format the date range for display

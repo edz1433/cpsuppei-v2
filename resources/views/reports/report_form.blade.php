@@ -74,7 +74,8 @@
                             <!-- Campus or Office -->
                             <div class="col-md-3">
                                 <label>Campus or Office:</label>
-                                <select class="form-control select2bs4" id="office_id" name="office_id" style="width: 100%;">
+                                @php $canSelectMultipleOffice = in_array(auth()->user()->role, ['Administrator', 'Supply Officer']); @endphp
+                                <select class="form-control select2bs4" id="office_id" name="office_id{{ $canSelectMultipleOffice ? '[]' : '' }}" style="width: 100%;" @if($canSelectMultipleOffice) multiple @endif>
                                     <option disabled selected value=""> --- select --- </option>
                                     @foreach ($office as $data)
                                         @if($data->office_code != '0000')
@@ -275,16 +276,21 @@ $(function() {
     $('#office_id').on('change', function() {
         const officeId = $(this).val();
 
+        // Supports single (string) or multiple (array) office selection
+        const officeIds = Array.isArray(officeId)
+            ? officeId.filter(id => id !== null && id !== '')
+            : (officeId ? [officeId] : []);
+
         $('#location, #person_accntable, #enduser, #item_id').each(function() {
             $(this).html('<option value="" disabled selected>Loading...</option>').trigger('change.select2');
         });
 
-        if (!officeId) {
+        if (officeIds.length === 0) {
             resetSelects();
             return;
         }
 
-        $.get("{{ route('generateMix', 0) }}".replace('0', officeId), function(response) {
+        $.get("{{ route('generateMix', 0) }}".replace('0', officeIds.join(',')), function(response) {
             // Keep "All" and append real locations from backend
             let locationHtml = '<option disabled value=""> --- select --- </option>';
             locationHtml += '<option value="All">All</option>';
