@@ -649,6 +649,7 @@ class ReportsController extends Controller
             ->leftJoin('accountable as accountable_person', 'accountable_person.id', '=', 'enduser_property.person_accnt')
             ->leftJoin('accountable as end_user', 'end_user.id', '=', 'enduser_property.person_accnt1')
             ->leftJoin('offices', 'offices.id', '=', 'enduser_property.office_id')
+            ->leftJoin('offices as locations', 'locations.id', '=', 'enduser_property.location')
             ->leftJoin('units', 'units.id', '=', 'enduser_property.unit_id')
             ->select(
                 'enduser_property.*',
@@ -664,6 +665,7 @@ class ReportsController extends Controller
                 'offices.office_name',
                 'offices.office_abbr',
                 'offices.camp_id',
+                'locations.office_name as itemlocated',
                 'enduser_property.id as pid'
             );
 

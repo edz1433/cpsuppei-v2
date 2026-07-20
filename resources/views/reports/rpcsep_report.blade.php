@@ -396,7 +396,7 @@
                             <td class="text-center">{{ $purchaseData['office_name'] ?? $purchaseData->office_name ?? $purchaseData['whereabout'] ?? $purchaseData->whereabout ?? '' }}</td>
 
                             @if($locationcolumn == 1)
-                                <td class="text-center">{{ $purchaseData['itemlocated'] ?? $purchaseData->itemlocated ?? $purchaseData['location'] ?? $purchaseData->location ?? '' }}</td>
+                                <td class="text-center">{{ $purchaseData['itemlocated'] ?? $purchaseData->itemlocated ?? '' }}</td>
                             @endif
 
                             @if($serial == 1)
