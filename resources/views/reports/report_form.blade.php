@@ -76,7 +76,7 @@
                                 <label>Campus or Office:</label>
                                 @php $canSelectMultipleOffice = in_array(auth()->user()->role, ['Administrator', 'Supply Officer']); @endphp
                                 <select class="form-control select2bs4" id="office_id" name="office_id{{ $canSelectMultipleOffice ? '[]' : '' }}" style="width: 100%;" @if($canSelectMultipleOffice) multiple @endif>
-                                    <option disabled selected value=""> --- select --- </option>
+                                    <option value="All" selected>All Campuses &amp; Offices</option>
                                     @foreach ($office as $data)
                                         @if($data->office_code != '0000')
                                             <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
@@ -274,7 +274,16 @@ $(function() {
 
     // Office Change → generateMix
     $('#office_id').on('change', function() {
-        const officeId = $(this).val();
+        let officeId = $(this).val();
+
+        // "All" (all campuses & offices) is mutually exclusive with specific offices
+        if (Array.isArray(officeId) && officeId.length > 1 && officeId.includes('All')) {
+            // If "All" was just added, keep only "All"; otherwise drop "All" in favor of specific offices
+            officeId = officeId[officeId.length - 1] === 'All'
+                ? ['All']
+                : officeId.filter(id => id !== 'All');
+            $(this).val(officeId).trigger('change.select2');
+        }
 
         // Supports single (string) or multiple (array) office selection
         const officeIds = Array.isArray(officeId)
