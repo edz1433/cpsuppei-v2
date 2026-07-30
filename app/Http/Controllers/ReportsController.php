@@ -620,6 +620,7 @@ class ReportsController extends Controller
     {
         $request->validate([
             'report_type'   => 'nullable|in:1,2,3,4,5',
+            'format'        => 'nullable|in:pdf,excel',
             'properties_id' => 'nullable|array',
             'office_id'     => 'nullable', // scalar (single) or array (multiple offices)
             'office_id.*'   => 'nullable',
@@ -735,8 +736,13 @@ class ReportsController extends Controller
             'total_quantity'    => $items->sum('quantity'),
         ];
 
-        $view = $this->getReportView($reportType);
         $filename = $this->getReportFilename($reportType, $office);
+
+        if ($request->input('format') === 'excel') {
+            return $this->streamExcelReport((int) $reportType, $data, $filename);
+        }
+
+        $view = $this->getReportView($reportType);
 
         // Fix orientation logic (explicit and readable)
         $orientation = in_array($reportType, [3, 4, 5]) ? 'Portrait' : 'Landscape';
@@ -755,6 +761,20 @@ class ReportsController extends Controller
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
+
+    // Build and stream the .xlsx workbook that mirrors the PDF report's header/footer content
+    private function streamExcelReport(int $reportType, array $data, string $filename)
+    {
+        $spreadsheet = (new \App\Services\Reports\ReportExcelBuilder())->build($reportType, $data);
+        $writer = new Xlsx($spreadsheet);
+        $filename = preg_replace('/\.pdf$/i', '', $filename) . '.xlsx';
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
     

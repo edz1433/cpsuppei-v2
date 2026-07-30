@@ -49,10 +49,20 @@ Route::group(['middleware' => ['login_auth']], function () {
         Route::get('/', [ReturnSlipController::class, 'index'])->name('returnSlips.index');
         Route::get('/create', [ReturnSlipController::class, 'create'])->name('returnSlips.create');
         Route::post('/store', [ReturnSlipController::class, 'store'])->name('returnSlips.store');
-        Route::post('/items/{itemId}/confirm', [ReturnSlipController::class, 'confirmItem'])->name('returnSlips.items.confirm');
+        Route::get('/logs', [ReturnSlipController::class, 'logs'])->name('returnSlips.logs');
+        Route::get('/properties', [ReturnSlipController::class, 'propertyOptions'])->name('returnSlips.properties');
+        Route::get('/slip-report', [ReturnSlipController::class, 'slipReportForm'])->name('returnSlips.slipReport.form');
+        Route::get('/slip-report/summary', [ReturnSlipController::class, 'slipReportSummary'])->name('returnSlips.slipReport.summary');
+        Route::get('/transfer-report', [ReturnSlipController::class, 'transferReportForm'])->name('returnSlips.transferReport');
+        Route::get('/transfer-report/generate', [ReturnSlipController::class, 'transferReportGenerate'])->name('returnSlips.transferReport.generate');
+        Route::get('/transfer-report/summary', [ReturnSlipController::class, 'transferReportSummary'])->name('returnSlips.transferReport.summary');
+        Route::post('/items/{itemId}/transfer', [ReturnSlipController::class, 'transferItem'])->name('returnSlips.items.transfer');
+        Route::post('/items/{itemId}/unserviceable', [ReturnSlipController::class, 'unserviceableItem'])->name('returnSlips.items.unserviceable');
+        Route::post('/items/{itemId}/obsolete', [ReturnSlipController::class, 'obsoleteItem'])->name('returnSlips.items.obsolete');
         Route::post('/items/{itemId}/cancel', [ReturnSlipController::class, 'cancelItem'])->name('returnSlips.items.cancel');
         Route::post('/items/{itemId}/delete', [ReturnSlipController::class, 'deleteItem'])->name('returnSlips.items.delete');
-        Route::get('/{id}', [ReturnSlipController::class, 'show'])->name('returnSlips.show');
+        Route::get('/{id}', [ReturnSlipController::class, 'show'])->whereNumber('id')->name('returnSlips.show');
+        Route::get('/{id}/slip-report', [ReturnSlipController::class, 'returnSlipReport'])->whereNumber('id')->name('returnSlips.slipReport');
     });
 
     //View

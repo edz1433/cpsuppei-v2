@@ -220,8 +220,11 @@
 
                     <div class="form-group mt-4 report-action-buttons">
                         <button type="reset" class="btn btn-danger">Reset</button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-file-pdf"></i> Generate
+                        <button type="submit" name="format" value="pdf" class="btn btn-success">
+                            <i class="fas fa-file-pdf"></i> Generate PDF
+                        </button>
+                        <button type="submit" name="format" value="excel" class="btn btn-primary">
+                            <i class="fas fa-file-excel"></i> Generate Excel
                         </button>
                     </div>
                 </form>

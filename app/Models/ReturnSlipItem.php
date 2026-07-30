@@ -17,7 +17,15 @@ class ReturnSlipItem extends Model
         'current_office_id',
         'current_location_id',
         'current_status',
+        'previous_remarks',
         'status',
+        'action_type',
+        'transferred_to_enduser_id',
+        'transferred_to_enduser_name',
+        'transferred_to_office_id',
+        'transferred_to_location_id',
+        'actioned_by',
+        'actioned_at',
         'confirmed_by',
         'confirmed_at',
         'cancelled_by',
@@ -28,11 +36,25 @@ class ReturnSlipItem extends Model
     protected $casts = [
         'confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'actioned_at' => 'datetime',
     ];
+
+    /**
+     * Item is still sitting with Supply and can be transferred or tagged unserviceable.
+     */
+    public function isAwaitingAction(): bool
+    {
+        return in_array($this->status, ['Returned', 'Pending', ''], true) || $this->status === null;
+    }
 
     public function slip()
     {
         return $this->belongsTo(ReturnSlip::class, 'return_slip_id');
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(ReturnSlipLog::class, 'return_slip_item_id');
     }
 
     public function property()
@@ -48,6 +70,21 @@ class ReturnSlipItem extends Model
     public function currentLocation()
     {
         return $this->belongsTo(Office::class, 'current_location_id');
+    }
+
+    public function transferredToEnduser()
+    {
+        return $this->belongsTo(Accountable::class, 'transferred_to_enduser_id');
+    }
+
+    public function transferredToOffice()
+    {
+        return $this->belongsTo(Office::class, 'transferred_to_office_id');
+    }
+
+    public function actioner()
+    {
+        return $this->belongsTo(User::class, 'actioned_by');
     }
 
     public function confirmer()

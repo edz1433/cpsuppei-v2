@@ -937,9 +937,109 @@ table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
     color: #2d6cdf !important;
 }
 
-.return-slip-badge.status-cancelled {
+.return-slip-badge.status-cancelled,
+.return-slip-badge.status-deleted {
     background: #f8e7e3 !important;
     color: var(--cpsu-red) !important;
+}
+
+.return-slip-badge.status-returned {
+    background: #fff5d8 !important;
+    color: #946800 !important;
+}
+
+.return-slip-badge.status-transferred,
+.return-slip-badge.status-completed {
+    background: #e8f2ff !important;
+    color: #2d6cdf !important;
+}
+
+.return-slip-badge.status-unserviceable {
+    background: #fbe3e3 !important;
+    color: #b02a2a !important;
+}
+
+.return-slip-badge.status-obsolete {
+    background: #eceff3 !important;
+    color: #4a5568 !important;
+}
+
+.return-slip-hero-actions {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+.return-slip-selected-box {
+    background: #f7f9fb !important;
+    border: 1px dashed var(--cpsu-line) !important;
+    border-radius: 8px !important;
+    padding: 12px 14px !important;
+}
+
+.return-slip-selected-box strong {
+    color: var(--cpsu-ink) !important;
+    font-size: 15px !important;
+}
+
+.return-slip-log {
+    display: flex !important;
+    gap: 12px !important;
+    padding-bottom: 16px !important;
+    position: relative !important;
+}
+
+.return-slip-log:not(:last-child)::before {
+    background: var(--cpsu-line) !important;
+    content: '' !important;
+    left: 5px !important;
+    position: absolute !important;
+    top: 16px !important;
+    width: 2px !important;
+    bottom: 0 !important;
+}
+
+.return-slip-log-dot {
+    background: #9aa5b1 !important;
+    border-radius: 999px !important;
+    flex: 0 0 auto !important;
+    height: 12px !important;
+    margin-top: 4px !important;
+    width: 12px !important;
+    z-index: 1 !important;
+}
+
+.return-slip-log-dot.action-returned {
+    background: #d99a00 !important;
+}
+
+.return-slip-log-dot.action-transferred {
+    background: #2d6cdf !important;
+}
+
+.return-slip-log-dot.action-unserviceable {
+    background: #b02a2a !important;
+}
+
+.return-slip-log-dot.action-obsolete {
+    background: #718096 !important;
+}
+
+.return-slip-log-dot.action-cancelled,
+.return-slip-log-dot.action-deleted {
+    background: var(--cpsu-red) !important;
+}
+
+.return-slip-log-body {
+    flex: 1 1 auto !important;
+}
+
+.return-slip-log-head {
+    align-items: baseline !important;
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: space-between !important;
 }
 
 .return-slip-summary {
