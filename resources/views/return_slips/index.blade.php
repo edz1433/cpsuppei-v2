@@ -25,6 +25,9 @@
                 <a href="{{ route('returnSlips.transferReport') }}" class="btn btn-outline-light return-slip-action">
                     <i class="fas fa-file-pdf"></i> Transfer Report
                 </a>
+                <a href="{{ route('returnSlips.iirupReport') }}" class="btn btn-outline-light return-slip-action">
+                    <i class="fas fa-file-excel"></i> IIRUP Report
+                </a>
                 <a href="{{ route('returnSlips.logs') }}" class="btn btn-outline-light return-slip-action">
                     <i class="fas fa-history"></i> Item Logs
                 </a>

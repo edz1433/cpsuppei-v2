@@ -11,6 +11,7 @@ use App\Models\ReturnSlip;
 use App\Models\ReturnSlipItem;
 use App\Models\ReturnSlipLog;
 use App\Models\Setting;
+use App\Services\Reports\IirupExcelBuilder;
 use App\Services\Reports\PropertyReturnSlipExcelBuilder;
 use App\Services\Reports\PropertyTransferReportExcelBuilder;
 use Barryvdh\Snappy\Facades\SnappyPdf as Snappy;
@@ -665,6 +666,285 @@ class ReturnSlipController extends Controller
             ->get();
 
         return view('return_slips.logs', compact('setting', 'logs'));
+    }
+
+    // =====================================================================
+    // IIRUP (Appendix 74)
+    // Inventory and Inspection Report of Unserviceable Property, filled from
+    // public/IIRUP - FORM.xlsx and sourced from the return-slip logs.
+    // =====================================================================
+
+    public function iirupReportForm(Request $request)
+    {
+        if (!$this->isSupply()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'status' => 'nullable|in:all,'.self::STATUS_UNSERVICEABLE.','.self::STATUS_OBSOLETE,
+        ], [
+            'date_to.after_or_equal' => 'The "to" date cannot be earlier than the "from" date.',
+        ]);
+
+        $setting = Setting::firstOrNew(['id' => 1]);
+        $filters = $this->iirupReportOptions($request);
+        $data = $this->buildIirupReportPreviewData($filters);
+        $statuses = [self::STATUS_UNSERVICEABLE, self::STATUS_OBSOLETE];
+
+        return view('return_slips.iirup_report_form', compact('setting', 'filters', 'data', 'statuses'));
+    }
+
+    public function iirupReportGenerate(Request $request)
+    {
+        if (!$this->isSupply()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'status' => 'nullable|in:all,'.self::STATUS_UNSERVICEABLE.','.self::STATUS_OBSOLETE,
+            'fund_cluster' => 'nullable|string|max:100',
+            'accountable_name' => 'nullable|string|max:150',
+            'designation' => 'nullable|string|max:150',
+            'station' => 'nullable|string|max:150',
+            'format' => 'nullable|in:pdf,excel',
+        ], [
+            'date_to.after_or_equal' => 'The "to" date cannot be earlier than the "from" date.',
+        ]);
+
+        @set_time_limit(0);
+
+        $data = $this->buildIirupReportData($this->iirupReportOptions($request));
+        $filename = $this->iirupReportFilename($data);
+
+        if ($request->input('format') === 'pdf') {
+            $pdf = Snappy::loadView('return_slips.iirup_report_pdf', $data)
+                // Long bond paper: 8.5 x 13 inches, rendered landscape.
+                ->setOption('page-width', '330.2mm')
+                ->setOption('page-height', '215.9mm')
+                ->setOption('disable-smart-shrinking', true)
+                ->setOption('no-stop-slow-scripts', true)
+                ->setOption('quiet', true)
+                ->setOption('margin-top', '8mm')
+                ->setOption('margin-bottom', '17mm')
+                ->setOption('margin-left', '8mm')
+                ->setOption('margin-right', '8mm');
+
+            return response($pdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="'.$filename.'.pdf"',
+            ]);
+        }
+
+        $spreadsheet = (new IirupExcelBuilder())->build($data);
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename.'.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    private function buildIirupReportData(array $opts): array
+    {
+        $items = $this->iirupReportRows($opts);
+
+        return [
+            'items' => $items,
+            'total_cost' => (float) $items->sum('total_cost'),
+            'item_count' => $items->count(),
+            'fund_cluster' => trim((string) $opts['fund_cluster']),
+            'accountable_name' => trim((string) $opts['accountable_name']),
+            'designation' => trim((string) $opts['designation']),
+            'station' => trim((string) $opts['station']),
+            'status' => $opts['status'],
+            'scope_label' => $this->iirupReportScopeLabel($opts),
+            'period_label' => $this->transferReportPeriodLabel($opts),
+            'date_from' => $opts['date_from'],
+            'date_to' => $opts['date_to'],
+            'generated_at' => now()->format('F d, Y h:i A'),
+            'generated_by' => $this->currentUserFullName(),
+            'letterhead' => $this->transferReportLetterhead(),
+        ];
+    }
+
+    private function buildIirupReportPreviewData(array $opts): array
+    {
+        $query = $this->iirupReportBaseQuery($opts);
+        $items = $query->paginate(50)->appends($this->iirupReportQueryParams($opts));
+        $items->setCollection($items->getCollection()->map(fn ($row) => $this->mapIirupReportRow($row)));
+
+        return [
+            'items' => $items,
+            'total_cost' => $this->iirupReportTotalCost($opts),
+            'item_count' => $items->total(),
+            'fund_cluster' => trim((string) $opts['fund_cluster']),
+            'accountable_name' => trim((string) $opts['accountable_name']),
+            'designation' => trim((string) $opts['designation']),
+            'station' => trim((string) $opts['station']),
+            'status' => $opts['status'],
+            'scope_label' => $this->iirupReportScopeLabel($opts),
+            'period_label' => $this->transferReportPeriodLabel($opts),
+            'date_from' => $opts['date_from'],
+            'date_to' => $opts['date_to'],
+            'generated_at' => now()->format('F d, Y h:i A'),
+            'generated_by' => $this->currentUserFullName(),
+            'letterhead' => $this->transferReportLetterhead(),
+        ];
+    }
+
+    private function iirupReportRows(array $opts)
+    {
+        return $this->iirupReportBaseQuery($opts)
+            ->get()
+            ->map(fn ($row) => $this->mapIirupReportRow($row));
+    }
+
+    private function iirupReportBaseQuery(array $opts)
+    {
+        return $this->iirupReportFilteredQuery($opts)
+            ->select(
+                'return_slip_logs.id as log_id',
+                'return_slip_logs.action',
+                'return_slip_logs.remarks as log_remarks',
+                'return_slip_logs.created_at as log_created_at',
+                'return_slip_items.id as item_id',
+                'return_slip_items.property_no_generated',
+                'return_slip_items.item_name',
+                'return_slip_items.serial_number',
+                'return_slip_items.action_remarks',
+                'return_slips.id as slip_id',
+                'enduser_property.item_descrip',
+                'enduser_property.item_model',
+                'enduser_property.qty',
+                'enduser_property.item_cost',
+                'enduser_property.total_cost',
+                'enduser_property.date_acquired',
+                'items.item_name as catalog_item_name',
+                'units.unit_name',
+                'offices.office_name'
+            )
+            ->orderBy('return_slip_logs.created_at')
+            ->orderBy('return_slip_logs.id');
+    }
+
+    private function iirupReportFilteredQuery(array $opts)
+    {
+        return ReturnSlipLog::query()
+            ->join('return_slip_items', 'return_slip_logs.return_slip_item_id', '=', 'return_slip_items.id')
+            ->join('return_slips', 'return_slip_logs.return_slip_id', '=', 'return_slips.id')
+            ->leftJoin('enduser_property', 'return_slip_logs.enduser_property_id', '=', 'enduser_property.id')
+            ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
+            ->leftJoin('units', 'enduser_property.unit_id', '=', 'units.id')
+            ->leftJoin('offices', 'return_slip_items.current_office_id', '=', 'offices.id')
+            ->whereIn('return_slip_logs.action', [self::STATUS_UNSERVICEABLE, self::STATUS_OBSOLETE])
+            ->when($opts['status'] !== 'all', function ($query) use ($opts) {
+                return $query->where('return_slip_logs.action', $opts['status']);
+            })
+            ->when(!empty($opts['date_from']), function ($query) use ($opts) {
+                return $query->whereDate('return_slip_logs.created_at', '>=', $opts['date_from']);
+            })
+            ->when(!empty($opts['date_to']), function ($query) use ($opts) {
+                return $query->whereDate('return_slip_logs.created_at', '<=', $opts['date_to']);
+            });
+    }
+
+    private function mapIirupReportRow($row): array
+    {
+        $name = $row->item_name ?: $row->catalog_item_name;
+        $qty = (float) str_replace(',', '', (string) ($row->qty ?? 0));
+        $unitCost = (float) str_replace(',', '', (string) ($row->item_cost ?? 0));
+        $totalCost = (float) str_replace(',', '', (string) ($row->total_cost ?? 0));
+
+        if ($totalCost <= 0) {
+            $totalCost = $unitCost * max(1, $qty);
+        }
+
+        return [
+            'date_acquired' => $this->transferReportDate($row->date_acquired),
+            'item_name' => (string) $name,
+            'description' => $this->transferReportDescription($row->item_descrip, $name),
+            'model' => trim(str_ireplace('Model:', '', (string) $row->item_model)),
+            'property_no' => (string) ($row->property_no_generated ?: ''),
+            'serial_number' => trim((string) $row->serial_number),
+            'qty' => $qty > 0 ? $qty : 1,
+            'unit_name' => (string) ($row->unit_name ?: ''),
+            'unit_cost' => $unitCost,
+            'total_cost' => $totalCost,
+            'status' => (string) $row->action,
+            'remarks' => (string) ($row->log_remarks ?: $row->action_remarks ?: ''),
+            'log_date' => $row->log_created_at ? Carbon::parse($row->log_created_at)->format('m/d/Y') : '',
+            'slip_no' => 'RS-'.str_pad((string) $row->slip_id, 5, '0', STR_PAD_LEFT),
+            'office_name' => (string) ($row->office_name ?: ''),
+        ];
+    }
+
+    private function iirupReportTotalCost(array $opts): float
+    {
+        $query = $this->iirupReportFilteredQuery($opts)
+            ->selectRaw("
+                SUM(
+                    CASE
+                        WHEN CAST(REPLACE(COALESCE(enduser_property.total_cost, 0), ',', '') AS DECIMAL(15,2)) > 0
+                            THEN CAST(REPLACE(COALESCE(enduser_property.total_cost, 0), ',', '') AS DECIMAL(15,2))
+                        ELSE CAST(REPLACE(COALESCE(enduser_property.item_cost, 0), ',', '') AS DECIMAL(15,2))
+                            * GREATEST(1, CAST(REPLACE(COALESCE(enduser_property.qty, 1), ',', '') AS DECIMAL(15,2)))
+                    END
+                ) as aggregate
+            ");
+
+        return (float) ($query->value('aggregate') ?? 0);
+    }
+
+    private function iirupReportQueryParams(array $opts): array
+    {
+        return array_filter([
+            'date_from' => $opts['date_from'],
+            'date_to' => $opts['date_to'],
+            'status' => $opts['status'] !== 'all' ? $opts['status'] : null,
+            'fund_cluster' => $opts['fund_cluster'],
+            'accountable_name' => $opts['accountable_name'],
+            'designation' => $opts['designation'],
+            'station' => $opts['station'],
+        ], fn ($value) => $value !== null && $value !== '');
+    }
+
+    private function iirupReportOptions(Request $request): array
+    {
+        return [
+            'date_from' => $request->input('date_from'),
+            'date_to' => $request->input('date_to'),
+            'status' => $request->input('status') ?: 'all',
+            'fund_cluster' => (string) $request->input('fund_cluster'),
+            'accountable_name' => (string) $request->input('accountable_name', 'MA. SOCORRO T. LLAMAS'),
+            'designation' => (string) $request->input('designation', 'Administrative Officer V/Head Supply Unit'),
+            'station' => (string) $request->input('station', 'Central Philippines State University'),
+        ];
+    }
+
+    private function iirupReportScopeLabel(array $opts): string
+    {
+        if ($opts['status'] === self::STATUS_UNSERVICEABLE) {
+            return 'Items logged as Unserviceable';
+        }
+
+        if ($opts['status'] === self::STATUS_OBSOLETE) {
+            return 'Items logged as Obsolete';
+        }
+
+        return 'Items logged as Unserviceable or Obsolete';
+    }
+
+    private function iirupReportFilename(array $data): string
+    {
+        $status = $data['status'] === 'all' ? 'Unserviceable-and-Obsolete' : $data['status'];
+        $date = now()->format('Ymd-His');
+
+        return 'IIRUP-'.$status.'-'.$date;
     }
 
     // =====================================================================

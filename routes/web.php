@@ -50,6 +50,8 @@ Route::group(['middleware' => ['login_auth']], function () {
         Route::get('/create', [ReturnSlipController::class, 'create'])->name('returnSlips.create');
         Route::post('/store', [ReturnSlipController::class, 'store'])->name('returnSlips.store');
         Route::get('/logs', [ReturnSlipController::class, 'logs'])->name('returnSlips.logs');
+        Route::get('/iirup-report', [ReturnSlipController::class, 'iirupReportForm'])->name('returnSlips.iirupReport');
+        Route::get('/iirup-report/generate', [ReturnSlipController::class, 'iirupReportGenerate'])->name('returnSlips.iirupReport.generate');
         Route::get('/properties', [ReturnSlipController::class, 'propertyOptions'])->name('returnSlips.properties');
         Route::get('/slip-report', [ReturnSlipController::class, 'slipReportForm'])->name('returnSlips.slipReport.form');
         Route::get('/slip-report/summary', [ReturnSlipController::class, 'slipReportSummary'])->name('returnSlips.slipReport.summary');
