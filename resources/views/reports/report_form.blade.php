@@ -76,10 +76,14 @@
                                 <label>Campus or Office:</label>
                                 @php $canSelectMultipleOffice = in_array(auth()->user()->role, ['Administrator', 'Supply Officer']); @endphp
                                 <select class="form-control select2bs4" id="office_id" name="office_id{{ $canSelectMultipleOffice ? '[]' : '' }}" style="width: 100%;" @if($canSelectMultipleOffice) multiple @endif>
-                                    <option value="All" selected>All Campuses &amp; Offices</option>
+                                    {{-- Campus-scoped users report on their own campus only, so "All"
+                                         would be misleading - their campus is pre-selected instead. --}}
+                                    @if($canSelectMultipleOffice)
+                                        <option value="All" selected>All Campuses &amp; Offices</option>
+                                    @endif
                                     @foreach ($office as $data)
                                         @if($data->office_code != '0000')
-                                            <option value="{{ $data->id }}">{{ $data->office_abbr }} - {{ $data->office_name }}</option>
+                                            <option value="{{ $data->id }}" @if(!$canSelectMultipleOffice && $loop->first) selected @endif>{{ $data->office_abbr }} - {{ $data->office_name }}</option>
                                         @endif
                                     @endforeach
                                 </select>
@@ -244,11 +248,18 @@ $(function() {
         allowClear: true
     });
 
+    const currentMonthStart = moment().startOf('month');
+    const currentMonthEnd = moment().endOf('month');
+    const currentMonthRange = currentMonthStart.format('YYYY-MM-DD') + ' - ' + currentMonthEnd.format('YYYY-MM-DD');
+
     // Date Range Picker
     $('#date_range').daterangepicker({
-        autoUpdateInput: false,
+        startDate: currentMonthStart,
+        endDate: currentMonthEnd,
+        autoUpdateInput: true,
         locale: { cancelLabel: 'Clear', format: 'YYYY-MM-DD' }
     });
+    $('#date_range').val(currentMonthRange);
 
     $('#date_range').on('apply.daterangepicker', function(ev, picker) {
         const dateString = picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD');
@@ -309,8 +320,12 @@ $(function() {
             locationHtml += response.selectlocation.replace('<option disabled value=""> --- select --- </option>', '');
 
             $('#location').html(locationHtml).trigger('change.select2');
+            let accountableOptions = (response.selectedaccntable || '')
+                .replace('<option disabled value=""> --- select --- </option>', '')
+                .replace('<option value="All" selected>All</option>', '')
+                .replace('<option value="All">All</option>', '');
             let accountableHtml = '<option disabled value=""> --- select --- </option><option value="All" selected>All</option>';
-            accountableHtml += (response.selectedaccntable || '').replace('<option disabled value=""> --- select --- </option>', '');
+            accountableHtml += accountableOptions;
 
             $('#person_accntable').html(accountableHtml).trigger('change.select2');
             $('#enduser').html(response.selectedenduser).trigger('change.select2');
@@ -318,6 +333,16 @@ $(function() {
 
             loadItems();
         });
+    });
+
+    $('#parReport').on('reset', function() {
+        setTimeout(function() {
+            $('#date_range').data('daterangepicker').setStartDate(currentMonthStart);
+            $('#date_range').data('daterangepicker').setEndDate(currentMonthEnd);
+            $('#date_range').val(currentMonthRange);
+            $('.select2bs4').trigger('change.select2');
+            loadItems();
+        }, 0);
     });
 
     // Trigger loadItems on field change

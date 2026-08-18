@@ -60,6 +60,16 @@ class ReturnSlipController extends Controller
      */
     public const PTR_APPROVED_BY = ['name' => 'MA. SOCORRO T. LLAMAS', 'designation' => 'AOV/Supply Officer designate'];
     public const PTR_SUPPLY_OFFICER = ['name' => 'LUIGIE T. CABU-AL', 'designation' => 'AOIII/Supply Officer II'];
+    public const PTR_PROPERTY_CUSTODIAN = ['name' => 'JUNDIL A. BACONGCO', 'designation' => 'ADAS II/Property Custodian'];
+
+    /**
+     * Who the report may name under RELEASED/ISSUED BY. Leaving the form's
+     * select blank keeps the default: the end user who gave the property up.
+     */
+    public const PTR_RELEASED_BY_OPTIONS = [
+        'property_custodian' => self::PTR_PROPERTY_CUSTODIAN,
+        'supply_officer' => self::PTR_SUPPLY_OFFICER,
+    ];
 
     /**
      * Signatories and instructions pre-printed on
@@ -454,7 +464,14 @@ class ReturnSlipController extends Controller
         $locationId = ($validated['location_id'] ?? null) ?: null;
 
         DB::transaction(function () use ($request, $validated, $slip, $item, $enduser, $officeId, $locationId) {
+            // The receiver takes over both columns: person_accnt is what the
+            // properties list shows as PERSON ACCOUNTABLE and person_accnt1 the
+            // END USER, so a transfer that touched only the latter left the old
+            // holder still named as accountable. person_accnt_name is the
+            // denormalised copy the inventory screens read.
             $update = [
+                'person_accnt' => $enduser->id,
+                'person_accnt_name' => $enduser->person_accnt,
                 'person_accnt1' => $enduser->id,
                 'remarks' => $validated['condition'],
             ];
@@ -1211,13 +1228,15 @@ class ReturnSlipController extends Controller
         $custodians = $endusers->where('is_custodian', true)->values();
         $others = $endusers->where('is_custodian', false)->values();
         $transferTypes = self::TRANSFER_TYPES;
+        $releasedByOptions = self::PTR_RELEASED_BY_OPTIONS;
 
         return view('return_slips.transfer_report_form', compact(
             'setting',
             'endusers',
             'custodians',
             'others',
-            'transferTypes'
+            'transferTypes',
+            'releasedByOptions'
         ));
     }
 
@@ -1278,6 +1297,7 @@ class ReturnSlipController extends Controller
             'transfer_type' => 'nullable|in:'.implode(',', self::TRANSFER_TYPES),
             'transfer_type_other' => 'nullable|string|max:150',
             'reason' => 'nullable|string|max:2000',
+            'released_by' => 'nullable|in:'.implode(',', array_keys(self::PTR_RELEASED_BY_OPTIONS)),
             'format' => 'nullable|in:pdf,excel',
         ], [
             'from_enduser_id.required' => 'Select the end user who returned the property.',
@@ -1390,9 +1410,10 @@ class ReturnSlipController extends Controller
             'date_to' => $opts['date_to'],
             'period_label' => $this->transferReportPeriodLabel($opts),
             // The previous holder releases, the new holder receives, and Supply
-            // (which held the property in between) approves.
+            // (which held the property in between) approves. The form can name a
+            // Supply signatory under RELEASED/ISSUED BY instead of the holder.
             'approved_by' => self::PTR_APPROVED_BY,
-            'released_by' => $fromBlock,
+            'released_by' => self::PTR_RELEASED_BY_OPTIONS[trim((string) ($opts['released_by'] ?? ''))] ?? $fromBlock,
             'received_by' => $toBlock,
             'generated_at' => now()->format('F d, Y h:i A'),
             'generated_by' => $this->currentUserFullName(),
@@ -1676,6 +1697,7 @@ class ReturnSlipController extends Controller
                 : null,
             'transfer_type_other' => (string) $request->input('transfer_type_other'),
             'reason' => (string) $request->input('reason'),
+            'released_by' => (string) $request->input('released_by'),
         ];
     }
 

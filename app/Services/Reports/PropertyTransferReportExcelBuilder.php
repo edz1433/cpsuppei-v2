@@ -238,7 +238,9 @@ class PropertyTransferReportExcelBuilder
         $labelRow = self::ROW_REASON_LABEL + $shift;
         $textRow = self::ROW_REASON_TEXT + $shift;
 
-        $sheet->setCellValue('A'.$labelRow, 'Reason for Transfer:');
+        // The form's own label is not reprinted - the block shows the reason itself,
+        // so clear whatever the template left on that row.
+        $sheet->setCellValue('A'.$labelRow, '');
 
         // The reason sits inside the bordered block the form leaves below the
         // label; merging it keeps long text on one wrapped paragraph.

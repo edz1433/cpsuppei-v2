@@ -107,6 +107,19 @@
                             <input type="text" name="transfer_type_other" class="form-control" maxlength="150">
                         </div>
 
+                        <div class="form-group">
+                            <label>Released/Issued By</label>
+                            <select name="released_by" id="ptrReleasedBy" class="form-control">
+                                <option value="">Use the end user who returned the property</option>
+                                @foreach($releasedByOptions as $key => $signatory)
+                                    <option value="{{ $key }}">{{ $signatory['name'] }} — {{ $signatory['designation'] }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">
+                                Who signs the report under <strong>RELEASED/ISSUED BY</strong>.
+                            </small>
+                        </div>
+
                         <div class="form-group mb-0">
                             <label>Reason for Transfer</label>
                             <textarea name="reason" class="form-control" rows="3"

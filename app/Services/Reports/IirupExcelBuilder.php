@@ -259,11 +259,6 @@ class IirupExcelBuilder
             $parts[] = 'Model: '.$model;
         }
 
-        $office = trim((string) ($item['office_name'] ?? ''));
-        if ($office !== '') {
-            $parts[] = 'OFFICE/CAMPUS : '.$office;
-        }
-
         return implode("\n", $parts);
     }
 
@@ -284,6 +279,10 @@ class IirupExcelBuilder
         return implode("\n", $parts);
     }
 
+    /**
+     * Remarks carries the office/campus instead of the logged remark, which is
+     * why particularsLine() no longer repeats it.
+     */
     private function remarksLine(array $item): string
     {
         $parts = [];
@@ -292,8 +291,9 @@ class IirupExcelBuilder
             $parts[] = $item['status'];
         }
 
-        if (!empty($item['remarks'])) {
-            $parts[] = $item['remarks'];
+        $office = trim((string) ($item['office_name'] ?? ''));
+        if ($office !== '') {
+            $parts[] = 'OFFICE/CAMPUS : '.$office;
         }
 
         return implode(' - ', $parts);

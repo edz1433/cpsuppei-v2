@@ -319,15 +319,16 @@
                 if ($row['item_name']) { $particulars[] = $row['item_name']; }
                 if ($row['description'] && strcasecmp($row['description'], (string) $row['item_name']) !== 0) { $particulars[] = $row['description']; }
                 if ($row['model']) { $particulars[] = 'Model: '.$row['model']; }
-                if ($row['office_name']) { $particulars[] = 'OFFICE/CAMPUS : '.$row['office_name']; }
 
                 $property = [];
                 if ($row['property_no']) { $property[] = $row['property_no']; }
                 if ($row['serial_number']) { $property[] = 'SN: '.str_replace(';', ' / ', $row['serial_number']); }
 
+                // Remarks carries the office/campus instead of the logged remark,
+                // which is why Particulars no longer repeats it.
                 $remarks = array_filter([
                     $row['status'],
-                    $row['remarks'] ?: null,
+                    $row['office_name'] ? 'OFFICE/CAMPUS : '.$row['office_name'] : null,
                 ]);
             @endphp
             <tr>

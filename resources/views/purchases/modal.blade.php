@@ -253,8 +253,8 @@
                                 </div>
                                 
                                 <div class="col-md-5">
-                                    <label>Accountable Person:</label>
-                                    <select class="form-control select2bs4" id="accountableSelect" name="person_accnt" data-placeholder=" ---Select Accountable Person--- " style="width: 100%;">
+                                    <label>Accountable Person: <span class="text-danger">*</span></label>
+                                    <select class="form-control select2bs4" id="accountableSelect" name="person_accnt" data-placeholder=" ---Select Accountable Person--- " style="width: 100%;" required aria-required="true">
                                         <option value=""> ---Select Accountable Person--- </option>
                                         <!-- Options are dynamically filled by JS -->
                                     </select>

@@ -84,12 +84,59 @@
 </script>
 
 <script>
+    $(function () {
+        $('#addrelease').validate({
+            ignore: [],
+            rules: {
+                person_accnt: {
+                    required: true
+                }
+            },
+            messages: {
+                person_accnt: {
+                    required: "Please select accountable person"
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback d-block');
+
+                if (element.hasClass('select2bs4')) {
+                    element.closest('.col-md-5').append(error);
+                    return;
+                }
+
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element) {
+                $(element).addClass('is-invalid');
+                if ($(element).hasClass('select2bs4')) {
+                    $(element).next('.select2-container').find('.select2-selection').addClass('is-invalid');
+                }
+            },
+            unhighlight: function (element) {
+                $(element).removeClass('is-invalid');
+                if ($(element).hasClass('select2bs4')) {
+                    $(element).next('.select2-container').find('.select2-selection').removeClass('is-invalid');
+                }
+            }
+        });
+    });
+</script>
+
+<script>
     function purchaseReleaseGet(dataid){
         $.ajax({
             type: "GET",
             url: "{{ route('purchaseReleaseGet', ':id') }}".replace(':id', dataid),
             success: function (data) {
                 // alert(data);
+                $('#addrelease')[0].reset();
+                $('#addrelease').validate().resetForm();
+                $('#addrelease .is-invalid').removeClass('is-invalid');
+                $('#addrelease select[name="office_id"]').val('').trigger('change.select2');
+                $('#accountableSelect').empty().append(`<option value=""> ---Select Accountable Person--- </option>`).trigger('change.select2');
+
                 $('#rel_item_name').val(data.purchase.item_name);
                 $('#rel_po_number').val(data.purchase.po_number);
                 $('#purchase_id').val(dataid);

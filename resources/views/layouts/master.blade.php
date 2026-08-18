@@ -353,29 +353,31 @@
         //Bootstrap Duallistbox
         $('.duallistbox').bootstrapDualListbox()
 
-        $('#date_range').daterangepicker({
-            autoUpdateInput: false,
-            locale: {
-                cancelLabel: 'Clear',
-                format: 'YYYY-MM-DD'
-            }
-        });
+        @if(!request()->is('report'))
+            $('#date_range').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'YYYY-MM-DD'
+                }
+            });
 
-        // Apply event
-        $('#date_range').on('apply.daterangepicker', function(ev, picker) {
-            $(this).val(
-                picker.startDate.format('YYYY-MM-DD') + ' - ' +
-                picker.endDate.format('YYYY-MM-DD')
-            );
+            // Apply event
+            $('#date_range').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(
+                    picker.startDate.format('YYYY-MM-DD') + ' - ' +
+                    picker.endDate.format('YYYY-MM-DD')
+                );
 
-            console.log("Start:", picker.startDate.format('YYYY-MM-DD'));
-            console.log("End:", picker.endDate.format('YYYY-MM-DD'));
-        });
+                console.log("Start:", picker.startDate.format('YYYY-MM-DD'));
+                console.log("End:", picker.endDate.format('YYYY-MM-DD'));
+            });
 
-        // Clear event
-        $('#date_range').on('cancel.daterangepicker', function(ev, picker) {
-            $(this).val('');
-        });
+            // Clear event
+            $('#date_range').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+            });
+        @endif
     });
 </script>
 

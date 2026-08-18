@@ -21,6 +21,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class ReportExcelBuilder
 {
+    /**
+     * Plain university letterhead used by the RPCPPE / RPCSEP reports. Unlike the
+     * old rpcppe.png / rpcsep.png it carries no appendix label or report title,
+     * so both are written out as text rows below the image.
+     */
+    private const RPC_LETTERHEAD = 'uploads/pre-repair-header.png';
+
     public function build(int $reportType, array $data): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
@@ -37,7 +44,7 @@ class ReportExcelBuilder
 
         switch ($reportType) {
             case 2:
-                $this->buildRpcppeRpcsep($sheet, $data, 'rpcsep.png');
+                $this->buildRpcppeRpcsep($sheet, $data, self::RPC_LETTERHEAD, 'REPORT ON THE PHYSICAL COUNT OF SEMI-EXPENDABLE PROPERTY');
                 break;
             case 3:
                 $this->buildIcs($sheet, $data);
@@ -50,7 +57,7 @@ class ReportExcelBuilder
                 break;
             case 1:
             default:
-                $this->buildRpcppeRpcsep($sheet, $data, 'rpcppe.png');
+                $this->buildRpcppeRpcsep($sheet, $data, self::RPC_LETTERHEAD, 'REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT');
                 break;
         }
 
@@ -59,10 +66,19 @@ class ReportExcelBuilder
         return $spreadsheet;
     }
 
+    /**
+     * enduser_property stores money and quantities as varchar, and some rows were
+     * saved with thousands separators ("5,000"), which a plain cast reads as 5.
+     */
+    private function toAmount($value): float
+    {
+        return (float) str_replace([',', ' '], '', (string) $value);
+    }
+
     // =====================================================================
     // RPCPPE / RPCSEP (report_type 1 & 2) - identical layout, different logo
     // =====================================================================
-    private function buildRpcppeRpcsep(Worksheet $sheet, array $data, string $logo): void
+    private function buildRpcppeRpcsep(Worksheet $sheet, array $data, string $logo, string $reportTitle): void
     {
         $items = $data['items'] ?? collect();
         $filters = $data['filters'] ?? [];
@@ -100,11 +116,24 @@ class ReportExcelBuilder
         $officeName = $items->first()->office_name ?? '';
         $displayDate = $data['date_range_display'] ?? strtoupper(Carbon::now()->format('M j, Y'));
 
-        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, $data['title'] ?? 'PROPERTY REPORT', ['bold' => true, 'size' => 13]);
+        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'Appendix 73', ['italic' => true, 'size' => 10], Alignment::HORIZONTAL_RIGHT);
+        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, $reportTitle, ['bold' => true, 'size' => 13]);
         $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, $officeName, ['bold' => true, 'size' => 11]);
         $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, $categoryDisplay, ['underline' => true]);
         $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, '(Type of Property, Plant and Equipment)', ['italic' => true, 'size' => 9]);
-        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'As of ' . $displayDate . '.', []);
+        // Each line only appears when that filter was narrowed - the controller omits it for "All".
+        // Campus/Office and Location print bare; only the account title carries a label.
+        $filterLines = [
+            ['Account Title: ', $filters['Account Title'] ?? ''],
+            ['', $filters['Campus or Office'] ?? ''],
+            ['', $filters['Location'] ?? ''],
+        ];
+        foreach ($filterLines as [$label, $value]) {
+            if ($value !== '') {
+                $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, $label . $value, ['underline' => true]);
+            }
+        }
+        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'As at ' . $displayDate . '.', []);
         $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'Fund Cluster : ________________________________', [], Alignment::HORIZONTAL_LEFT);
         $row = $this->mergeAndWrite(
             $sheet,
@@ -128,8 +157,10 @@ class ReportExcelBuilder
 
         $dataStartRow = $row;
         foreach ($items as $item) {
-            $qty = $item->quantity ?? $item->qty ?? 1;
-            $unitCost = (float) ($item->item_cost ?? 0);
+            // item_cost/qty are varchar and some rows carry thousands separators,
+            // which a plain (float) cast would read as 5 instead of 5,000.
+            $qty = $this->toAmount($item->quantity ?? $item->qty ?? 1);
+            $unitCost = $this->toAmount($item->item_cost ?? 0);
             $totalCost = $qty * $unitCost;
 
             $col = 1;
@@ -172,7 +203,7 @@ class ReportExcelBuilder
         $this->writeSignatureFooter($sheet, $row, $lastCol, [
             ['label' => 'Certified Correct by:', 'name' => 'MA. SOCORRO T. LLAMAS', 'title' => 'Administrative Officer V/Supply Officer designate'],
             ['label' => 'Approved by:', 'name' => 'ALADINO C. MORACA, Ph.D.', 'title' => 'SUC President'],
-            ['label' => 'Verified by', 'name' => 'JEREMIAS G. AGUI', 'title' => 'State Auditor IV'],
+            ['label' => 'Verified by', 'name' => 'ATTY. IRRAH MICAH T. SU-AY', 'title' => 'State Auditor I/OIC - Audit Team Leader'],
         ]);
 
         $sheet->freezePane('A' . $dataStartRow);
@@ -472,7 +503,9 @@ class ReportExcelBuilder
 
     private function writeLetterheadImage(Worksheet $sheet, string $filename, int $lastCol): int
     {
-        $path = public_path('template/img/' . $filename);
+        // A bare filename lives in template/img; anything with a slash is taken
+        // as a path relative to public/ (e.g. uploads/pre-repair-header.png).
+        $path = public_path(str_contains($filename, '/') ? $filename : 'template/img/' . $filename);
         $row = 1;
 
         if (is_file($path)) {

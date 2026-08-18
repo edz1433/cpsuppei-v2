@@ -31,13 +31,114 @@ class ReportsController extends Controller
         return [13, 17, 14, 15, 5, 16, 7, 6, 12, 2, 8];
     }
 
-    private function applyOfficeFilter($query, $officeId)
+    /**
+     * Offices the signed-in user may report on, or null when they may report on
+     * every campus.
+     *
+     * Administrators and Supply Officers work system-wide. Everyone else - campus
+     * admins/custodians - is pinned to the campus they belong to, so a request
+     * naming another campus's office (or naming none at all) cannot pull that
+     * campus's data. The office picker already hides other campuses; this is the
+     * server-side half, since the form's values can be edited before they are sent.
+     */
+    private function allowedReportOfficeIds(): ?array
     {
-        // Normalize to an array so single and multiple selections share one path
+        $user = auth()->user();
+
+        if (!$user) {
+            return [];
+        }
+
+        if (in_array($user->role, ['Administrator', 'Supply Officer'], true)) {
+            return null;
+        }
+
+        $campusId = $user->campus_id;
+
+        if (!$campusId) {
+            return [];
+        }
+
+        // Main campus has no camp_id row of its own: it covers every office
+        // except the satellite campuses, which is what office id 1 means
+        // everywhere else in this controller.
+        if ((string) $campusId === '1') {
+            return Office::whereNotIn('id', $this->mainCampusExcludedOfficeIds())
+                ->pluck('id')
+                ->map(function ($id) { return (int) $id; })
+                ->all();
+        }
+
+        // A satellite campus owns its campus office plus its location offices.
+        return Office::where('camp_id', $campusId)
+            ->orWhere('loc_camp', $campusId)
+            ->pluck('id')
+            ->map(function ($id) { return (int) $id; })
+            ->all();
+    }
+
+    /**
+     * Drops the placeholders the form can send ("All", blank) and returns a
+     * plain list, so single and multiple office selections share one path.
+     */
+    private function normalizeOfficeIds($officeId): array
+    {
         $officeIds = is_array($officeId) ? $officeId : [$officeId];
-        $officeIds = array_values(array_filter($officeIds, function ($id) {
+
+        return array_values(array_filter($officeIds, function ($id) {
             return $id !== null && $id !== '' && $id !== 'All';
         }));
+    }
+
+    /**
+     * Narrows a requested office selection to what the user is allowed to see.
+     * An empty selection means "their own campus" rather than "every campus".
+     */
+    private function restrictOfficeIds(array $officeIds, ?array $allowedIds): array
+    {
+        if ($allowedIds === null) {
+            return $officeIds;
+        }
+
+        if (empty($officeIds)) {
+            return $allowedIds;
+        }
+
+        return array_values(array_intersect(
+            array_map('intval', $officeIds),
+            $allowedIds
+        ));
+    }
+
+    private function reportOfficeScopeIds(Office $office)
+    {
+        if ((string) $office->id === '1') {
+            return Office::whereNotIn('id', $this->mainCampusExcludedOfficeIds())
+                ->pluck('id')
+                ->all();
+        }
+
+        return [$office->id];
+    }
+
+    private function applyOfficeFilter($query, $officeId)
+    {
+        $officeIds = $this->normalizeOfficeIds($officeId);
+        $allowedIds = $this->allowedReportOfficeIds();
+
+        if ($allowedIds !== null) {
+            $officeIds = $this->restrictOfficeIds($officeIds, $allowedIds);
+
+            // Nothing left means every office asked for belongs to another
+            // campus - report on no rows rather than falling through to "all".
+            if (empty($officeIds)) {
+                return $query->whereRaw('1 = 0');
+            }
+
+            // The id 1 shorthand is deliberately not expanded here: for a
+            // campus-scoped user the allowed list is already the whole scope.
+            return $query->whereIn('enduser_property.office_id', $officeIds);
+        }
 
         if (empty($officeIds)) {
             return $query;
@@ -61,10 +162,12 @@ class ReportsController extends Controller
      */
     private function resolveSelectedOffice($officeId)
     {
-        $officeIds = is_array($officeId) ? $officeId : [$officeId];
-        $officeIds = array_values(array_filter($officeIds, function ($id) {
-            return $id !== null && $id !== '' && $id !== 'All';
-        }));
+        // Restricted the same way as the data itself, so the header and filename
+        // can never name a campus the report does not actually cover.
+        $officeIds = $this->restrictOfficeIds(
+            $this->normalizeOfficeIds($officeId),
+            $this->allowedReportOfficeIds()
+        );
 
         if (empty($officeIds)) {
             return null;
@@ -185,7 +288,15 @@ class ReportsController extends Controller
             return trim($v) !== '';
         }));
 
-        $offices = Office::whereIn('id', $ids)->get();
+        // Campus-scoped users must not be able to list another campus's
+        // locations, accountable persons or end users either.
+        $allowedIds = $this->allowedReportOfficeIds();
+
+        if ($allowedIds !== null) {
+            $ids = array_values(array_intersect(array_map('intval', $ids), $allowedIds));
+        }
+
+        $offices = empty($ids) ? collect() : Office::whereIn('id', $ids)->get();
 
         if ($offices->isEmpty()) {
             return response()->json([
@@ -203,6 +314,7 @@ class ReportsController extends Controller
 
         foreach ($offices as $office) {
             $oid = $office->id;
+            $officeScopeIds = $this->reportOfficeScopeIds($office);
 
             if (!is_null($office->camp_id)) {
                 // Camp / Custodian Case
@@ -227,25 +339,31 @@ class ReportsController extends Controller
                 $label = ' - CUSTODIAN';
             } else {
                 // Regular Office Case
-                $enduserlocation = EnduserProperty::where('office_id', $oid)
+                $enduserlocation = EnduserProperty::whereIn('office_id', $officeScopeIds)
                     ->pluck('location');
 
                 $location = $location->merge(
-                    Office::where('loc_camp', 1)
+                    Office::where('loc_camp', $office->loc_camp ?? 1)
                         ->where('office_code', '0000')
                         ->whereIn('id', $enduserlocation)
                         ->get()
                 );
 
                 $accntable = $accntable->merge(
-                    Accountable::where('off_id', $oid)
+                    Accountable::whereIn('off_id', $officeScopeIds)
                         ->where('accnt_role', 1)
+                        ->whereNotNull('person_accnt')
+                        ->where('person_accnt', '!=', '')
+                        ->orderBy('person_accnt')
                         ->get()
                 );
 
                 $enduser = $enduser->merge(
-                    Accountable::where('off_id', $oid)
+                    Accountable::whereIn('off_id', $officeScopeIds)
                         ->where('accnt_role', 0)
+                        ->whereNotNull('person_accnt')
+                        ->where('person_accnt', '!=', '')
+                        ->orderBy('person_accnt')
                         ->get()
                 );
             }
@@ -275,12 +393,6 @@ class ReportsController extends Controller
                 . htmlspecialchars($acc->person_accnt ?? '', ENT_QUOTES, 'UTF-8')
                 . $label . '</option>';
             $first = false;
-        }
-
-        if (count($ids) === 1 && (string) reset($ids) === '1') {
-            $selectedaccntable = '<option value="" selected>'
-                . htmlspecialchars($this->getMainCampusDefaultAccountableName(), ENT_QUOTES, 'UTF-8')
-                . '</option>';
         }
 
         // Build End User
@@ -518,8 +630,11 @@ class ReportsController extends Controller
             // Add condition for items acquired BEFORE the start date
             $broughtForwardQuery->where('enduser_property.date_acquired', '<', $startDate);
             
-            // Get the sum of item costs for brought forward items
-            $bforward = $broughtForwardQuery->sum('enduser_property.item_cost');
+            // Get the sum of item costs for brought forward items. item_cost is a
+            // varchar, so the separators are stripped in SQL before summing.
+            $bforward = $broughtForwardQuery->sum(
+                \DB::raw("REPLACE(REPLACE(enduser_property.item_cost, ',', ''), ' ', '') + 0")
+            );
             
             return $bforward ?: 0;
             
@@ -595,11 +710,24 @@ class ReportsController extends Controller
     }
 
     /**
+     * enduser_property stores money and quantities as varchar, and some rows were
+     * saved with thousands separators ("5,000"). Multiplying or summing those raw
+     * raises "A non-numeric value encountered" and, worse, reads 5,000 as 5, so
+     * every amount coming out of that table is parsed through here.
+     */
+    public static function toAmount($value): float
+    {
+        return (float) str_replace([',', ' '], '', (string) $value);
+    }
+
+    /**
      * Calculate total cost for current items
      */
     private function calculateTotalCost($items)
     {
-        return $items->sum('item_cost');
+        return $items->sum(function ($item) {
+            return self::toAmount($item->item_cost ?? 0);
+        });
     }
 
     /**
@@ -610,8 +738,12 @@ class ReportsController extends Controller
         return $items->groupBy('cat_name')->map(function ($group) {
             return [
                 'count' => $group->count(),
-                'total_cost' => $group->sum('item_cost'),
-                'total_quantity' => $group->sum('quantity')
+                'total_cost' => $group->sum(function ($item) {
+                    return self::toAmount($item->item_cost ?? 0);
+                }),
+                'total_quantity' => $group->sum(function ($item) {
+                    return self::toAmount($item->quantity ?? 0);
+                })
             ];
         });
     }
@@ -946,9 +1078,31 @@ class ReportsController extends Controller
         
         if ($request->filled('property_id') && $request->property_id !== 'All') {
             $property = Property::find($request->property_id);
-            $summary['Account Title'] = $property ? $property->property_name : $request->property_id;
+            // Match the picker's own wording, e.g. "PPE - Property, Plant & Equipment"
+            if ($property) {
+                $summary['Account Title'] = trim($property->abbreviation)
+                    ? $property->abbreviation . ' - ' . $property->property_name
+                    : $property->property_name;
+            } else {
+                $summary['Account Title'] = $request->property_id;
+            }
         }
-        
+
+        // Campus or Office supports a single id or a multi-selection
+        if ($request->filled('office_id')) {
+            $officeIds = is_array($request->office_id) ? $request->office_id : [$request->office_id];
+            $officeIds = array_values(array_filter($officeIds, function ($id) {
+                return $id !== null && $id !== '' && $id !== 'All';
+            }));
+
+            if (!empty($officeIds)) {
+                $officeNames = Office::whereIn('id', $officeIds)->pluck('office_name')->toArray();
+                if (!empty($officeNames)) {
+                    $summary['Campus or Office'] = implode(', ', $officeNames);
+                }
+            }
+        }
+
         if ($request->filled('location') && $request->location !== 'All') {
             $location = Office::find($request->location);
             $summary['Location'] = $location ? $location->office_name : $request->location;

@@ -68,13 +68,26 @@
         .report-header {
             text-align: center;
             margin-top: -5px;
-            width: 107%;
+            width: 100%;
         }
 
         .report-header img {
             display: inline-block;
-            max-width: 107%;
+            width: 900px;
+            max-width: 100%;
             height: auto;
+        }
+
+        .report-appendix {
+            text-align: right;
+            font-style: italic;
+            font-size: 11pt;
+        }
+
+        .report-title {
+            font-weight: bold;
+            font-size: 13pt;
+            margin-top: 4px;
         }
 
         .footer-cell-title {
@@ -146,7 +159,11 @@
     $serial = in_array('serial_number', $selected_columns) || in_array('serial', $selected_columns) ? 1 : 0;
     $acquired = in_array('date_acquired', $selected_columns) ? 1 : 0;
     $categoriesLabel = $filters['Category'] ?? 'All';
-    
+    // Set by the controller only when a specific value was picked (never for "All")
+    $accountTitleLabel = $filters['Account Title'] ?? '';
+    $campusOfficeLabel = $filters['Campus or Office'] ?? '';
+    $locationLabel = $filters['Location'] ?? '';
+
     // Check options from form
     $showBalanceForward = $show_balance_forward ?? false;
     $showGrandTotal = $show_grand_total ?? false;
@@ -264,7 +281,9 @@
     {{-- Header Each Page checked: every page. Unchecked: first page only. --}}
     @if($showHeaderOnThisPage)
         <header class="report-header">
-            <img src="{{ asset('template/img/rpcppe.png') }}">
+            <div class="report-appendix">Appendix 73</div>
+            <img src="{{ asset('uploads/pre-repair-header.png') }}">
+            <div class="report-title">REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT</div>
         </header>
     @endif
 
@@ -285,7 +304,17 @@
         @endif
     </div>
     <div class="text1">(Type of Property, Plant and Equipment)</div>
-    <div class="text2">As of <u>{{ $displayDate }}</u>.</div>
+    {{-- Each line only shows when that filter was narrowed; the controller omits it for "All". --}}
+    @if(!empty($accountTitleLabel))
+    <div class="text2">Account Title: <u>{{ $accountTitleLabel }}</u></div>
+    @endif
+    @if(!empty($campusOfficeLabel))
+    <div class="text2"><u>{{ $campusOfficeLabel }}</u></div>
+    @endif
+    @if(!empty($locationLabel))
+    <div class="text2"><u>{{ $locationLabel }}</u></div>
+    @endif
+    <div class="text2">As at <u>{{ $displayDate }}</u>.</div>
     <div class="text3">Fund Cluster : ________________________________</div>
 
     <div class="text4">
@@ -355,8 +384,10 @@
                 @else
                     @foreach ($pageItems as $purchaseData)
                         @php
-                            $quantity = $purchaseData['quantity'] ?? $purchaseData->quantity ?? $purchaseData['qty'] ?? $purchaseData->qty ?? 1;
-                            $unitCost = $purchaseData['item_cost'] ?? $purchaseData->item_cost ?? 0;
+                            // item_cost/qty are varchar and some rows carry thousands
+                            // separators, so parse before multiplying.
+                            $quantity = \App\Http\Controllers\ReportsController::toAmount($purchaseData['quantity'] ?? $purchaseData->quantity ?? $purchaseData['qty'] ?? $purchaseData->qty ?? 1);
+                            $unitCost = \App\Http\Controllers\ReportsController::toAmount($purchaseData['item_cost'] ?? $purchaseData->item_cost ?? 0);
                             $itemTotalCost = $quantity * $unitCost;
                             $pageSubtotal += $itemTotalCost;
                         @endphp
@@ -488,8 +519,8 @@
 
                             <div class="footer-cell">
                                 <div>Verified by</div>
-                                <div class="footer-cell-sign bold">JEREMIAS G. AGUI</div>
-                                <div class="footer-cell-text">State Auditor IV</div>
+                                <div class="footer-cell-sign bold">ATTY. IRRAH MICAH T. SU-AY</div>
+                                <div class="footer-cell-text">State Auditor I/OIC - Audit Team Leader</div>
                             </div>
                         </td>
                     </tr>
@@ -517,8 +548,8 @@
 
                             <div class="footer-cell">
                                 <div>Verified by</div>
-                                <div class="footer-cell-sign bold">JEREMIAS G. AGUI</div>
-                                <div class="footer-cell-text">State Auditor IV</div>
+                                <div class="footer-cell-sign bold">ATTY. IRRAH MICAH T. SU-AY</div>
+                                <div class="footer-cell-text">State Auditor I/OIC - Audit Team Leader</div>
                             </div>
                         </td>
                     </tr>

@@ -343,8 +343,9 @@
 </table>
 
 <div class="closing">
+    {{-- The box carries the reason typed on the form (or the standard wording
+         when it was left blank); the printed label is not repeated. --}}
     <div class="reason-box">
-        Reason for Transfer:
         <p class="reason-text">{{ $reason }}</p>
     </div>
 

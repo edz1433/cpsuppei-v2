@@ -178,10 +178,18 @@ class PurchaseController extends Controller
     }
 
     public function purchaseReleasePost(Request $request) {
+        $validated = $request->validate([
+            'purchase_id' => 'required|integer|exists:purchases,id',
+            'office_id' => 'required|integer|exists:offices,id',
+            'person_accnt' => 'required|integer|exists:accountable,id',
+        ], [
+            'person_accnt.required' => 'Please select accountable person.',
+            'person_accnt.exists' => 'Selected accountable person is invalid.',
+        ]);
+
         // Retrieve necessary data
-        $purchase = Purchases::find($request->purchase_id); 
-        $office = Office::where('id', $request->office_id)->first();
-        $accnt = Accountable::find($request->person_accnt);
+        $purchase = Purchases::findOrFail($validated['purchase_id']);
+        $accnt = Accountable::findOrFail($validated['person_accnt']);
 
         //dd($accnt);
         $dateAcquired = $request->date_acquired;
@@ -190,7 +198,7 @@ class PurchaseController extends Controller
     
         $serials = $request->serial_number;
     
-        $accountablePer = ($request->person_accnt == "") ? $office->office_officer : $accnt->person_accnt;
+        $accountablePer = $accnt->person_accnt;
         
         $newItemNum = intval($request->itemnum);
         
@@ -240,7 +248,7 @@ class PurchaseController extends Controller
                     'selected_account_id' => $purchase->selected_account_id,
                     'remarks' => 'Good Condition',
                     'price_stat' => 'certain',
-                    'person_accnt' => ($request->person_accnt == "") ? '' : $request->person_accnt,
+                    'person_accnt' => $validated['person_accnt'],
                     'person_accnt_name' => $accountablePer,
                     'supply_type' => $purchase->supply_type,
                 ]);
@@ -269,7 +277,7 @@ class PurchaseController extends Controller
                 'selected_account_id' => $purchase->selected_account_id,
                 'remarks' => 'Good Condition',
                 'price_stat' => 'certain',
-                'person_accnt' => ($request->person_accnt == "") ? '' : $request->person_accnt,
+                'person_accnt' => $validated['person_accnt'],
                 'person_accnt_name' => $accountablePer,
                 'supply_type' => $purchase->supply_type,
             ]);
