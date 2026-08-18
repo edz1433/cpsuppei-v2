@@ -139,15 +139,18 @@
                             <div class="form-row">
                                 <div class="col-md-12">
                                     <label for="exampleInputName">Role:</label>
+                                    @php
+                                        // A Supply Officer only ever manages these roles, so the ones
+                                        // they cannot assign are not offered at all.
+                                        $assignableRoles = auth()->user()->role === 'Supply Officer'
+                                            ? \App\Http\Controllers\UserController::SUPPLY_OFFICER_MANAGED_ROLES
+                                            : ['Administrator', 'Supply Officer', 'Campus Admin', 'Supply Staff', 'Technician'];
+                                    @endphp
                                     <select class="form-control select_camp" name="role">
                                         <option value=""> --- Select Role --- </option>
-                                        @if(auth()->user()->role !== 'Supply Officer')
-                                        <option value="Administrator" @if($cr === 'userEdit' && $selectedUser->role == 'Administrator' ? 'selected' : '' ) selected @endif>Administrator</option>
-                                        @endif
-                                        <option value="Supply Officer" @if($cr === 'userEdit' && $selectedUser->role == 'Supply Officer' ? 'selected' : '' ) selected @endif>Supply Officer</option>
-                                        <option value="Campus Admin" @if($cr === 'userEdit' && $selectedUser->role == 'Campus Admin' ? 'selected' : '' ) selected @endif>Campus Admin</option>
-                                        <option value="Supply Staff" @if($cr === 'userEdit' && $selectedUser->role == 'Supply Staff' ? 'selected' : '' ) selected @endif>Supply Staff</option>
-                                        <option value="Technician" @if($cr === 'userEdit' && $selectedUser->role == 'Technician' ? 'selected' : '' ) selected @endif>Technician</option>
+                                        @foreach($assignableRoles as $assignableRole)
+                                            <option value="{{ $assignableRole }}" @if($cr === 'userEdit' && $selectedUser->role == $assignableRole) selected @endif>{{ $assignableRole }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
