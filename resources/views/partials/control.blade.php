@@ -41,7 +41,9 @@
                 <i class="fas fa-clipboard-check mt-1"></i> Return Slip
             </a>
             
-            @if(auth()->user()->role=='Administrator')
+            {{-- Supply Officers manage the Supply Officer / Campus Admin / Supply Staff
+                 accounts, so the Users screen is theirs too. --}}
+            @if(in_array(auth()->user()->role, ['Administrator', 'Supply Officer']))
                 <a href="{{ route('userRead') }}" class="btn btn-app {{$current_route=='userRead' || $current_route=='userEdit' ?'active':''}}" title="Users">
                     <i class="fas fa-users mt-1"></i> Users
                 </a>
