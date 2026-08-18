@@ -17,7 +17,10 @@ class LoginAuth
     public function handle(Request $request, Closure $next)
     {
         if (auth()->check()) {
-            if (auth()->user()->hasRole('Supply Officer') || auth()->user()->hasRole('Supply Staff')) {
+            // Supply Officers manage the Supply Officer / Campus Admin / Supply Staff
+            // accounts, so the Users screen is open to them; UserController limits
+            // which accounts they can see and assign. Supply Staff stay out.
+            if (auth()->user()->hasRole('Supply Staff')) {
                 if ($request->is('users') || $request->is('users/*')) {
                     return redirect()->route('dashboard')
                         ->with('error1', 'You do not have permission to access this page');
