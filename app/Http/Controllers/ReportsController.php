@@ -1077,15 +1077,39 @@ class ReportsController extends Controller
         }
         
         if ($request->filled('property_id') && $request->property_id !== 'All') {
-            $property = Property::find($request->property_id);
-            // Match the picker's own wording, e.g. "PPE - Property, Plant & Equipment"
-            if ($property) {
-                $summary['Account Title'] = trim($property->abbreviation)
-                    ? $property->abbreviation . ' - ' . $property->property_name
-                    : $property->property_name;
-            } else {
-                $summary['Account Title'] = $request->property_id;
+            // The account picker submits properties.code (for example "030"),
+            // not the primary key of the separate property-type table. Codes can
+            // repeat across categories/property types, so use the other selected
+            // filters to resolve the exact account title.
+            $accountQuery = Properties::where('code', $request->property_id);
+
+            if ($request->filled('categories_id') && $request->categories_id !== 'All') {
+                $accountQuery->where('category_id', $request->categories_id);
             }
+
+            $propertyTypeIds = array_values(array_filter(
+                (array) $request->input('properties_id', []),
+                function ($id) {
+                    return $id !== null && $id !== '' && $id !== 'All';
+                }
+            ));
+
+            if (!empty($propertyTypeIds)) {
+                $accountQuery->whereIn('property_id', $propertyTypeIds);
+            }
+
+            // A shared code carries a different title per property type, and the
+            // account picker labels it with the first selected type's title, so
+            // resolve it the same way here.
+            $typeOrder = array_flip($propertyTypeIds);
+
+            $accountTitle = $accountQuery->get(['property_id', 'account_title'])
+                ->sortBy(function ($account) use ($typeOrder) {
+                    return $typeOrder[$account->property_id] ?? count($typeOrder);
+                })
+                ->value('account_title');
+
+            $summary['Account Title'] = $accountTitle ?: $request->property_id;
         }
 
         // Campus or Office supports a single id or a multi-selection

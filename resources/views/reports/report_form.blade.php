@@ -283,6 +283,7 @@ $(function() {
 
         $.get("{{ route('genPropType', 0) }}".replace('0', reportType), function(response) {
             $propSelect.html(response).trigger('change.select2');
+            refreshAccountTitles();
         });
     });
 
@@ -349,25 +350,68 @@ $(function() {
     $('#report_type, #properties_id, #location, #category_id, #property_id, #person_accntable, #enduser, #date_range')
         .on('change', loadItems);
 
+    // Changing the property types changes which account titles exist.
+    $('#properties_id').on('change', refreshAccountTitles);
+
     // Initial load
     if ($('#report_type').val()) $('#report_type').trigger('change');
     if ($('#office_id').val()) $('#office_id').trigger('change');
 });
 
 // ====================== CATEGOR FUNCTION ======================
+// PPE, semi-expendable high/low value and intangible account titles all live in
+// the same table and differ only by property type, so the account list has to
+// follow whatever property types the report is being generated for.
+function selectedPropertyTypeMode() {
+    const clean = ids => (Array.isArray(ids) ? ids : [ids])
+        .filter(id => id !== null && id !== '' && id !== 'All');
+
+    let ids = clean($('#properties_id').val() || []);
+
+    if (!ids.length) {
+        // Nothing picked yet - fall back to every type this report allows.
+        ids = clean($('#properties_id option').map(function () { return this.value; }).get());
+    }
+
+    return ids.length ? ids.join(',') : '0';
+}
+
+// Re-runs the account lookup for the category already chosen.
+function refreshAccountTitles() {
+    const category = $('#category_id').val();
+
+    if (category && category !== 'All') {
+        categor(category);
+    }
+}
+
 function categor(val) {
+    const $account = $('#property_id');
+    const emptyOptions = '<option disabled selected value=""> --- select --- </option><option value="All">All</option>';
+
     if (!val || val === "All") {
-        $('#property_id').html('<option disabled selected value=""> --- select --- </option><option value="All">All</option>');
+        $account.html(emptyOptions).trigger('change.select2');
         loadItems();
         return;
     }
 
-    const url = "{{ route('invCatIcsPar', [':id', '3']) }}".replace(':id', val);
+    // Keep the current choice when the list is only being refreshed.
+    const previous = $account.val();
 
-    $('#property_id').html('<option disabled selected value="">Loading...</option>');
+    const url = "{{ route('invCatIcsPar', [':id', ':mode']) }}"
+        .replace(':id', val)
+        .replace(':mode', selectedPropertyTypeMode()) + '?unique_code=1';
+
+    $account.html('<option disabled selected value="">Loading...</option>').trigger('change.select2');
 
     $.get(url, function(response) {
-        $('#property_id').html(response.options || '<option disabled selected value=""> --- select --- </option><option value="All">All</option>');
+        $account.html(response.options || emptyOptions);
+
+        if (previous && $account.find('option[value="' + previous + '"]').length) {
+            $account.val(previous);
+        }
+
+        $account.trigger('change.select2');
         loadItems();
     });
 }

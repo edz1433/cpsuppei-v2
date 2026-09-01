@@ -694,28 +694,54 @@ class PropertiesController extends Controller
         ]);
     }
 
-    public function invCatIcsPar($id, $mode) {
+    public function invCatIcsPar(Request $request, $id, $mode) {
         $modeArray = explode(',', $mode);
         if ($id) {
             $accounts = Properties::join('property', 'property.id', '=', 'properties.property_id')
                 ->where('properties.category_id', $id)
                 ->whereIn('properties.property_id', $modeArray)
-                ->select('properties.account_number', 'properties.account_title', 'properties.code', 'properties.id', 'property.abbreviation')
+                ->select('properties.account_number', 'properties.account_title', 'properties.code', 'properties.id', 'properties.property_id', 'property.abbreviation')
                 ->get();
-    
-            $options = "<option value='All' data-account-id='All' selected>All</option>"; 
-            
-            foreach ($accounts as $account) {
-                $options .= "<option value='".$account->code."' data-account-id='".$account->id."'>".$account->code.'|'.$account->abbreviation.'|'.$account->account_title."</option>";
+
+            $options = "<option value='All' data-account-id='All' selected>All</option>";
+
+            // The reports form filters on properties.code alone, so one code that
+            // exists under PPE, SPHV, SPLV and Intangible would show up as several
+            // identical-looking choices. Collapse those into a single entry naming
+            // every property type the code belongs to.
+            if ($request->boolean('unique_code')) {
+                // A code can carry a different title per property type ("010" is
+                // "Machinery" under PPE but "Semi-Expendable Machinery" under
+                // SPHV/SPLV), so the title shown is the one belonging to the
+                // first property type the caller asked for.
+                $modeOrder = array_flip(array_values($modeArray));
+
+                $grouped = $accounts
+                    ->sortBy(function ($account) use ($modeOrder) {
+                        return $modeOrder[$account->property_id] ?? count($modeOrder);
+                    })
+                    ->groupBy('code')
+                    ->sortKeys();
+
+                foreach ($grouped as $code => $rows) {
+                    $first = $rows->first();
+                    $abbreviations = $rows->pluck('abbreviation')->unique()->implode('/');
+
+                    $options .= "<option value='".$code."' data-account-id='".$first->id."'>".$code.'|'.$abbreviations.'|'.$first->account_title."</option>";
+                }
+            } else {
+                foreach ($accounts as $account) {
+                    $options .= "<option value='".$account->code."' data-account-id='".$account->id."'>".$account->code.'|'.$account->abbreviation.'|'.$account->account_title."</option>";
+                }
             }
         } else {
             $options = "<option value=''>Select a category first</option>";
         }
-    
+
         return response()->json([
             "options" => $options,
         ]);
-    }    
+    }
     
 
     public function propertiesDelete($id, Request $request)
