@@ -121,6 +121,67 @@ class ReportsController extends Controller
         return [$office->id];
     }
 
+    /**
+     * Category and Account Title accept a single value or a multi-selection.
+     * An empty list means "no filter" - that includes any selection holding "All".
+     */
+    private function normalizeMultiFilter($value): array
+    {
+        $values = is_array($value) ? $value : explode(',', (string) $value);
+        $values = array_values(array_unique(array_filter(array_map('trim', $values), function ($v) {
+            return $v !== '';
+        })));
+
+        return in_array('All', $values, true) ? [] : $values;
+    }
+
+    // Property Type, Category and Account Title filters shared by the item list and the reports.
+    private function applyPropertyFilters($query, $request)
+    {
+        $propertyTypeIds = $this->normalizeMultiFilter($request->input('properties_id'));
+        if (!empty($propertyTypeIds)) {
+            $query->whereIn('enduser_property.properties_id', $propertyTypeIds);
+        }
+
+        $categoryIds = $this->normalizeMultiFilter($request->input('categories_id'));
+        if (!empty($categoryIds)) {
+            $query->whereIn('enduser_property.categories_id', $categoryIds);
+        }
+
+        $accounts = $this->parseAccountFilter($request->input('property_id'));
+        if (!empty($accounts)) {
+            // Each account is its own category + code pair, so "07:010" never
+            // matches Machinery's 010 under category 05.
+            $query->where(function ($q) use ($accounts) {
+                foreach ($accounts as $account) {
+                    $q->orWhere(function ($pair) use ($account) {
+                        if ($account['category'] !== null) {
+                            $pair->where('enduser_property.categories_id', $account['category']);
+                        }
+                        $pair->where('enduser_property.property_id', $account['code']);
+                    });
+                }
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Account Title values are "category:code" (e.g. "07:010") because codes
+     * restart in every category. A bare code is still accepted.
+     */
+    private function parseAccountFilter($value): array
+    {
+        return array_map(function ($account) {
+            $parts = explode(':', $account, 2);
+
+            return count($parts) === 2
+                ? ['category' => $parts[0], 'code' => $parts[1]]
+                : ['category' => null, 'code' => $parts[0]];
+        }, $this->normalizeMultiFilter($value));
+    }
+
     private function applyOfficeFilter($query, $officeId)
     {
         $officeIds = $this->normalizeOfficeIds($officeId);
@@ -435,13 +496,7 @@ class ReportsController extends Controller
                 $query->where('enduser_property.location', $request->location);
             }
 
-            if ($request->filled('categories_id') && $request->categories_id !== 'All') {
-                $query->where('enduser_property.categories_id', $request->categories_id);
-            }
-
-            if ($request->filled('property_id') && $request->property_id !== 'All') {
-                $query->where('enduser_property.property_id', $request->property_id);
-            }
+            $query = $this->applyPropertyFilters($query, $request);
 
             // Safe accountable filter
             if ($request->filled('person_accnt1') && $request->person_accnt1 !== 'All') {
@@ -655,13 +710,7 @@ class ReportsController extends Controller
             $query->where('enduser_property.location', $request->location);
         }
         
-        if ($request->filled('categories_id') && $request->categories_id !== 'All') {
-            $query->where('enduser_property.categories_id', $request->categories_id);
-        }
-        
-        if ($request->filled('property_id') && $request->property_id !== 'All') {
-            $query->where('enduser_property.property_id', $request->property_id);
-        }
+        $query = $this->applyPropertyFilters($query, $request);
         
         // Accountable filter
         if ($request->filled('person_accnt1') && $request->person_accnt1 !== 'All') {
@@ -757,8 +806,10 @@ class ReportsController extends Controller
             'office_id'     => 'nullable', // scalar (single) or array (multiple offices)
             'office_id.*'   => 'nullable',
             'location'      => 'nullable',
-            'categories_id' => 'nullable',
-            'property_id'   => 'nullable',
+            'categories_id' => 'nullable', // scalar (single) or array (multiple categories)
+            'categories_id.*' => 'nullable',
+            'property_id'   => 'nullable', // scalar (single) or array (multiple account titles)
+            'property_id.*' => 'nullable',
             'date_range'    => 'nullable',
             'person_accnt'  => 'nullable',
             'person_accnt1' => 'nullable',
@@ -877,7 +928,8 @@ class ReportsController extends Controller
         $view = $this->getReportView($reportType);
 
         // Fix orientation logic (explicit and readable)
-        $orientation = in_array($reportType, [3, 4, 5]) ? 'Portrait' : 'Landscape';
+        // IIRUP (5) has 20 columns, which do not fit across a portrait page.
+        $orientation = in_array($reportType, [3, 4]) ? 'Portrait' : 'Landscape';
 
         $pdf = Snappy::loadView($view, $data)
             ->setOption('page-size', 'Tabloid') // better than setPaper for wkhtmltopdf
@@ -919,13 +971,7 @@ class ReportsController extends Controller
             $query->where('enduser_property.location', $request->location);
         }
 
-        if ($request->filled('categories_id') && $request->categories_id !== 'All') {
-            $query->where('enduser_property.categories_id', $request->categories_id);
-        }
-
-        if ($request->filled('property_id') && $request->property_id !== 'All') {
-            $query->where('enduser_property.property_id', $request->property_id);
-        }
+        $query = $this->applyPropertyFilters($query, $request);
 
         // Same accountable behavior as generateItems
         if ($request->filled('person_accnt1') && $request->person_accnt1 !== 'All') {
@@ -1071,22 +1117,24 @@ class ReportsController extends Controller
             $summary['Date Range'] = $this->formatDateRangeForDisplay($request->date_range);
         }
         
-        if ($request->filled('categories_id') && $request->categories_id !== 'All') {
-            $category = Category::find($request->categories_id);
-            $summary['Category'] = $category ? $category->cat_name : $request->categories_id;
+        $categoryIds = $this->normalizeMultiFilter($request->input('categories_id'));
+
+        if (!empty($categoryIds)) {
+            $categoryNames = [];
+            foreach ($categoryIds as $categoryId) {
+                $category = Category::find($categoryId);
+                $categoryNames[] = $category ? $category->cat_name : $categoryId;
+            }
+            $summary['Category'] = implode(', ', $categoryNames);
         }
-        
-        if ($request->filled('property_id') && $request->property_id !== 'All') {
+
+        $accounts = $this->parseAccountFilter($request->input('property_id'));
+
+        if (!empty($accounts)) {
             // The account picker submits properties.code (for example "030"),
             // not the primary key of the separate property-type table. Codes can
             // repeat across categories/property types, so use the other selected
             // filters to resolve the exact account title.
-            $accountQuery = Properties::where('code', $request->property_id);
-
-            if ($request->filled('categories_id') && $request->categories_id !== 'All') {
-                $accountQuery->where('category_id', $request->categories_id);
-            }
-
             $propertyTypeIds = array_values(array_filter(
                 (array) $request->input('properties_id', []),
                 function ($id) {
@@ -1094,22 +1142,36 @@ class ReportsController extends Controller
                 }
             ));
 
-            if (!empty($propertyTypeIds)) {
-                $accountQuery->whereIn('property_id', $propertyTypeIds);
-            }
-
             // A shared code carries a different title per property type, and the
             // account picker labels it with the first selected type's title, so
             // resolve it the same way here.
             $typeOrder = array_flip($propertyTypeIds);
 
-            $accountTitle = $accountQuery->get(['property_id', 'account_title'])
-                ->sortBy(function ($account) use ($typeOrder) {
-                    return $typeOrder[$account->property_id] ?? count($typeOrder);
-                })
-                ->value('account_title');
+            $accountTitles = [];
+            foreach ($accounts as $account) {
+                $code = $account['code'];
+                $accountQuery = Properties::where('code', $code);
 
-            $summary['Account Title'] = $accountTitle ?: $request->property_id;
+                if ($account['category'] !== null) {
+                    $accountQuery->where('category_id', $account['category']);
+                } elseif (!empty($categoryIds)) {
+                    $accountQuery->whereIn('category_id', $categoryIds);
+                }
+
+                if (!empty($propertyTypeIds)) {
+                    $accountQuery->whereIn('property_id', $propertyTypeIds);
+                }
+
+                $accountTitle = $accountQuery->get(['property_id', 'account_title'])
+                    ->sortBy(function ($account) use ($typeOrder) {
+                        return $typeOrder[$account->property_id] ?? count($typeOrder);
+                    })
+                    ->value('account_title');
+
+                $accountTitles[] = $accountTitle ?: $code;
+            }
+
+            $summary['Account Title'] = implode(', ', $accountTitles);
         }
 
         // Campus or Office supports a single id or a multi-selection

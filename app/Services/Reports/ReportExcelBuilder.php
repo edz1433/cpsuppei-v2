@@ -401,7 +401,16 @@ class ReportExcelBuilder
 
         $row = $this->writeLetterheadImage($sheet, 'unserviceable-header.png', $lastCol);
         $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'REPORT ON UNSERVICEABLE PROPERTY', ['bold' => true, 'size' => 13]);
-        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'As of: ' . Carbon::now()->format('F d, Y'), ['bold' => true]);
+        // "As of" follows the end of the selected date range, or today when no range is chosen.
+        $asOfDate = Carbon::now();
+        if (!empty($data['has_date_filter']) && preg_match_all('/\d{4}-\d{2}-\d{2}/', (string) ($data['raw_date_range'] ?? ''), $rangeDates)) {
+            try {
+                $asOfDate = Carbon::parse(end($rangeDates[0]));
+            } catch (\Exception $e) {
+                $asOfDate = Carbon::now();
+            }
+        }
+        $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'As of: ' . $asOfDate->format('F d, Y'), ['bold' => true]);
 
         $officeName = $items->first()->office_name ?? '';
         $row = $this->mergeAndWrite($sheet, $row, 1, $lastCol, 'Entity Name: ' . $officeName . '     Fund Cluster: ____________________', ['bold' => true], Alignment::HORIZONTAL_LEFT);

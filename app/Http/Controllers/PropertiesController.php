@@ -696,19 +696,23 @@ class PropertiesController extends Controller
 
     public function invCatIcsPar(Request $request, $id, $mode) {
         $modeArray = explode(',', $mode);
-        if ($id) {
+        // A comma-separated id list loads the account titles of several categories at once.
+        $categoryIds = array_values(array_filter(array_map('trim', explode(',', (string) $id)), function ($catId) {
+            return $catId !== '' && $catId !== '0' && $catId !== 'All';
+        }));
+        if (!empty($categoryIds)) {
             $accounts = Properties::join('property', 'property.id', '=', 'properties.property_id')
-                ->where('properties.category_id', $id)
+                ->whereIn('properties.category_id', $categoryIds)
                 ->whereIn('properties.property_id', $modeArray)
-                ->select('properties.account_number', 'properties.account_title', 'properties.code', 'properties.id', 'properties.property_id', 'property.abbreviation')
+                ->select('properties.account_number', 'properties.account_title', 'properties.code', 'properties.category_id', 'properties.id', 'properties.property_id', 'property.abbreviation')
                 ->get();
 
             $options = "<option value='All' data-account-id='All' selected>All</option>";
 
-            // The reports form filters on properties.code alone, so one code that
-            // exists under PPE, SPHV, SPLV and Intangible would show up as several
-            // identical-looking choices. Collapse those into a single entry naming
-            // every property type the code belongs to.
+            // The reports form picks accounts by category + code, so one account
+            // that exists under PPE, SPHV, SPLV and Intangible would show up as
+            // several identical-looking choices. Collapse those into a single
+            // entry naming every property type the account belongs to.
             if ($request->boolean('unique_code')) {
                 // A code can carry a different title per property type ("010" is
                 // "Machinery" under PPE but "Semi-Expendable Machinery" under
@@ -716,18 +720,24 @@ class PropertiesController extends Controller
                 // first property type the caller asked for.
                 $modeOrder = array_flip(array_values($modeArray));
 
+                // Codes restart in every category ("010" is Machinery under 05 but
+                // Furniture and Fixtures under 07), so the group key and the option
+                // value carry the category too: "07:010".
                 $grouped = $accounts
                     ->sortBy(function ($account) use ($modeOrder) {
                         return $modeOrder[$account->property_id] ?? count($modeOrder);
                     })
-                    ->groupBy('code')
+                    ->groupBy(function ($account) {
+                        return $account->category_id . ':' . $account->code;
+                    })
                     ->sortKeys();
 
-                foreach ($grouped as $code => $rows) {
+                foreach ($grouped as $key => $rows) {
                     $first = $rows->first();
                     $abbreviations = $rows->pluck('abbreviation')->unique()->implode('/');
+                    $label = $first->category_id . '-' . $first->code . '|' . $abbreviations . '|' . $first->account_title;
 
-                    $options .= "<option value='".$code."' data-account-id='".$first->id."'>".$code.'|'.$abbreviations.'|'.$first->account_title."</option>";
+                    $options .= "<option value='" . e($key) . "' data-account-id='" . $first->id . "'>" . e($label) . "</option>";
                 }
             } else {
                 foreach ($accounts as $account) {

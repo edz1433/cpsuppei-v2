@@ -127,6 +127,9 @@
     $showEachpageHeader = $show_eachpage_header ?? false;
     $showEachpageFooter = $show_eachpage_footer ?? false;
     
+    // Needed below for the date display, so it must be set before that block runs
+    $hasDateFilter = $has_date_filter ?? false;
+
     // Use the formatted date range from controller if available
     $displayDate = $date_range_display ?? '';
     

@@ -101,10 +101,9 @@
                             <!-- Category -->
                             <div class="col-md-3 mt-2">
                                 <label>Category:</label>
-                                <select id="category_id" name="categories_id" onchange="categor(this.value)"
+                                <select id="category_id" name="categories_id[]" multiple
                                         class="form-control select2bs4" style="width: 100%;">
-                                    <option disabled selected value=""> --- select --- </option>
-                                    <option value="All">All</option>
+                                    <option value="All" selected>All</option>
                                     @foreach ($category as $data)
                                         <option value="{{ $data->cat_code }}">{{ $data->cat_code }} - {{ $data->cat_name }}</option>
                                     @endforeach
@@ -114,9 +113,8 @@
                             <!-- Account Title -->
                             <div class="col-md-3 mt-2">
                                 <label>Account Title:</label>
-                                <select id="property_id" name="property_id" class="form-control select2bs4" style="width: 100%;">
-                                    <option disabled selected value=""> --- select --- </option>
-                                    <option value="All">All</option>
+                                <select id="property_id" name="property_id[]" multiple class="form-control select2bs4" style="width: 100%;">
+                                    <option value="All" selected>All</option>
                                 </select>
                             </div>
 
@@ -277,6 +275,17 @@ $(function() {
         const reportType = $(this).val();
         const $propSelect = $('#properties_id');
 
+        // IIRUP lists property that became unserviceable long after it was
+        // acquired, so a "this month" acquisition range would hide everything.
+        // Start it on All Dates; a range can still be picked afterwards.
+        if (reportType === '5') {
+            $('#date_range').val('');
+        } else if (!$('#date_range').val()) {
+            $('#date_range').data('daterangepicker').setStartDate(currentMonthStart);
+            $('#date_range').data('daterangepicker').setEndDate(currentMonthEnd);
+            $('#date_range').val(currentMonthRange);
+        }
+
         $propSelect.html('<option value="" disabled selected>Loading...</option>').trigger('change.select2');
 
         if (!reportType) return;
@@ -289,16 +298,8 @@ $(function() {
 
     // Office Change → generateMix
     $('#office_id').on('change', function() {
-        let officeId = $(this).val();
-
         // "All" (all campuses & offices) is mutually exclusive with specific offices
-        if (Array.isArray(officeId) && officeId.length > 1 && officeId.includes('All')) {
-            // If "All" was just added, keep only "All"; otherwise drop "All" in favor of specific offices
-            officeId = officeId[officeId.length - 1] === 'All'
-                ? ['All']
-                : officeId.filter(id => id !== 'All');
-            $(this).val(officeId).trigger('change.select2');
-        }
+        const officeId = enforceAllExclusive($(this));
 
         // Supports single (string) or multiple (array) office selection
         const officeIds = Array.isArray(officeId)
@@ -342,8 +343,22 @@ $(function() {
             $('#date_range').data('daterangepicker').setEndDate(currentMonthEnd);
             $('#date_range').val(currentMonthRange);
             $('.select2bs4').trigger('change.select2');
-            loadItems();
+            $('#office_id, #category_id, #property_id').each(function() {
+                $(this).data('prevVal', $(this).val());
+            });
+            // Category is back to "All", so the account list goes back to "All" only.
+            categor($('#category_id').val());
         }, 0);
+    });
+
+    // Category & Account Title: multi-select where "All" is exclusive and an
+    // emptied selection falls back to "All".
+    $('#category_id').on('change', function() {
+        categor(enforceAllExclusive($(this), true));
+    });
+
+    $('#property_id').on('change', function() {
+        enforceAllExclusive($(this), true);
     });
 
     // Trigger loadItems on field change
@@ -354,9 +369,39 @@ $(function() {
     $('#properties_id').on('change', refreshAccountTitles);
 
     // Initial load
+    $('#office_id, #category_id, #property_id').each(function() {
+        $(this).data('prevVal', $(this).val());
+    });
     if ($('#report_type').val()) $('#report_type').trigger('change');
     if ($('#office_id').val()) $('#office_id').trigger('change');
 });
+
+// Keeps "All" mutually exclusive with specific choices on a multi-select.
+// jQuery returns multi-select values in option order, not click order, so the
+// previous selection is compared to tell whether "All" was just picked.
+function enforceAllExclusive($select, fallbackToAll) {
+    let value = $select.val();
+
+    if (!Array.isArray(value)) {
+        return value;
+    }
+
+    const previous = $select.data('prevVal') || [];
+    value = value.filter(v => v !== null && v !== '');
+
+    if (value.length > 1 && value.includes('All')) {
+        // "All" newly picked → keep only "All"; otherwise a specific choice
+        // was added on top of "All" → drop "All".
+        value = !previous.includes('All') ? ['All'] : value.filter(v => v !== 'All');
+        $select.val(value).trigger('change.select2');
+    } else if (!value.length && fallbackToAll && $select.find('option[value="All"]').length) {
+        value = ['All'];
+        $select.val(value).trigger('change.select2');
+    }
+
+    $select.data('prevVal', value);
+    return value;
+}
 
 // ====================== CATEGOR FUNCTION ======================
 // PPE, semi-expendable high/low value and intangible account titles all live in
@@ -376,44 +421,55 @@ function selectedPropertyTypeMode() {
     return ids.length ? ids.join(',') : '0';
 }
 
-// Re-runs the account lookup for the category already chosen.
+// Re-runs the account lookup for the categories already chosen.
 function refreshAccountTitles() {
-    const category = $('#category_id').val();
+    const categories = $('#category_id').val() || [];
 
-    if (category && category !== 'All') {
-        categor(category);
+    if (categories.length && !categories.includes('All')) {
+        categor(categories);
     }
 }
 
+// Loads the account titles belonging to every selected category.
 function categor(val) {
     const $account = $('#property_id');
-    const emptyOptions = '<option disabled selected value=""> --- select --- </option><option value="All">All</option>';
+    const allOnly = '<option value="All" selected>All</option>';
 
-    if (!val || val === "All") {
-        $account.html(emptyOptions).trigger('change.select2');
+    const categories = (Array.isArray(val) ? val : [val])
+        .filter(id => id !== null && id !== '');
+
+    // Keep the current choices when the list is only being refreshed.
+    const previous = ($account.val() || []).filter(code => code !== 'All');
+
+    if (!categories.length || categories.includes('All')) {
+        $account.data('pendingRequest', null);
+        $account.html(allOnly).trigger('change.select2');
+        $account.data('prevVal', ['All']);
         loadItems();
         return;
     }
 
-    // Keep the current choice when the list is only being refreshed.
-    const previous = $account.val();
-
     const url = "{{ route('invCatIcsPar', [':id', ':mode']) }}"
-        .replace(':id', val)
+        .replace(':id', categories.map(encodeURIComponent).join(','))
         .replace(':mode', selectedPropertyTypeMode()) + '?unique_code=1';
 
-    $account.html('<option disabled selected value="">Loading...</option>').trigger('change.select2');
+    const request = $.get(url, function(response) {
+        // A newer category change started another lookup - ignore this one.
+        if ($account.data('pendingRequest') !== request) return;
 
-    $.get(url, function(response) {
-        $account.html(response.options || emptyOptions);
+        $account.html(response.options || allOnly);
 
-        if (previous && $account.find('option[value="' + previous + '"]').length) {
-            $account.val(previous);
-        }
+        const kept = previous.filter(code =>
+            $account.find('option').filter(function() { return this.value === code; }).length
+        );
+        $account.val(kept.length ? kept : ['All']);
+        $account.data('prevVal', $account.val());
 
         $account.trigger('change.select2');
         loadItems();
     });
+
+    $account.data('pendingRequest', request);
 }
 
 // ====================== LOAD ITEMS WITH CONSOLE LOGGING ======================
@@ -432,9 +488,9 @@ function loadItems() {
             location:      $('#location').val() || '',
             person_accnt:  $('#person_accntable').val() || '',
             person_accnt1: $('#enduser').val() || '',
-            categories_id: $('#category_id').val() || '',
+            categories_id: $('#category_id').val() || [],
             properties_id: $('#properties_id').val() || [],
-            property_id:   $('#property_id').val() || '',
+            property_id:   $('#property_id').val() || [],
             date_range:    $('#date_range').val() || ''
         };
 
