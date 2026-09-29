@@ -38,9 +38,8 @@ class AppController extends Controller
     public function scanQr(Request $request)
     {
         $qr = trim((string) $request->input('q', ''));
-
-        $inventoryRows = EnduserProperty::where('property_no_generated', $qr)
-            ->leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
+        $serial = trim((string) $request->input('serial', ''));
+        $query = EnduserProperty::leftJoin('offices', 'enduser_property.office_id', '=', 'offices.id')
             ->leftJoin('items', 'enduser_property.item_id', '=', 'items.id')
             ->leftJoin('accountable as person_accountable', 'enduser_property.person_accnt', '=', 'person_accountable.id')
             ->leftJoin('accountable as end_user', 'enduser_property.person_accnt1', '=', 'end_user.id')
@@ -48,6 +47,7 @@ class AppController extends Controller
                 'enduser_property.id',
                 'enduser_property.office_id',
                 'enduser_property.property_no_generated as property_number',
+                'enduser_property.serial_number',
                 'items.item_name as property_name',
                 'enduser_property.location as property_loc',
                 'enduser_property.person_accnt as accountable_person_id',
@@ -55,9 +55,21 @@ class AppController extends Controller
                 'enduser_property.person_accnt1 as enduser_id',
                 'end_user.person_accnt as enduser_name',
                 'enduser_property.remarks as status'
-            )
-            ->limit(2)
-            ->get();
+            );
+
+        if ($serial !== '') {
+            $normalized = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $serial));
+            if (strlen($normalized) < 4) {
+                return response()->json(['status' => 'invalid'], 422);
+            }
+            $query->whereRaw(
+                "REGEXP_REPLACE(UPPER(enduser_property.serial_number), '[^A-Z0-9]', '') LIKE ?",
+                ['%' . $normalized . '%']
+            );
+        } else {
+            $query->where('enduser_property.property_no_generated', $qr);
+        }
+        $inventoryRows = $query->limit(2)->get();
 
         $count = $inventoryRows->count();
         if ($count === 0) return response()->json(['status' => 'not_found']);
