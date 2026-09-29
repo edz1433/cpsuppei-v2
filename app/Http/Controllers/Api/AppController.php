@@ -59,17 +59,51 @@ class AppController extends Controller
 
         if ($serial !== '') {
             $normalized = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $serial));
+            $rawSerial = strtoupper(trim($serial));
             if (strlen($normalized) < 4) {
                 return response()->json(['status' => 'invalid'], 422);
             }
-            $query->whereRaw(
-                "REGEXP_REPLACE(UPPER(enduser_property.serial_number), '[^A-Z0-9]', '') LIKE ?",
-                ['%' . $normalized . '%']
-            );
+
+            // Reject obvious placeholder values without blocking real serials.
+            $compactSerial = str_replace([' ', "\t", "\r", "\n"], '', $rawSerial);
+            if (str_starts_with($compactSerial, 'N/A')) {
+                $remainder = str_replace(['N/A', ';', ',', '-'], '', $compactSerial);
+                if ($remainder === '' || ctype_digit($remainder)) {
+                    return response()->json(['status' => 'not_found']);
+                }
+            }
+            if (str_contains($rawSerial, 'NOT VISIBLE') || str_contains($rawSerial, 'CANNOT BE SEEN')) {
+                return response()->json(['status' => 'not_found']);
+            }
+
+            $normalizedColumn = "REGEXP_REPLACE(UPPER(enduser_property.serial_number), '[^A-Z0-9]', '')";
+            
+            // Exclude obvious placeholder rows from serial lookup candidates.
+            $query
+                ->whereRaw("UPPER(TRIM(enduser_property.serial_number)) NOT LIKE 'N/A%'")
+                ->whereRaw("REPLACE(UPPER(TRIM(enduser_property.serial_number)), ' ', '') NOT LIKE 'S/N:N/A%'")
+                ->whereRaw("UPPER(TRIM(enduser_property.serial_number)) != 'NOT VISIBLE'")
+                ->whereRaw("UPPER(TRIM(enduser_property.serial_number)) != 'CANNOT BE SEEN'");
+
+            // Prefer an exact normalized serial match.
+            $inventoryRows = (clone $query)
+                ->whereRaw("$normalizedColumn = ?", [$normalized])
+                ->limit(2)
+                ->get();
+
+            // No exact match: allow lookup inside compound/descriptive serial fields.
+            if ($inventoryRows->isEmpty()) {
+                $inventoryRows = $query
+                    ->whereRaw("$normalizedColumn LIKE ?", ['%' . $normalized . '%'])
+                    ->limit(2)
+                    ->get();
+            }
         } else {
-            $query->where('enduser_property.property_no_generated', $qr);
+            $inventoryRows = $query
+                ->where('enduser_property.property_no_generated', $qr)
+                ->limit(2)
+                ->get();
         }
-        $inventoryRows = $query->limit(2)->get();
 
         $count = $inventoryRows->count();
         if ($count === 0) return response()->json(['status' => 'not_found']);
@@ -90,17 +124,16 @@ class AppController extends Controller
             ->get();
 
         $locations = Office::leftJoin('campuses', 'offices.loc_camp', '=', 'campuses.id')
-    ->where('offices.office_code', '0000')
-    ->select(
-        'offices.id',
-        'offices.office_name',
-        'offices.office_abbr',
-        'offices.loc_camp',
-        DB::raw("COALESCE(campuses.campus_abbr, '') AS campus_abbr")
-    )
-    ->orderBy('offices.office_name')
-    ->get();
-
+        ->where('offices.office_code', '0000')
+        ->select(
+            'offices.id',
+            'offices.office_name',
+            'offices.office_abbr',
+            'offices.loc_camp',
+            DB::raw("COALESCE(campuses.campus_abbr, '') AS campus_abbr")
+        )
+        ->orderBy('offices.office_name')
+        ->get();
 
         return response()->json([
             'status' => 'match',
