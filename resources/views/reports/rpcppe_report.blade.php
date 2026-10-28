@@ -322,9 +322,9 @@
 
     <div class="text4">
         For which 
-        <u>ALADINO C. MORACA, Ph.D., CPSU, Camingawan, Kabankalan City</u>
+        <u>MAE FLOR POSADAS, Ph. D., CPSU, Camingawan, Kabankalan City</u>
         of <u>CENTRAL PHILIPPINES STATE UNIVERSITY</u>,
-        is accountable, having assumed such accountability on August 16, 2018.
+        is accountable, having assumed such accountability on September 29, 2026.
     </div>
     @endif
 
@@ -516,7 +516,7 @@
 
                             <div class="footer-cell">
                                 <div>Approved by:</div>
-                                <div class="footer-cell-sign bold">ALADINO C. MORACA, Ph.D.</div>
+                                <div class="footer-cell-sign bold">MAE FLOR POSADAS, Ph. D.</div>
                                 <div class="footer-cell-text">SUC President</div>
                             </div>
 
@@ -545,7 +545,7 @@
 
                             <div class="footer-cell">
                                 <div>Approved by:</div>
-                                <div class="footer-cell-sign bold">ALADINO C. MORACA, Ph.D.</div>
+                                <div class="footer-cell-sign bold">MAE FLOR POSADAS, Ph. D.</div>
                                 <div class="footer-cell-text">SUC President</div>
                             </div>
 
