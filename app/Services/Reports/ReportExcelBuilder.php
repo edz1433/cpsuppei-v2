@@ -140,7 +140,7 @@ class ReportExcelBuilder
             $row,
             1,
             $lastCol,
-            'For which ALADINO C. MORACA, Ph.D., CPSU, Camingawan, Kabankalan City of CENTRAL PHILIPPINES STATE UNIVERSITY, is accountable, having assumed such accountability on August 16, 2018.',
+            'For which MAE FLOR POSADAS, Ph. D., CPSU, Camingawan, Kabankalan City of CENTRAL PHILIPPINES STATE UNIVERSITY, is accountable, having assumed such accountability on September 29, 2026.',
             [],
             Alignment::HORIZONTAL_LEFT,
             true
@@ -202,7 +202,7 @@ class ReportExcelBuilder
         $row++;
         $this->writeSignatureFooter($sheet, $row, $lastCol, [
             ['label' => 'Certified Correct by:', 'name' => 'MA. SOCORRO T. LLAMAS', 'title' => 'Administrative Officer V/Supply Officer designate'],
-            ['label' => 'Approved by:', 'name' => 'ALADINO C. MORACA, Ph.D.', 'title' => 'SUC President'],
+            ['label' => 'Approved by:', 'name' => 'MAE FLOR POSADAS, Ph. D.', 'title' => 'SUC President'],
             ['label' => 'Verified by', 'name' => 'ATTY. IRRAH MICAH T. SU-AY', 'title' => 'State Auditor I/OIC - Audit Team Leader'],
         ]);
 
